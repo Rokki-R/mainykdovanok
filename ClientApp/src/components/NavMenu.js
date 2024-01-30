@@ -110,7 +110,7 @@ export class NavMenu extends Component {
                                 <NavDropdown.Item>Visi</NavDropdown.Item>
                             </NavDropdown>
                             <div className="d-inline-block align-middle">
-                                <Button className="buttoncreate" variant="primary" size="sm" href="/skelbimas/naujas">Dovanoti!</Button>
+                                <Button className="buttoncreate" variant="primary" size="sm" href="/naujasskelbimas">Dovanoti!</Button>
                             </div>
 
                             {this.state.isLogged ? (

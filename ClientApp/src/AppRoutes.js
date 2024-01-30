@@ -6,6 +6,8 @@ import { LoginPage } from "./components/LoginPage/LoginPage";
 import RegistrationPage from "./components/RegistrationPage/RegistrationPage";
 import VerifyEmailPage from "./components/VerifyEmailPage/VerifyEmailPage";
 
+import ItemCreationPage from "./components/ItemCreationPage/ItemCreationPage";
+
 const AppRoutes = [
   {
     index: true,
@@ -30,6 +32,10 @@ const AppRoutes = [
   {
     path: '/verifyemail',
     element: <VerifyEmailPage />
+  },
+  {
+    path: '/naujasskelbimas',
+    element: <ItemCreationPage />
   }
 ];
 
