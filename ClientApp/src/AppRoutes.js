@@ -1,6 +1,6 @@
 import { Counter } from "./components/Counter";
 import { FetchData } from "./components/FetchData";
-import { Home } from "./components/Home";
+import HomePage from "./components/HomePage/HomePage";
 
 import { LoginPage } from "./components/LoginPage/LoginPage";
 import RegistrationPage from "./components/RegistrationPage/RegistrationPage";
@@ -11,7 +11,7 @@ import ItemCreationPage from "./components/ItemCreationPage/ItemCreationPage";
 const AppRoutes = [
   {
     index: true,
-    element: <Home />
+    element: <HomePage />
   },
   {
     path: '/counter',
