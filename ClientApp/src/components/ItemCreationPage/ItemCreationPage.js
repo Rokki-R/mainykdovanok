@@ -118,7 +118,14 @@ const ItemCreationPage = () => {
                 containsEmptyQuestions = true;
             }
         });
-        if (name === '' || description === '' || location === '' || category === 'Pasirinkite kategoriją' || itemType === 'Pasirinkite, kaip norite atiduoti' || endDate === 'Pasirinkite datą' || containsEmptyQuestions) {
+        console.log(name)
+        console.log(description)
+        console.log(location)
+        console.log(category)
+        console.log(itemType)
+        console.log(endDate)
+        console.log(containsEmptyQuestions)
+        if (name === '' || description === '' || location === '' || category === 'Pasirinkite kategoriją' || itemType === 'Pasirinkite, kaip norite atiduoti' || endDate === 'Pasirinkite datą') {
             toast.error('Reikia užpildyti visus laukus!');
             return false;
         }
