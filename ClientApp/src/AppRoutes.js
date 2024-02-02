@@ -7,7 +7,7 @@ import RegistrationPage from "./components/RegistrationPage/RegistrationPage";
 import VerifyEmailPage from "./components/VerifyEmailPage/VerifyEmailPage";
 
 import ItemCreationPage from "./components/ItemCreationPage/ItemCreationPage";
-
+import { ItemViewPage } from "./components/ItemViewPage/ItemViewPage";
 const AppRoutes = [
   {
     index: true,
@@ -36,6 +36,10 @@ const AppRoutes = [
   {
     path: '/naujasskelbimas',
     element: <ItemCreationPage />
+  },
+  {
+    path: '/skelbimas/:itemId',
+    element: <ItemViewPage />
   }
 ];
 
