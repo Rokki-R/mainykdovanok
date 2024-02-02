@@ -4,7 +4,7 @@ using SixLabors.ImageSharp.Processing;
 
 namespace mainykdovanok.Tools
 {
-    public static class ImageUtilities
+    public static class ImageCompressor
     {
         public async static Task<byte[]> ConvertToByteArray(IFormFile image)
         {

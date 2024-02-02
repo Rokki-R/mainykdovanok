@@ -201,5 +201,18 @@ namespace mainykdovanok.Controllers.UserAuthentication
                 return Unauthorized();
             }
         }
+        [HttpGet("getCurrentUserId")]
+        public IActionResult GetCurrentUserId()
+        {
+            if (HttpContext.User.Identity.IsAuthenticated)
+            {
+                int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+                return Ok(userId);
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
     }
 }

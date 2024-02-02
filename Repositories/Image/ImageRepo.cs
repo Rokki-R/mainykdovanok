@@ -45,7 +45,7 @@ namespace mainykdovanok.Repositories.Image
 
             foreach (IFormFile image in item.Images)
             {
-                byte[] data = await ImageUtilities.ResizeCompressImage(image, 640, 480);
+                byte[] data = await ImageCompressor.ResizeCompressImage(image, 640, 480);
 
                 using MySqlCommand command = new MySqlCommand(
                     "INSERT INTO item_images (image, fk_item) VALUES (@image, @fk_item)", connection);

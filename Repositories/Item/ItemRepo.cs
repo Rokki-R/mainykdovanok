@@ -92,15 +92,15 @@ namespace mainykdovanok.Repositories.Item
             using (MySqlConnection connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                using (MySqlCommand command = new MySqlCommand("SELECT items.*, item_type.type AS item_type, categories.name AS category_name, status.name AS status_name, " +
+                using (MySqlCommand command = new MySqlCommand("SELECT items.*, item_type.type AS item_type, item_categories.name AS category_name, item_status.name AS status_name, " +
                     "COUNT(item_lottery_participants.id) AS participants_count " +
                     "FROM items " +
                     "JOIN item_type ON items.fk_type = item_type.id " +
-                    "JOIN categories ON items.fk_category = categories.id " +
-                    "JOIN status ON items.fk_status = status.id " +
+                    "JOIN item_categories ON items.fk_category = item_categories.id " +
+                    "JOIN item_status ON items.fk_status = item_status.id " +
                     "LEFT JOIN item_lottery_participants ON items.id = item_lottery_participants.fk_item " +
                     "WHERE items.id = @itemId " +
-                    "GROUP BY items.id, item_type.type, categories.name", connection))
+                    "GROUP BY items.id, item_type.type, item_categories.name", connection))
                 {
                     command.Parameters.AddWithValue("@itemId", itemId);
                     using (DbDataReader reader = await command.ExecuteReaderAsync())
@@ -186,15 +186,15 @@ namespace mainykdovanok.Repositories.Item
             using (var connection = new MySqlConnection(_connectionString))
             {
                 using (MySqlCommand command = new MySqlCommand("SELECT items.*, item_type.type AS item_type, " +
-                    "categories.name AS category_name, status.name AS status_name, " +
+                    "item_categories.name AS category_name, item_status.name AS status_name, " +
                     "COUNT(item_lottery_participants.id) AS participants_count " +
                     "FROM items " +
                     "JOIN item_type ON items.fk_type = item_type.id " +
-                    "JOIN categories ON itemss.fk_category = categories.id " +
-                    "JOIN status ON items.fk_status = status.id " +
+                    "JOIN item_categories ON items.fk_category = categories.id " +
+                    "JOIN item_status ON items.fk_status = status.id " +
                     "LEFT JOIN item_lottery_participants ON items.id = ad_lottery_participants.fk_item " +
                     "WHERE items.fk_category = @categoryId AND items.fk_status = 1  " +
-                    "GROUP BY items.id, item_type.type, categories.name", connection))
+                    "GROUP BY items.id, item_type.type, item_categories.name", connection))
                 {
                     await connection.OpenAsync();
                     command.Parameters.AddWithValue("@categoryId", categoryId);
@@ -286,14 +286,14 @@ namespace mainykdovanok.Repositories.Item
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT question_text, id FROM questions where fk_item=@itemId", connection);
+                "SELECT question, id FROM questions where fk_item=@itemId", connection);
             command.Parameters.AddWithValue("@itemId", itemId);
 
             using DbDataReader reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
                 int id = reader.GetInt32("id");
-                string text = reader.GetString("question_text");
+                string text = reader.GetString("question");
                 ItemQuestionsViewModel question = new ItemQuestionsViewModel { Id = id, Question = text };
                 questions.Add(question);
             }
@@ -310,7 +310,7 @@ namespace mainykdovanok.Repositories.Item
                 foreach (string question in item.Questions)
                 {
                     using MySqlCommand command = new MySqlCommand(
-                        "INSERT INTO questions (question_text, fk_item) VALUES (@question, @fk_item)", connection);
+                        "INSERT INTO questions (question, fk_item) VALUES (@question, @fk_item)", connection);
 
                     // Add parameters
                     command.Parameters.AddWithValue("@question", question);
@@ -326,6 +326,19 @@ namespace mainykdovanok.Repositories.Item
                 _logger.Error(ex, "Error saving questions to database!");
                 return false;
             }
+        }
+        public async Task<bool> DeleteItem(int id)
+        {
+            using MySqlConnection connection = GetConnection();
+            using MySqlCommand command = new MySqlCommand(
+                "DELETE FROM ads WHERE id=@Id", connection);
+
+            command.Parameters.AddWithValue("@Id", id);
+
+            await connection.OpenAsync();
+            await command.ExecuteNonQueryAsync();
+
+            return true;
         }
     }
 }
