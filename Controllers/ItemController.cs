@@ -235,7 +235,91 @@ namespace mainykdovanok.Controllers
             }
         }
 
+        [HttpGet("getLotteryParticipants/{itemId}")]
+        [Authorize]
+        public async Task<IActionResult> GetLotteryParticipants(int itemId)
+        {
+            try
+            {
+                var result = await _itemRepo.GetLotteryParticipants(itemId);
 
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("leaveLottery/{id}")]
+        [Authorize]
+        public async Task<IActionResult> LeaveLottery(int id)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            try
+            {
+                var result = await _itemRepo.LeaveLottery(id, userId);
+
+                if (result == null)
+                {
+                    return BadRequest();
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("enterLottery/{id}")]
+        public async Task<IActionResult> EnterLottery(int id)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            try
+            {
+                var result = await _itemRepo.EnterLottery(id, userId);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("isUserParticipatingInLottery/{id}")]
+        [Authorize]
+        public async Task<IActionResult> IsUserParticipatingInLottery(int id)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            try
+            {
+                var result = await _itemRepo.IsUserParticipatingInLottery(id, userId);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
     }
 }
