@@ -143,5 +143,41 @@ namespace mainykdovanok.Tools
                 _logger.Error("Error sending email to poster notifying of expiration: {0}", ex.Message);
             }
         }
+
+        public async Task notifyQuestionnaireWinner(string email, string itemName, int itemId)
+        {
+            message.To.Clear();
+            message.To.Add(new MailAddress(email));
+
+            message.Subject = "Laimėjote mainykdovanok.lt skelbimo klausimyną!";
+
+            string url = $"https://localhost:44492/laimejimas/{itemId}";
+            if (String.Equals(Environment.GetEnvironmentVariable("SERVER_HOST"), "1"))
+            {
+                url = $"https://neismesk.azurewebsites.net/laimejimas/{itemId}";
+            }
+
+            message.Body = $"<html><body>" +
+                           $"<p>Sveiki,</p>" +
+                           $"<p>Jūs tapote laimėtoju skelbimo „<b>{itemName}</b>“ klausimyne!</p>" +
+                           $"<p>Iš visų atsakymų, savininkui labiausiai patiko Jūsų!</p>" +
+                           $"<p>Kad suderinti pristatymą ar atsiėmimą, prašome eiti į šią nuorodą:</p>" +
+                           $"<p>{url}</p>" +
+                           $"<p>Šiame puslapyje turėsite galimybę pateikti savo telefono numerį, kad skelbėjas galėtų su Jumis susisiekti.</p>" +
+                           $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
+                           $"<p>Linkėjimai,</p>" +
+                           $"<p>mainykdovanok.lt komanda</p>" +
+                           $"</body></html>";
+            message.IsBodyHtml = true;
+
+            try
+            {
+                smtpClient.Send(message);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Error sending email to questionnaire winner: {0}", ex.Message);
+            }
+        }
     }
 }

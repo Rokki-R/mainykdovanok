@@ -1,6 +1,6 @@
-﻿namespace mainykdovanok.ViewModels.User
+﻿namespace mainykdovanok.Models
 {
-    public class UserViewModel
+    public class UserModel
     {
         public int Id { get; set; }
         public string Name { get; set; }

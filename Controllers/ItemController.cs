@@ -12,6 +12,7 @@ using mainykdovanok.Repositories.User;
 using Newtonsoft.Json.Linq;
 using mainykdovanok.ViewModels.Video;
 using mainykdovanok.Repositories.Video;
+using mainykdovanok.Services;
 
 namespace mainykdovanok.Controllers
 {
@@ -25,6 +26,7 @@ namespace mainykdovanok.Controllers
         private readonly ImageRepo _imageRepo;
         private readonly UserRepo _userRepo;
         private readonly VideoRepo _videoRepo;
+        private readonly QuestionnaireService _questionnaireService;
 
         public ItemController()
         {
@@ -34,6 +36,7 @@ namespace mainykdovanok.Controllers
             _imageRepo = new ImageRepo();
             _userRepo = new UserRepo();
             _videoRepo = new VideoRepo();
+            _questionnaireService = new QuestionnaireService();
         }
 
         [HttpGet("getItems")]
@@ -314,6 +317,64 @@ namespace mainykdovanok.Controllers
                 var result = await _itemRepo.IsUserParticipatingInLottery(id, userId);
 
                 return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("submitAnswers/{itemId}")]
+        public async Task<IActionResult> SubmitAnswers(int itemId, [FromBody] List<AnswerModel> answers)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            try
+            {
+                var result = await _itemRepo.InsertAnswers(itemId, answers, userId);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("getQuestionsAndAnswers/{itemId}")]
+        [Authorize]
+        public async Task<IActionResult> GetQuestionsAndAnswers(int itemId)
+        {
+            try
+            {
+                var result = await _itemRepo.GetQuestionsAndAnswers(itemId);
+
+                return Ok(new { questionnaires = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("chooseQuestionnaireWinner")]
+        public async Task<IActionResult> ChooseQuestionnaireWinner([FromBody] QuestionnaireWinnerModel winner)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            try
+            {
+                _questionnaireService.NotifyWinner(winner, userId);
+
+                return Ok();
             }
             catch (Exception ex)
             {
