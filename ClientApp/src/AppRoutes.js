@@ -8,6 +8,7 @@ import VerifyEmailPage from "./components/VerifyEmailPage/VerifyEmailPage";
 
 import ItemCreationPage from "./components/ItemCreationPage/ItemCreationPage";
 import { ItemViewPage } from "./components/ItemViewPage/ItemViewPage";
+import { DetailedItemInfoPage } from "./components/DetailedItemInfoPage/DetailedItemInfoPage";
 const AppRoutes = [
   {
     index: true,
@@ -40,6 +41,10 @@ const AppRoutes = [
   {
     path: '/skelbimas/:itemId',
     element: <ItemViewPage />
+  },
+  {
+    path: '/skelbimas/info/:itemId',
+    element: <DetailedItemInfoPage />
   }
 ];
 

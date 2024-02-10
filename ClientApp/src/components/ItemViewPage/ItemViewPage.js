@@ -201,6 +201,7 @@ export const ItemViewPage = () => {
         }
         else if (item.type === 'Klausimynas') {
             const answersList = Object.entries(data.answers).map(([key, value]) => ({ question: parseInt(key), text: value }));
+            console.log(answersList);
             axios.post(`api/item/submitAnswers/${itemId}`, answersList)
                 .then(response => {
                     if (response.data) {

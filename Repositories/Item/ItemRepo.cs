@@ -2,7 +2,6 @@
 using mainykdovanok.Models;
 using mainykdovanok.Repositories.Image;
 using mainykdovanok.ViewModels.Item;
-using mainykdovanok.ViewModels.User;
 using Org.BouncyCastle.Cms;
 using Serilog;
 using System.Collections.Generic;
@@ -386,9 +385,9 @@ namespace mainykdovanok.Repositories.Item
             return reader.HasRows;
         }
 
-        public async Task<List<UserViewModel>> GetLotteryParticipants(int itemId)
+        public async Task<List<UserModel>> GetLotteryParticipants(int itemId)
         {
-            List<UserViewModel> lotteryParticipants = new List<UserViewModel>();
+            List<UserModel> lotteryParticipants = new List<UserModel>();
 
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
@@ -402,7 +401,7 @@ namespace mainykdovanok.Repositories.Item
             using DbDataReader reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                UserViewModel user = new UserViewModel();
+                UserModel user = new UserModel();
                 user.Id = reader.GetInt32("user_id");
                 user.Name = reader.GetString("name");
                 user.Surname = reader.GetString("surname");
@@ -533,6 +532,82 @@ namespace mainykdovanok.Repositories.Item
 
             await command.ExecuteNonQueryAsync();
             return true;
+        }
+        public async Task<Dictionary<string, List<QuestionnaireViewModel>>> GetQuestionsAndAnswers(int itemId)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "SELECT a.id, a.answer, q.question, CONCAT(u.name, ' ', u.surname) AS user " +
+                "FROM answers AS a " +
+                "INNER JOIN questions AS q ON a.fk_question = q.id " +
+                "INNER JOIN users AS u ON a.fk_user = u.user_id " +
+                "WHERE a.fk_item=@itemId", connection);
+            command.Parameters.AddWithValue("@itemId", itemId);
+
+            using DbDataReader reader = await command.ExecuteReaderAsync();
+
+            List<QuestionnaireViewModel> results = new List<QuestionnaireViewModel>();
+            while (await reader.ReadAsync())
+            {
+                int id = reader.GetInt32("id");
+                string text = reader.GetString("question");
+                string answer = reader.GetString("answer");
+                string user = reader.GetString("user");
+                QuestionnaireViewModel result = new QuestionnaireViewModel { Id = id, Question = text, Answer = answer, User = user };
+                results.Add(result);
+            }
+
+            Dictionary<string, List<QuestionnaireViewModel>> groupedResults = results.GroupBy(r => r.User)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            return groupedResults;
+        }
+
+        public async Task<bool> InsertAnswers(int itemId, List<AnswerModel> answers, int userId)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            foreach (AnswerModel answer in answers)
+            {
+                using MySqlCommand command = new MySqlCommand(
+                    "INSERT INTO answers (answer, fk_question, fk_user, fk_ad) VALUES (@answer, @fk_question, @fk_user, @fk_item)", connection);
+
+                // Add parameters
+                command.Parameters.AddWithValue("@answer", answer.Text);
+                command.Parameters.AddWithValue("@fk_question", answer.Question);
+                command.Parameters.AddWithValue("@fk_user", userId);
+                command.Parameters.AddWithValue("@fk_item", itemId);
+
+                await command.ExecuteNonQueryAsync();
+            }
+
+            return true;
+        }
+
+        public async Task<string> GetItemName(int itemId)
+        {
+            using (MySqlConnection connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (MySqlCommand command = new MySqlCommand(
+                    "SELECT name " +
+                    "FROM items " +
+                    "WHERE id = @itemId ", connection))
+                {
+                    command.Parameters.AddWithValue("@itemId", itemId);
+                    using (DbDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        await reader.ReadAsync();
+
+                        string name = reader["name"].ToString();
+
+                        return name;
+                    }
+                }
+            }
         }
     }
 }

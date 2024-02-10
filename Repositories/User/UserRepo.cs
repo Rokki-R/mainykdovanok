@@ -2,9 +2,9 @@
 using System.Data.Common;
 using System.Reflection;
 using MySql.Data.MySqlClient;
-using mainykdovanok.ViewModels.User;
 using Org.BouncyCastle.Cms;
 using Serilog;
+using mainykdovanok.Models;
 
 namespace mainykdovanok.Repositories.User
 {
@@ -186,7 +186,7 @@ namespace mainykdovanok.Repositories.User
             }
         }
 
-        public async Task<UserViewModel> GetUser(string name)
+        public async Task<UserModel> GetUser(string name)
         {
             MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
@@ -200,7 +200,7 @@ namespace mainykdovanok.Repositories.User
             {
                 await reader.ReadAsync();
 
-                UserViewModel user = new UserViewModel()
+                UserModel user = new UserModel()
                 {
                     Id = Convert.ToInt32(reader["user_id"]),
                     Name = reader["name"].ToString(),
