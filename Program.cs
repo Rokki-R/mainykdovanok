@@ -3,12 +3,15 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using mainykdovanok.Controllers.UserAuthentication;
+using mainykdovanok.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddHostedService<LotteryService>();
+builder.Services.AddHostedService<ItemStatusService>();
 
 builder.Logging.AddSerilog(new LoggerConfiguration()
     .MinimumLevel.Information()

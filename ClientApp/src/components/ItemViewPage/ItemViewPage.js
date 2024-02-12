@@ -342,7 +342,7 @@ export const ItemViewPage = () => {
                                                         <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/redaguoti/${item.id}`}>
                                                             <Button variant="primary">Redaguoti</Button>
                                                         </Link>
-                                                        <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/detailedItem/${item.id}`}>
+                                                        <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/info/${item.id}`}>
                                                             <Button variant="primary">Siūlymai</Button>
                                                         </Link>
                                                     </>
@@ -370,7 +370,7 @@ export const ItemViewPage = () => {
                                                         <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/redaguoti/${item.id}`}>
                                                             <Button variant="primary">Redaguoti</Button>
                                                         </Link>
-                                                        <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/detailedItem/${item.id}`}>
+                                                        <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/info/${item.id}`}>
                                                             <Button variant="primary">Atsakymai</Button>
                                                         </Link>
                                                     </>
@@ -398,7 +398,7 @@ export const ItemViewPage = () => {
                                                         <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/redaguoti/${item.id}`}>
                                                             <Button variant="primary">Redaguoti</Button>
                                                         </Link>
-                                                        <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/detailedItem/${item.id}`}>
+                                                        <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/info/${item.id}`}>
                                                             <Button variant="primary">Dalyviai</Button>
                                                         </Link>
                                                     </>
@@ -428,7 +428,7 @@ export const ItemViewPage = () => {
                                                 <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/redaguoti/${item.id}`}>
                                                     <Button variant="primary">Redaguoti</Button>
                                                 </Link>
-                                                <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/detailedItem/${item.id}`}>
+                                                <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/info/${item.id}`}>
                                                     <Button variant="primary">Dalyviai</Button>
                                                 </Link>
                                             </>

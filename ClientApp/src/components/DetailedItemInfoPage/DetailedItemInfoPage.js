@@ -255,7 +255,14 @@ export const DetailedItemInfoPage = () => {
                     <ListGroupItem variant="primary"><b>Loterijos dalyviai</b></ListGroupItem>
                     {itemLotteryParticipants.length > 0 ? (
                         itemLotteryParticipants.map((user) => (
-                            <ListGroupItem key={user.id}>{user.name} {user.surname}</ListGroupItem>
+                            <ListGroupItem key={user.id} className="d-flex justify-content-between align-items-center">
+                                <div className="d-flex align-items-center">
+                                    {user.name} {user.surname}
+                                </div>
+                                <div className="d-flex align-items-center">
+                                    <Button className='ReviewProfileButton' variant="primary" size="sm" onClick={() => navigate(`/klientas/${user.id}`)}>View Profile</Button>
+                                </div>
+                            </ListGroupItem>
                         ))
                     ) : (
                         <ListGroupItem>Loterijos dalyvių nėra.</ListGroupItem>

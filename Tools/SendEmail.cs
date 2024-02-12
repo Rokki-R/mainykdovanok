@@ -104,7 +104,7 @@ namespace mainykdovanok.Tools
                            $"<p>Šiame puslapyje turėsite galimybę pateikti savo telefono numerį, kad skelbėjas galėtų su Jumis susisiekti.</p>" +
                            $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
                            $"<p>Linkėjimai,</p>" +
-                           $"<p>mainykdovanok.lt komanda</p>" +
+                           $"<p>mainykdovanok.lt</p>" +
                            $"</body></html>";
             message.IsBodyHtml = true;
 
@@ -166,7 +166,7 @@ namespace mainykdovanok.Tools
                            $"<p>Šiame puslapyje turėsite galimybę pateikti savo telefono numerį, kad skelbėjas galėtų su Jumis susisiekti.</p>" +
                            $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
                            $"<p>Linkėjimai,</p>" +
-                           $"<p>mainykdovanok.lt komanda</p>" +
+                           $"<p>mainykdovanok.lt</p>" +
                            $"</body></html>";
             message.IsBodyHtml = true;
 
@@ -177,6 +177,36 @@ namespace mainykdovanok.Tools
             catch (Exception ex)
             {
                 _logger.Error("Error sending email to questionnaire winner: {0}", ex.Message);
+            }
+        }
+        public async Task<bool> sendWinnerDetails(string email, string itemName, string phoneNumber, string additionalMessage)
+        {
+            message.To.Clear();
+            message.To.Add(new MailAddress(email));
+
+            message.Subject = "Skelbimo laimėtojas atsiuntė susisiekimo duomenis";
+
+            string extraMessageBody = additionalMessage.Trim().Length > 0 ? $"<p>Papildoma žinutė iš laimėtojo: <b>{additionalMessage}</b></p>" : "";
+            message.Body = $"<html><body>" +
+                           $"<p>Sveiki,</p>" +
+                           $"<p>Jūsų skelbimo „<b>{itemName}</b>“ laimėtojas pateikė savo susisiekimo duomenis:</p>" +
+                           $"<p>Telefono numeris: <b>{phoneNumber}</b></p>" +
+                           $"<p>{extraMessageBody}</p>" +
+                           $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
+                           $"<p>Linkėjimai,</p>" +
+                           $"<p>mainykdovanok.lt</p>" +
+                           $"</body></html>";
+            message.IsBodyHtml = true;
+
+            try
+            {
+                smtpClient.Send(message);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Error sending winner details email to poster: {0}", ex.Message);
+                return false;
             }
         }
     }
