@@ -423,7 +423,7 @@ namespace mainykdovanok.Repositories.Item
 
             using (MySqlCommand command = new MySqlCommand("SELECT items.id, items.fk_user AS UserId, items.name AS Name, items.description AS Description, COUNT(item_lottery_participants.id) " +
                 "AS Participants, items.location AS Location, item_categories.name AS Category " +
-                "FROM items" +
+                "FROM items " +
                 "JOIN item_categories ON items.fk_category = item_categories.id " +
                 "LEFT JOIN item_lottery_participants ON items.id = item_lottery_participants.fk_item " +
                 "WHERE items.end_datetime <= @dateTimeNow AND items.fk_status = 1 AND items.fk_type = 1 " +
@@ -459,7 +459,7 @@ namespace mainykdovanok.Repositories.Item
             using MySqlCommand command = new MySqlCommand(
                 "SELECT items.id, items.name, items.description, items.location, items.end_datetime, items.fk_status, items.fk_user, items.fk_winner, item_status.name AS status_name " +
                 "FROM items " +
-                "JOIN item_status ON items.fk_status = status.id " +
+                "JOIN item_status ON items.fk_status = item_status.id " +
                 "WHERE end_datetime < NOW() AND fk_status = 1", connection);
 
             using (DbDataReader reader = await command.ExecuteReaderAsync())

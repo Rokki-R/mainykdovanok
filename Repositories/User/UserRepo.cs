@@ -5,6 +5,8 @@ using MySql.Data.MySqlClient;
 using Org.BouncyCastle.Cms;
 using Serilog;
 using mainykdovanok.Models;
+using mainykdovanok.ViewModels.User;
+using System.Xml.Linq;
 
 namespace mainykdovanok.Repositories.User
 {
@@ -201,6 +203,32 @@ namespace mainykdovanok.Repositories.User
                 await reader.ReadAsync();
 
                 UserModel user = new UserModel()
+                {
+                    Id = Convert.ToInt32(reader["user_id"]),
+                    Name = reader["name"].ToString(),
+                    Surname = reader["surname"].ToString(),
+                    Email = reader["email"].ToString()
+                };
+
+                return user;
+            }
+        }
+
+        public async Task<UserViewModel> GetUserById(int userId)
+        {
+            MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "SELECT user_id, name, surname, email FROM users " +
+                "WHERE user_id = @id", connection);
+            command.Parameters.AddWithValue("@id", userId);
+
+            using (DbDataReader reader = await command.ExecuteReaderAsync())
+            {
+                await reader.ReadAsync();
+
+                UserViewModel user = new UserViewModel()
                 {
                     Id = Convert.ToInt32(reader["user_id"]),
                     Name = reader["name"].ToString(),

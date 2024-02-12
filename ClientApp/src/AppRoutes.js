@@ -9,6 +9,12 @@ import VerifyEmailPage from "./components/VerifyEmailPage/VerifyEmailPage";
 import ItemCreationPage from "./components/ItemCreationPage/ItemCreationPage";
 import { ItemViewPage } from "./components/ItemViewPage/ItemViewPage";
 import { DetailedItemInfoPage } from "./components/DetailedItemInfoPage/DetailedItemInfoPage";
+
+import MyProfilePage from "./components/MyProfilePage/MyProfilePage";
+import { UserProfilePage } from "./components/UserProfilePage/UserProfilePage";
+
+import { ItemWinnerPage } from "./components/ItemWinnerPage/ItemWinnerPage";
+
 const AppRoutes = [
   {
     index: true,
@@ -45,6 +51,18 @@ const AppRoutes = [
   {
     path: '/skelbimas/info/:itemId',
     element: <DetailedItemInfoPage />
+  },
+  {
+    path: '/manoprofilis',
+    element: <MyProfilePage />
+  },
+  {
+    path: '/klientas/:userId',
+    element: <UserProfilePage />
+  },
+  {
+    path: '/laimejimas/:itemId',
+    element: <ItemWinnerPage />
   }
 ];
 

@@ -382,5 +382,26 @@ namespace mainykdovanok.Controllers
             }
         }
 
+        [HttpPost("submitWinnerDetails")]
+        [Authorize]
+        public async Task<IActionResult> SubmitWinnerDetails(ItemWinnerViewModel itemWinnerDetails)
+        {
+            try
+            {
+                // Send an email to the item poster with winner details.
+                SendEmail emailer = new SendEmail();
+                bool result = await emailer.sendWinnerDetails(itemWinnerDetails.PosterEmail, itemWinnerDetails.ItemName, itemWinnerDetails.Phone, itemWinnerDetails.Message);
+
+                // Set item status to 'Užbaigtas'
+                await _itemRepo.UpdateItemStatus(itemWinnerDetails.ItemId, 3);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

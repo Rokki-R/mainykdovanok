@@ -19,7 +19,7 @@ export class NavMenu extends Component {
             isLoggedInAsAdmin: false,
             dropdownOpen: false,
             selectedCategory: 'Filtras',
-            userAvatar: './images/profile.png',
+            userProfileImage: './images/profile.png',
             categories: [],
             items: [],
             allItems: false,
@@ -29,6 +29,7 @@ export class NavMenu extends Component {
 
     componentDidMount() {
         this.handleLoginClick();
+        this.getMyProfileImage();
     }
 
 
@@ -75,6 +76,18 @@ export class NavMenu extends Component {
         })
     }
 
+    getMyProfileImage() {
+        axios.get('api/user/getMyProfileImage')
+            .then(response => {
+                if (response.data.user_profile_image !== undefined) {
+                    this.setState({
+                        userProfileImage: response.data.user_profile_image
+                    });
+                }
+            })
+            .catch(error => console.error(error));
+    }
+
     toggleDropdown = () => {
         this.setState(prevState => ({
             dropdownOpen: !prevState.dropdownOpen,
@@ -82,8 +95,8 @@ export class NavMenu extends Component {
     };
     
     render() {
-        const { userAvatar } = this.state;
-        const avatar = userAvatar.length < 100 ? userAvatar : `data:image/jpeg;base64,${userAvatar}`;
+        const { userProfileImage} = this.state;
+        const ProfileImage = userProfileImage.length < 100 ? userProfileImage : `data:image/jpeg;base64,${userProfileImage}`;
         const maxCategoryLength = 20; // Maximum number of characters to display in dropdown toggle
 
         let displayCategory = this.state.selectedCategory;
@@ -114,15 +127,15 @@ export class NavMenu extends Component {
                             </div>
 
                             {this.state.isLogged ? (
-                                <NavDropdown title={<Image alt="Profilio nuotrauka" src={avatar} roundedCircle style={{ height: '75px', width: '75px' }} />} onClick={this.handleLoginClick}>
-                                    <NavDropdown.Item href="/profile" onClick={this.handleClick}>Profilis</NavDropdown.Item>
+                                <NavDropdown title={<Image alt="Profilio nuotrauka" src={[ProfileImage]} roundedCircle style={{ height: '75px', width: '75px' }} />} onClick={this.handleLoginClick}>
+                                    <NavDropdown.Item href="/manoprofilis" onClick={this.handleClick}>Profilis</NavDropdown.Item>
                                     {this.state.isLoggedInAsAdmin ? (
                                         <NavDropdown.Item href="/admin/taisyklos" onClick={this.handleClick}>Taisyklos</NavDropdown.Item>
                                     ) : null}
                                     <NavDropdown.Item  onClick={() => { this.handleLogoutClick() }}>Atsijungti</NavDropdown.Item>
                                 </NavDropdown>
                             ) : (
-                                <NavDropdown className="custom-dropdown" title={<Image alt="Profilio nuotrauka" src={avatar} roundedCircle style={{ height: '75px', width: '75px' }} />} onClick={this.handleLoginClick}>
+                                <NavDropdown className="custom-dropdown" title={<Image alt="Profilio nuotrauka" src={ProfileImage} roundedCircle style={{ height: '75px', width: '75px' }} />} onClick={this.handleLoginClick}>
                                     <NavDropdown.Item href="/prisijungimas" onClick={this.handleClick}>Prisijungti</NavDropdown.Item>
                                     <NavDropdown.Item href="/registracija" onClick={this.handleClick}>Registruotis</NavDropdown.Item>
                                 </NavDropdown>
