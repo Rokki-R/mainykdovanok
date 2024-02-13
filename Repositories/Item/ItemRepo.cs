@@ -2,6 +2,7 @@
 using mainykdovanok.Models;
 using mainykdovanok.Repositories.Image;
 using mainykdovanok.ViewModels.Item;
+using mainykdovanok.ViewModels.User;
 using Org.BouncyCastle.Cms;
 using Serilog;
 using System.Collections.Generic;
@@ -411,7 +412,34 @@ namespace mainykdovanok.Repositories.Item
             }
             return lotteryParticipants;
         }
+        public async Task<UserViewModel> GetItemOwnerByItemId(int itemId)
+        {
+            UserViewModel itemOwner = new UserViewModel();
 
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            string query = "SELECT u.user_id AS UserId, u.name AS Name, u.surname AS Surname, u.email AS Email " +
+                           "FROM items AS i " +
+                           "JOIN users AS u ON i.fk_user = u.user_id " +
+                           "WHERE i.id = @itemId";
+
+            using MySqlCommand command = new MySqlCommand(query, connection);
+            command.Parameters.AddWithValue("@itemId", itemId);
+
+            using (DbDataReader reader = await command.ExecuteReaderAsync())
+            {
+                if (await reader.ReadAsync())
+                {
+                    itemOwner.Id = reader.GetInt32("UserId");
+                    itemOwner.Name = reader.GetString("Name");
+                    itemOwner.Surname = reader.GetString("Surname");
+                    itemOwner.Email = reader.GetString("Email");
+                }
+            }
+
+            return itemOwner;
+        }
 
         public async Task<List<ItemLotteryViewModel>> GetDueLotteries()
         {

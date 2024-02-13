@@ -10,8 +10,6 @@ using mainykdovanok.ViewModels.Item;
 using mainykdovanok.Tools;
 using mainykdovanok.Repositories.User;
 using Newtonsoft.Json.Linq;
-using mainykdovanok.ViewModels.Video;
-using mainykdovanok.Repositories.Video;
 using mainykdovanok.Services;
 
 namespace mainykdovanok.Controllers
@@ -25,7 +23,6 @@ namespace mainykdovanok.Controllers
         private readonly ItemRepo _itemRepo;
         private readonly ImageRepo _imageRepo;
         private readonly UserRepo _userRepo;
-        private readonly VideoRepo _videoRepo;
         private readonly QuestionnaireService _questionnaireService;
 
         public ItemController()
@@ -35,7 +32,6 @@ namespace mainykdovanok.Controllers
             _itemRepo = new ItemRepo();
             _imageRepo = new ImageRepo();
             _userRepo = new UserRepo();
-            _videoRepo = new VideoRepo();
             _questionnaireService = new QuestionnaireService();
         }
 
@@ -65,6 +61,25 @@ namespace mainykdovanok.Controllers
             try
             {
                 var result = await _itemRepo.GetFullById(itemId);
+
+                if (result == null)
+                {
+                    return BadRequest();
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpGet("getItemOwnerInfo/{itemId}")]
+        public async Task<IActionResult> GetItemOwnerInfo(int itemId)
+        {
+            try
+            {
+                var result = await _itemRepo.GetItemOwnerByItemId(itemId);
 
                 if (result == null)
                 {
@@ -196,41 +211,6 @@ namespace mainykdovanok.Controllers
                 await _itemRepo.DeleteItem(itemId);
 
                 return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost("uploadVideo/{itemId}")]
-        public async Task<IActionResult> UploadVideo(int itemId, [FromForm] IFormFile file)
-        {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return Unauthorized();
-            }
-
-            if (file == null || file.Length == 0)
-            {
-                return BadRequest("No video file provided.");
-            }
-
-            VideoModel video = new VideoModel()
-            {
-                File = file,
-                Item = itemId,
-                User = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value),
-            };
-
-            try
-            {
-                // Assuming you have a method in _videoRepo to handle video insertion
-                bool success = await _videoRepo.InsertVideo(video);
-
-                // ... (existing code)
-
-                return Ok(success);
             }
             catch (Exception ex)
             {
