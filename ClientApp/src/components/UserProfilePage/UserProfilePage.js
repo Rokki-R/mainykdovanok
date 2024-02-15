@@ -6,7 +6,7 @@ import axios from 'axios';
 
 export const UserProfilePage = () => {
     const { userId } = useParams();
-    const [image, setImage] = useState(null);
+    const [image, setImage] = useState('./images/profile.png');
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -16,7 +16,9 @@ export const UserProfilePage = () => {
                 const userDetailsResponse = await axios.get(`api/user/getUserDetails/${userId}`);
                 setUser(userDetailsResponse.data);
                 const userProfileImageResponse = await axios.get(`api/user/getUserProfileImage/${userId}`);
-                setImage(userProfileImageResponse.data);
+                if (userProfileImageResponse.data !== undefined) {
+                    setImage(userProfileImageResponse.data);
+                }
             } catch (error) {
                 toast.error('Error fetching user profile information.');
             } finally {
@@ -26,7 +28,7 @@ export const UserProfilePage = () => {
 
         fetchData();
     }, [userId]);
-
+    const ProfileImage = image.length < 100 ? image : `data:image/jpeg;base64,${image.user_profile_image}`;
     return (
         <Container className='profile d-flex justify-content-center align-items-center'>
             {isLoading ? (
@@ -34,25 +36,29 @@ export const UserProfilePage = () => {
                     <span className="sr-only">Loading...</span>
                 </Spinner>
             ) : (
-                <Card className="my-4" style={{ width: '350px' }}>
+                <Card className="my-4" style={{ width: '400px' }}>
                     <Card.Body className="text-center">
                         <div>
-                            {image ? (
-                                <img
-                                    src={`data:image/png;base64,${image.user_profile_image}`}
+                                    <img
+                                    src={[ProfileImage]}
                                     alt="Profile"
                                     className="rounded-circle mb-3"
                                     style={{ width: '200px', height: '200px' }}
                                 />
-                            ) : (
-                                <div className="rounded-circle bg-secondary mb-3" style={{ width: '200px', height: '200px' }} />
-                            )}
+                            
+
                         </div>
                         <Card.Title className="mb-4">
                             {user.name} {user.surname}
                         </Card.Title>
                         <Card.Text className="text-center mb-0">
                             <strong>El. paštas:</strong> {user.email}
+                        </Card.Text>
+                        <Card.Text className="text-center mb-0">
+                            <strong>Padovanotų elektronikos prietaisų kiekis:</strong> {user.itemsGifted}
+                        </Card.Text>
+                        <Card.Text className="text-center mb-0">
+                            <strong>Laimėtų elektronikos prietaisų kiekis:</strong> {user.itemsWon}
                         </Card.Text>
                     </Card.Body>
                 </Card>

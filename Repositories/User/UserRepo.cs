@@ -188,6 +188,36 @@ namespace mainykdovanok.Repositories.User
             }
         }
 
+        public async Task<bool> IncrementUserQuantityOfItemsWon(int userId)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "UPDATE users " +
+                "SET items_won = items_won + 1 " +
+                "WHERE user_id = @id", connection);
+            command.Parameters.AddWithValue("@id", userId);
+
+            await command.ExecuteNonQueryAsync();
+            return true;
+        }
+
+        public async Task<bool> IncrementUserQuantityOfItemsGifted(int userId)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "UPDATE users " +
+                "SET items_gifted = items_gifted + 1 " +
+                "WHERE user_id = @id", connection);
+            command.Parameters.AddWithValue("@id", userId);
+
+            await command.ExecuteNonQueryAsync();
+            return true;
+        }
+
         public async Task<UserModel> GetUser(string name)
         {
             MySqlConnection connection = GetConnection();
@@ -220,7 +250,7 @@ namespace mainykdovanok.Repositories.User
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT user_id, name, surname, email FROM users " +
+                "SELECT user_id, name, surname, email, items_gifted, items_won FROM users " +
                 "WHERE user_id = @id", connection);
             command.Parameters.AddWithValue("@id", userId);
 
@@ -233,7 +263,10 @@ namespace mainykdovanok.Repositories.User
                     Id = Convert.ToInt32(reader["user_id"]),
                     Name = reader["name"].ToString(),
                     Surname = reader["surname"].ToString(),
-                    Email = reader["email"].ToString()
+                    Email = reader["email"].ToString(),
+                    itemsGifted = Convert.ToInt32(reader["items_gifted"]),
+                    itemsWon = Convert.ToInt32(reader["items_won"]),
+
                 };
 
                 return user;

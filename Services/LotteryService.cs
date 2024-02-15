@@ -55,6 +55,9 @@ namespace mainykdovanok.Services
 
                     // Update item status to 'Ištrinktas laimėtojas'
                     await _itemRepo.UpdateItemStatus(lottery.Id, 2);
+
+                    await _userRepo.IncrementUserQuantityOfItemsGifted(posterUserId);
+                    await _userRepo.IncrementUserQuantityOfItemsWon(winnerUserId);
                 }
                 else
                 {

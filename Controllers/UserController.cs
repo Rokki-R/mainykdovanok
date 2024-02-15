@@ -226,7 +226,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
-            string sql = "SELECT name, surname, email FROM users WHERE user_id = @user_id";
+            string sql = "SELECT name, surname, email, items_gifted, items_won FROM users WHERE user_id = @user_id";
             var parameters = new { user_id = userId };
             var result = await _userRepo.LoadData(sql, parameters);
 
@@ -238,6 +238,8 @@ namespace mainykdovanok.Controllers.UserAuthentication
             string name = result.Rows[0]["name"].ToString();
             string surname = result.Rows[0]["surname"].ToString();
             string email = result.Rows[0]["email"].ToString();
+            int itemsGifted = Convert.ToInt32(result.Rows[0]["items_gifted"]);
+            int itemsWon = Convert.ToInt32(result.Rows[0]["items_won"]);
 
             sql = "SELECT image FROM user_profile_images WHERE fk_user = @user_id";
             parameters = new { user_id = userId };
@@ -249,7 +251,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
                 user_profile_image = (byte[])result.Rows[0]["image"];
             }
 
-            return Ok(new { name, surname, email, user_profile_image });
+            return Ok(new { name, surname, email, itemsGifted, itemsWon, user_profile_image });
         }
 
         [HttpPost("updateProfileDetails")]
