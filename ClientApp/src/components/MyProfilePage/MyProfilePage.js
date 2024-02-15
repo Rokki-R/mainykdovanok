@@ -154,6 +154,12 @@ const MyProfilePage = () => {
                                         <Form.Label><strong>El. paštas:</strong></Form.Label>
                                         <Form.Control type="email" id="email" value={user.email} onChange={(e) => setUser({ ...user, email: e.target.value })} />
                                     </Form.Group>
+                                    <Form.Group className='givenAwayLabel'>
+                                        <Form.Label><strong>Atiduotų elektronikos prietaisų kiekis:</strong> {user.itemsGifted}</Form.Label>
+                                    </Form.Group>
+                                    <Form.Group>
+                                        <Form.Label><strong>Laimėtų elektronikos prietaisų kiekis:</strong> {user.itemsWon}</Form.Label>
+                                    </Form.Group>
                                     <div className="my-5"></div>
                                     <Form.Group>
                                         <Form.Label><strong>Senas slaptažodis:</strong></Form.Label>
