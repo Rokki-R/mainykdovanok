@@ -398,11 +398,6 @@ namespace mainykdovanok.Controllers.UserAuthentication
         [HttpGet("getUserProfileImage/{userId}")]
         public async Task<IActionResult> GetUserProfileImage(int userId)
         {
-            if (!HttpContext.User.Identity.IsAuthenticated)
-            {
-                return Ok("./images/profile.png");
-            }
-
             string sql = "SELECT image FROM user_profile_images WHERE fk_user = @userId";
             var parameters = new { userId };
             var result = await _userRepo.LoadData(sql, parameters);

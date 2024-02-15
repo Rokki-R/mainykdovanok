@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Carousel, Col, Container, Row, Form, Button, Card, Spinner } from 'react-bootstrap';
+import { Carousel, Col, Container, Row, Form, Button, Card, Spinner, Accordion } from 'react-bootstrap';
 import toast, { Toaster } from 'react-hot-toast';
 import './ItemViewPage.css'
 import axios from 'axios';
@@ -18,8 +18,29 @@ export const ItemViewPage = () => {
     const [isPastEndTime, setIsPastEndTime] = useState(true);
     const [isUserParticipating, setIsUserParticipating] = useState(false);
     const [isLoggedInAsAdmin, setIsLoggedInAsAdmin] = useState(false);
-    const [videoFile, setVideoFile] = useState(null);
+    const [itemOwner, setItemOwner] = useState(null);
+    const [userImage, setUserImage] = useState(null);
     const navigate = useNavigate();
+
+
+    useEffect(() => {
+        const fetchItemOwnerInfo = async () => {
+            try {
+                // Fetch item owner information
+                const response = await axios.get(`api/item/getItemOwnerInfo/${itemId}`);
+                const itemOwnerData = response.data;
+                setItemOwner(itemOwnerData);
+    
+                // Fetch user profile image using item owner's id
+                const userProfileImageResponse = await axios.get(`api/user/getUserProfileImage/${itemOwnerData.id}`);
+                setUserImage(userProfileImageResponse.data);
+            } catch (error) {
+                toast.error('Įvyko klaida, susisiekite su administratoriumi!');
+            }
+        };
+    
+        fetchItemOwnerInfo();
+    }, [itemId]);
 
     useEffect(() => {
         const fetchItem = async () => {
@@ -115,10 +136,6 @@ export const ItemViewPage = () => {
         });
     };
 
-    const handleVideoUpload = (event) => {
-        const file = event.target.files[0];
-        setVideoFile(file);
-    };
 
     const handleSubmit = async (event, isParticipating) => {
         event.preventDefault();
@@ -254,25 +271,6 @@ export const ItemViewPage = () => {
                     }
                 });
         }
-        else if (item.type === 'Motyvacinis video' && videoFile) {
-        const data = new FormData();
-        data.append('file', videoFile);
-
-        try {
-            const response = await axios.post(`api/item/uploadVideo/${itemId}`, data);
-
-            // Check if the response indicates success
-            if (response.data) {
-                toast.success('Video successfully uploaded!');
-                // Additional success handling if needed
-            } else {
-                toast.error('Upload failed. Please try again.');
-            }
-        } catch (error) {
-            console.error('Error during video upload:', error);
-            toast.error('An error occurred during video upload. Please try again.');
-        }
-    }
     };
 
 
@@ -282,7 +280,7 @@ export const ItemViewPage = () => {
         navigate(`/`);
     };
 
-    return item ? (
+    return item && itemOwner ? (
         <div className='outerBoxWrapper'>
             <Toaster />
             <Container className="my-5">
@@ -307,6 +305,36 @@ export const ItemViewPage = () => {
                         <Card>
                             <Card.Header>{item.category}</Card.Header>
                             <Card.Body>
+                            <Accordion defaultActiveKey="1" className="borderless-accordion">
+    <Accordion.Item eventKey="0">
+        <Accordion.Header className="accordion-header-text" style={{ outline: 'none' }}>Skelbimo savininko informacija</Accordion.Header>
+        <Accordion.Body>
+            <div className="d-flex justify-content-between align-items-start">
+                <div>
+                    {userImage ? (
+                        <img
+                            src={`data:image/png;base64,${userImage.user_profile_image}`}
+                            alt="Profile"
+                            className="rounded-circle mb-3"
+                            style={{ width: '100px', height: '100px' }}
+                        />
+                    ) : (
+                        <div className="rounded-circle bg-secondary mb-3" style={{ width: '100px', height: '100px' }} />
+                    )}
+                </div>
+                <div className='owner-info-1'>
+                    <p><strong>Vardas:</strong> {itemOwner.name} {itemOwner.surname}</p>
+                    <p><strong>El. paštas:</strong> {itemOwner.email}</p>
+                </div>
+                <div className='owner-info-2'>
+                    <p ><strong>Padovanotų prietaisų kiekis:</strong> {/* Add the count here */}</p>
+                    <p><strong>Laimėtų prietaisų kiekis:</strong> {/* Add the count here */}</p>
+                </div>
+            </div>
+        </Accordion.Body>
+    </Accordion.Item>
+</Accordion>
+
                                 <Card.Title>{item.name}</Card.Title>
                                 <Card.Text>{item.description}</Card.Text>
                                 {item.status !== "Aktyvus" || isPastEndTime ? (
@@ -407,36 +435,7 @@ export const ItemViewPage = () => {
                                         </Row>
                                     </Form>
                                 )}
-                                {item.type === 'Motyvacinis video' && (
-                                <Form onSubmit={handleSubmit}>
-                                <Form.Group>
-                                <Form.Label>Įkelti motyvacinį video:</Form.Label>
-                                <Form.Control type="file" accept="video/*" onChange={handleVideoUpload} />
-                                </Form.Group>
-                                <Form.Group>
-                                
-                                </Form.Group>
-                                <p>Laimėtojas bus išrinktas {new Date(item.endDateTime).toLocaleString('lt-LT')}</p>
-                                <Row>
-                                    <Col>
-                                        <Button variant="primary" type="submit" disabled={isPastEndTime || item.userId === viewerId}>Įkelti</Button>
-                                    </Col>
-                                    <Col className="d-flex justify-content-end">
-                                        {isLoggedInAsAdmin || item.userId === viewerId ? (
-                                            <>
-                                                <Button style={{ marginRight: '10px' }} variant="primary" onClick={() => handleDelete(item.id)}>Ištrinti</Button>
-                                                <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/redaguoti/${item.id}`}>
-                                                    <Button variant="primary">Redaguoti</Button>
-                                                </Link>
-                                                <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/info/${item.id}`}>
-                                                    <Button variant="primary">Dalyviai</Button>
-                                                </Link>
-                                            </>
-                                        ) : null}
-                                    </Col>
-                                </Row>
-                            </Form>
-                            )}
+                                                                
                             </Card.Body>
                             <Card.Footer>{item.location} | {new Date(item.creationDateTime).toLocaleString('lt-LT')}</Card.Footer>
                         </Card>
