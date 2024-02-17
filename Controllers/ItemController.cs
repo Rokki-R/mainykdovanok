@@ -383,5 +383,40 @@ namespace mainykdovanok.Controllers
             }
         }
 
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string searchWord)
+        {
+            try
+            {
+                var searchResults = await _itemRepo.Search(searchWord);
+
+                return Ok(searchResults);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("search/category/{categoryId}")]
+        public async Task<IActionResult> GetItemsByCategory(int categoryId)
+        {
+            try
+            {
+                var result = await _itemRepo.GetAllByCategory(categoryId);
+
+                if (result == null)
+                {
+                    return BadRequest();
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }
