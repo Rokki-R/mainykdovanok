@@ -9,9 +9,12 @@ import VerifyEmailPage from "./components/VerifyEmailPage/VerifyEmailPage";
 import ItemCreationPage from "./components/ItemCreationPage/ItemCreationPage";
 import { ItemViewPage } from "./components/ItemViewPage/ItemViewPage";
 import { DetailedItemInfoPage } from "./components/DetailedItemInfoPage/DetailedItemInfoPage";
+import SearchResultsByQueryPage from "./components/SearchResultsByQueryPage/SearchResultsByQueryPage";
+import SearchResultsByCategoryPage from "./components/SearchResultsByCategoryPage/SearchResultsByCategoryPage";
 
 import MyProfilePage from "./components/MyProfilePage/MyProfilePage";
 import { UserProfilePage } from "./components/UserProfilePage/UserProfilePage";
+import  MyItemsPage from "./components/MyItemsPage/MyItemsPage"
 
 import { ItemWinnerPage } from "./components/ItemWinnerPage/ItemWinnerPage";
 
@@ -63,7 +66,19 @@ const AppRoutes = [
   {
     path: '/laimejimas/:itemId',
     element: <ItemWinnerPage />
-  }
+  },
+  {
+    path: '/manoskelbimai',
+    element: <MyItemsPage />
+  },
+  {
+    path: '/search/:searchQuery',
+    element: <SearchResultsByQueryPage />
+  },
+  {
+    path: '/search/category/:categoryId',
+    element: <SearchResultsByCategoryPage />
+  },
 ];
 
 export default AppRoutes;

@@ -134,15 +134,15 @@ namespace mainykdovanok.Repositories.Item
 
             using (var connection = new MySqlConnection(_connectionString))
             {
-                using (MySqlCommand command = new MySqlCommand("SELECT items.*, item_type.type AS item_type, categories.name AS category_name, status.name AS status_name, " +
+                using (MySqlCommand command = new MySqlCommand("SELECT items.*, item_type.type AS item_type, item_categories.name AS category_name, item_status.name AS status_name, " +
                     "COUNT(item_lottery_participants.id) AS participants_count " +
                     "FROM items " +
                     "JOIN item_type ON items.fk_type = item_type.id " +
-                    "JOIN categories ON items.fk_category = categories.id " +
-                    "JOIN status ON items.fk_status = status.id " +
+                    "JOIN item_categories ON items.fk_category = item_categories.id " +
+                    "JOIN item_status ON items.fk_status = item_status.id " +
                     "LEFT JOIN item_lottery_participants ON items.id = item_lottery_participants.fk_item " +
                     "WHERE items.fk_user = @userId " +
-                    "GROUP BY items.id, item_type.type, categories.name ", connection))
+                    "GROUP BY items.id, item_type.type, item_categories.name ", connection))
                 {
                     await connection.OpenAsync();
                     command.Parameters.AddWithValue("@userId", userId);
@@ -636,6 +636,35 @@ namespace mainykdovanok.Repositories.Item
                     }
                 }
             }
+        }
+
+        public async Task<List<ItemViewModel>> Search(string searchWord)
+        {
+            List<ItemViewModel> foundItems = new List<ItemViewModel>();
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+               "SELECT id, name, description, fk_user, fk_status, end_datetime FROM items " +
+                "WHERE (name LIKE CONCAT('%', @searchWord, '%') OR description LIKE CONCAT('%', @searchWord, '%')) " +
+                "AND fk_status = 1", connection);
+            command.Parameters.AddWithValue("@searchWord", searchWord);
+
+            using DbDataReader reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                ItemViewModel item = new()
+                {
+                    Id = reader.GetInt32("id"),
+                    Name = reader.GetString("name"),
+                    Description = reader.GetString("description"),
+                    UserId = reader.GetInt32("fk_user"),
+                    Images = await _imageRepo.GetByItemFirst(reader.GetInt32("id")),
+                    EndDateTime = reader.GetDateTime("end_datetime")
+                };
+                foundItems.Add(item);
+            }
+            return foundItems;
         }
     }
 }

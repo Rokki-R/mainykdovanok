@@ -22,6 +22,7 @@ const MyProfilePage = () => {
             }
             catch (error) {
                 if (error.response && error.response.status === 401) {
+                    toast.error('Jūs turite būti prisijungęs');
                     navigate('/prisijungimas');
                 }
             };
