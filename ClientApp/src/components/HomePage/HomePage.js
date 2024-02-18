@@ -1,9 +1,8 @@
-﻿import React, { useRef, useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Card, Button, Carousel, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import './HomePage.css';
-
 
 function HomePage() {
     const [items, setItems] = useState(null);
@@ -11,8 +10,12 @@ function HomePage() {
 
     useEffect(() => {
         async function fetchItems() {
-            const response = await axios.get('/api/item/getItems');
-            setItems(response.data);
+            try {
+                const response = await axios.get('/api/item/getItems');
+                setItems(response.data);
+            } catch (error) {
+                console.error('Error fetching items:', error);
+            }
         }
         fetchItems();
     }, []);
@@ -21,12 +24,12 @@ function HomePage() {
         navigate(`/skelbimas/${itemId}`);
     }
 
-    return items ? (
+    return (
         <Container className="home">
             <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Naujausi prietaisų skelbimai</h3>
-            <Row>
-                {items.map((item) => (
-                    <Col sm={4} key={item.id}>
+            <Row className="justify-content-center">
+                {items ? items.map((item) => (
+                    <Col sm={4} key={item.id} style={{ width: '300px' }}>
                         <Card className="mb-4">
                             <img
                                 className="d-block w-100"
@@ -54,15 +57,16 @@ function HomePage() {
                             </Card.Body>
                         </Card>
                     </Col>
-                ))}
+                )) : (
+                    <Col sm={12}>
+                        <div className='outerBoxWrapper d-flex justify-content-center'>
+                            <Spinner animation="border" role="status" />
+                        </div>
+                    </Col>
+                )}
             </Row>
-        </Container>
-     ) : (
-        <Container className="my-5">
-            <div className='outerBoxWrapper d-flex justify-content-center'>
-                <Spinner animation="border" role="status" />
-            </div>
         </Container>
     );
 }
+
 export default HomePage;

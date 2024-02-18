@@ -36,23 +36,18 @@ function SearchResultsByQueryPage() {
       <form onSubmit={handleSearch}>
       </form>
       {location.state && location.state.searchResults && location.state.searchResults.length > 0 ? (
-        <Row>
+        <Row className="justify-content-center">
             <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Rasti prietaisai pagal "{location.state.searchQuery}" raktažodį</h3>
           {location.state.searchResults.map((item) => (
-            <Col sm={4} key={item.id}>
+            <Col sm={4} key={item.id} style={{ width: '300px' }}>
               <Card className="mb-4">
-                <Carousel style={{ height: "250px" }} >
-                  {item.images && item.images.map((image, index) => (
-                    <Carousel.Item key={index}>
-                      <img
-                        className="d-block w-100"
-                        style={{ objectFit: "cover" }}
-                        src={`data:image/png;base64,${image.data}`}
-                        alt={item.name}
-                      />
-                    </Carousel.Item>
-                  ))}
-                </Carousel>
+                            <img
+                                className="d-block w-100"
+                                style={{ objectFit: "cover" }}
+                                height="256"
+                                src={item.images && item.images.length > 0 ? `data:image/png;base64,${item.images[0].data}` : ""}
+                                alt={item.name}
+                            />
                 <Card.Body>
                   <Card.Title>{item.name}</Card.Title>
                   <Card.Text>{item.description}</Card.Text>

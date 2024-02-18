@@ -42,47 +42,6 @@ export class NavMenu extends Component {
     this.getCategories();
   }
 
-  handleClick() {
-    this.setState({
-      isClicked: !this.state.isClicked,
-    });
-  }
-
-  handleLoginClick = () => {
-    this.setState({
-      isClicked: !this.state.isClicked,
-    });
-    fetch("api/user/isloggedin/0", { method: "GET" }).then((response) => {
-      if (response.status == 200) {
-        // 200 - Ok, we are logged in.
-        this.setState({ isLogged: true });
-      }
-    });
-    console.log(this.isLogged);
-    axios.get("api/user/isloggedin/1").then((response) => {
-      if (response.status === 200) {
-        this.setState({ isLoggedInAsAdmin: true });
-      }
-    });
-  };
-
-  handleLogoutClick = () => {
-    fetch("api/user/logout", { method: "GET" }).then((response) => {
-      if (response.status === 200) {
-        // 200 - Ok
-        this.setState({ isLogged: false });
-        window.location.reload();
-        window.location.href = "/prisijungimas";
-      } else if (response.status === 401) {
-        // 401 - Unauthorized
-        toast.error("Jūs jau esate atsijungę!");
-      } else {
-        // 500 - Internal server error
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
-      }
-    });
-  };
-
   getMyProfileImage() {
     axios
       .get("api/user/getMyProfileImage")
@@ -97,22 +56,22 @@ export class NavMenu extends Component {
   }
 
   getCategories()
-    {
-        axios.get("api/item/getCategories")
-        .then(response => { this.setState({
-            categories : response.data
-        })
-        })
-        .catch(error => {
-            console.log(error);
-            toast.error("Įvyko klaida, susisiekite su administratoriumi!");
-        })
-    }
+  {
+      axios.get("api/item/getCategories")
+      .then(response => { this.setState({
+          categories : response.data
+      })
+      })
+      .catch(error => {
+          console.log(error);
+          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+      })
+  }
 
-  toggleDropdown = () => {
-    this.setState((prevState) => ({
-      dropdownOpen: !prevState.dropdownOpen,
-    }));
+  handleClick() {
+    this.setState({
+      isClicked: !this.state.isClicked,
+    });
   };
 
   handleSearchInputChange = (event) => {
@@ -153,11 +112,52 @@ this.setState({
 this.props.navigate(`/search/category/0`);
 };
 
-selectCategory = category => {
-  this.setState({
-      selectedCategory: category,
-  });
-};
+  handleLoginClick = () => {
+    this.setState({
+      isClicked: !this.state.isClicked,
+    });
+    fetch("api/user/isloggedin/0", { method: "GET" }).then((response) => {
+      if (response.status == 200) {
+        // 200 - Ok, we are logged in.
+        this.setState({ isLogged: true });
+      }
+    });
+    console.log(this.isLogged);
+    axios.get("api/user/isloggedin/1").then((response) => {
+      if (response.status === 200) {
+        this.setState({ isLoggedInAsAdmin: true });
+      }
+    });
+  };
+
+  handleLogoutClick = () => {
+    fetch("api/user/logout", { method: "GET" }).then((response) => {
+      if (response.status === 200) {
+        // 200 - Ok
+        this.setState({ isLogged: false });
+        window.location.reload();
+        window.location.href = "/prisijungimas";
+      } else if (response.status === 401) {
+        // 401 - Unauthorized
+        toast.error("Jūs jau esate atsijungę!");
+      } else {
+        // 500 - Internal server error
+        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+      }
+    });
+  };
+
+  selectCategory = category => {
+    this.setState({
+        selectedCategory: category,
+    });
+  };
+
+  toggleDropdown = () => {
+    this.setState((prevState) => ({
+      dropdownOpen: !prevState.dropdownOpen,
+    }));
+  };
 
   render() {
     const { userProfileImage } = this.state;

@@ -185,16 +185,15 @@ namespace mainykdovanok.Repositories.Item
 
             using (var connection = new MySqlConnection(_connectionString))
             {
-                using (MySqlCommand command = new MySqlCommand("SELECT items.*, item_type.type AS item_type, " +
-                    "item_categories.name AS category_name, item_status.name AS status_name, " +
+                using (MySqlCommand command = new MySqlCommand("SELECT items.*, item_type.type AS item_type, item_categories.name AS category_name, item_status.name AS status_name, " +
                     "COUNT(item_lottery_participants.id) AS participants_count " +
                     "FROM items " +
                     "JOIN item_type ON items.fk_type = item_type.id " +
-                    "JOIN item_categories ON items.fk_category = categories.id " +
-                    "JOIN item_status ON items.fk_status = status.id " +
-                    "LEFT JOIN item_lottery_participants ON items.id = ad_lottery_participants.fk_item " +
-                    "WHERE items.fk_category = @categoryId AND items.fk_status = 1  " +
-                    "GROUP BY items.id, item_type.type, item_categories.name", connection))
+                    "JOIN item_categories ON items.fk_category = item_categories.id " +
+                    "JOIN item_status ON items.fk_status = item_status.id " +
+                    "LEFT JOIN item_lottery_participants ON items.id = item_lottery_participants.fk_item " +
+                    "WHERE items.fk_category = @categoryId " +
+                    "GROUP BY items.id, item_type.type, item_categories.name ", connection))
                 {
                     await connection.OpenAsync();
                     command.Parameters.AddWithValue("@categoryId", categoryId);

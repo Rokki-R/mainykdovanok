@@ -53,7 +53,7 @@ function SearchResultsByCategoryPage() {
 
   return items && !loading ? (
     <Container className="home">
-        <Row>
+        <Row className="justify-content-center">
             {items.length == 0 ? (
                 <Container className="my-5">
                     <div className='outerBoxWrapper d-flex justify-content-center'>
@@ -68,20 +68,15 @@ function SearchResultsByCategoryPage() {
                 )
             )}
         {items.map((item) => (
-        <Col sm={4} key={item.id}>
+       <Col sm={4} key={item.id} style={{ width: '300px' }}>
             <Card className="mb-4">
-            <Carousel style={{ height: "250px" }} >
-                {item.images && item.images.map((image, index) => (
-                <Carousel.Item key={index}>
-                    <img
-                    className="d-block w-100"
-                    style={{ objectFit: "cover" }}
-                    src={`data:image/png;base64,${image.data}`}
-                    alt={item.name}
-                    />
-                </Carousel.Item>
-                ))}
-            </Carousel>
+                            <img
+                                className="d-block w-100"
+                                style={{ objectFit: "cover" }}
+                                height="256"
+                                src={item.images && item.images.length > 0 ? `data:image/png;base64,${item.images[0].data}` : ""}
+                                alt={item.name}
+                            />
             <Card.Body>
                 <Card.Title>{item.name}</Card.Title>
                 <Card.Text>{item.description}</Card.Text>
