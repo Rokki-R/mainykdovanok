@@ -54,9 +54,9 @@ function MyItemsPage() {
             {items.length === 0 ? (
                 <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Jūs neturite įkėlęs skelbimo</h3>
             ) : (
-                <Row>
+                <Row className="justify-content-center">
                     {items.map((item) => (
-                        <Col sm={4} key={item.id}>
+                        <Col sm={4} key={item.id} style={{ width: '300px' }}>
                             <Card className="mb-4">
                                 <img
                                     className="d-block w-100"
