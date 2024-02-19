@@ -46,5 +46,31 @@ namespace mainykdovanok.Tools
                 }
             }
         }
+
+        public async static Task<byte[]> AddWatermark(byte[] imageData, string watermarkImagePath)
+        {
+            using (var imageStream = new MemoryStream(imageData))
+            using (var img = Image.Load(imageStream))
+            {
+                // Load watermark image
+                using (var watermarkStream = File.OpenRead(watermarkImagePath))
+                using (var watermark = Image.Load(watermarkStream))
+                {
+                    // Calculate position to overlay watermark (e.g., bottom right corner)
+                    var position = new Point(0, 0);
+
+                    // Overlay watermark on the image
+                    img.Mutate(x => x.DrawImage(watermark, position, 1f));
+
+                    // Convert image back to byte array
+                    using (var outputStream = new MemoryStream())
+                    {
+                        img.Save(outputStream, new JpegEncoder());
+                        return outputStream.ToArray();
+                    }
+                }
+            }
+        }
+
     }
 }
