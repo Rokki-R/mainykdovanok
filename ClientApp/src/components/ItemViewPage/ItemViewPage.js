@@ -349,11 +349,9 @@ export const ItemViewPage = () => {
                         <div className="owner-info-2">
                           <p>
                             <strong>Padovanotų prietaisų kiekis:</strong> {itemOwner.itemsGifted}{" "}
-                            {/* Add the count here */}
                           </p>
                           <p>
                             <strong>Laimėtų prietaisų kiekis:</strong> {itemOwner.itemsWon}{" "}
-                            {/* Add the count here */}
                           </p>
                         </div>
                       </div>

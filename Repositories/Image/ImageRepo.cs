@@ -47,6 +47,8 @@ namespace mainykdovanok.Repositories.Image
             {
                 byte[] data = await ImageCompressor.ResizeCompressImage(image, 640, 480);
 
+                data = await ImageCompressor.AddWatermark(data, "ClientApp\\public\\images\\watermark.png"); // Provide path to watermark image
+
                 using MySqlCommand command = new MySqlCommand(
                     "INSERT INTO item_images (image, fk_item) VALUES (@image, @fk_item)", connection);
 
