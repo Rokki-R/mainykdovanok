@@ -113,7 +113,6 @@ export const DetailedItemInfoPage = () => {
                 try {
                     const response = await axios.get(`api/item/getLotteryParticipants/${itemId}`);
                     setItemLotteryParticipants(response.data);
-                    console.log(response.data);
                 } catch (error) {
                     toast.error('Įvyko klaida, susisiekite su administratoriumi!');
                 }
@@ -159,7 +158,7 @@ export const DetailedItemInfoPage = () => {
         };
         setSubmitting(true);
 
-        await axios.post(`/api/item/chooseOfferWinner`, requestBody)
+        await axios.post(`/api/item/chooseExchangeOfferWinner`, requestBody)
             .then(response => {
                 if (response) {
                     toast.success('Išsirinkote, su kuo mainyti! Laimėtojui išsiųstas el. laiškas dėl susisiekimo.');
@@ -174,21 +173,20 @@ export const DetailedItemInfoPage = () => {
                     toast.error('Turite būti prisijungęs!');
                 }
                 else {
-                    console.log(error);
                     toast.error('Įvyko klaida, susisiekite su administratoriumi!');
                 }
             });
         setSubmitting(false);
     };
 
-    return item && ((item.type === 'Klausimynas' && itemQuestions_Answers) || (item.type === 'Loterija' && itemLotteryParticipants) || (item.type === 'Keitimas' && itemOffers)) ? (
+    return item && ((item.type === 'Klausimynas' && itemQuestions_Answers) || (item.type === 'Loterija' && itemLotteryParticipants) || (item.type === 'Mainai į kita prietaisą' && itemOffers)) ? (
         <div className="my-div" style={{ marginTop: "120px" }}>
-            {item.type === 'Keitimas' && (
+            {item.type === 'Mainai į kita prietaisą' && (
                 <Container className="home">
                     <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Pasiūlymai mainams</h3>
-                    <Row>
+                    <Row className="justify-content-center">
                         {itemOffers.map((item) => (
-                            <Col sm={4} key={item.id}>
+                            <Col sm={4} key={item.id} style={{ width: '300px' }}>
                                 <Card className="mb-4">
                                     <Carousel style={{ height: "250px" }} >
                                         {item.images && item.images.map((image, index) => (

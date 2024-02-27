@@ -665,5 +665,64 @@ namespace mainykdovanok.Repositories.Item
             }
             return foundItems;
         }
+
+        public async Task<List<ExchangeViewModel>> GetOffers(int itemId)
+        {
+            List<ExchangeViewModel> results = new List<ExchangeViewModel>();
+
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+
+            using MySqlCommand command = new MySqlCommand(
+                "SELECT e.fk_offered_item, e.offer_message, i.name, i.description, i.location, i.end_datetime, CONCAT(u.name, ' ', u.surname) AS user " +
+                "FROM item_exchange_offers AS e " +
+                "INNER JOIN items AS i ON i.id = e.fk_offered_item " +
+        "JOIN users AS u ON i.fk_user = u.user_id " +
+                "WHERE e.fk_main_item = @itemId ",
+                connection);
+
+            command.Parameters.AddWithValue("@itemId", itemId);
+
+
+            using (DbDataReader reader = await command.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    ExchangeViewModel result = new ExchangeViewModel
+                    {
+                        Id = reader.GetInt32("fk_offered_item"),
+                        Message = reader.GetString("offer_message"),
+                        Name = reader.GetString("name"),
+                        Description = reader.GetString("description"),
+                        Location = reader.GetString("location"),
+                        EndDateTime = reader.GetDateTime("end_datetime"),
+                        Images = await _imageRepo.GetByItem(Convert.ToInt32(reader["fk_offered_item"])),
+                        User = reader.GetString("user"),
+                    };
+                    results.Add(result);
+                }
+            }
+
+            return results;
+
+        }
+
+        public async Task<bool> SubmitExchangeOffer(int itemId, ExchangeOfferModel offer)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                    "INSERT INTO item_exchange_offers (fk_main_item, fk_offered_item, offer_message) VALUES (@fk_main_item, @fk_offered_item, @offer_message)", connection);
+
+            // Add parameters
+            command.Parameters.AddWithValue("@fk_main_item", itemId);
+            command.Parameters.AddWithValue("@fk_offered_item", offer.SelectedItem);
+            command.Parameters.AddWithValue("@offer_message", offer.Message);
+
+            await command.ExecuteNonQueryAsync();
+            return true;
+        }
     }
 }
