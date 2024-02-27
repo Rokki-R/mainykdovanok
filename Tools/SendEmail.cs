@@ -209,5 +209,40 @@ namespace mainykdovanok.Tools
                 return false;
             }
         }
+        public async Task notifyOfferWinner(string email, string itemName, int itemId, string offerItemName)
+        {
+            message.To.Clear();
+            message.To.Add(new MailAddress(email));
+
+            message.Subject = "Sėkmingi mainai neismesk.lt skelbimais!";
+
+            string url = $"https://localhost:44486/laimejimas/{itemId}";
+            if (String.Equals(Environment.GetEnvironmentVariable("SERVER_HOST"), "1"))
+            {
+                url = $"https://neismesk.azurewebsites.net/laimejimas/{itemId}";
+            }
+
+            message.Body = $"<html><body>" +
+                           $"<p>Sveiki,</p>" +
+                           $"<p>Su jumis sutiko mainyti „<b>{itemName}</b>“ prietaisą!</p>" +
+                           $"<p>Iš visų pasiūlymų, savininkui labiausiai patiko jūsų „<b>{offerItemName}</b>“!" +
+                           $"<p>Kad suderinti pristatymą ar atsiėmimą, prašome eiti į šią nuorodą:</p>" +
+                           $"<p><a href='{url}'>https://neismesk.lt/laimejimas/{itemId}</a></p>" +
+                           $"<p>Šiame puslapyje turėsite galimybę pateikti savo telefono numerį, kad skelbėjas galėtų su Jumis susisiekti.</p>" +
+                           $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
+                           $"<p>Linkėjimai,</p>" +
+                           $"<p>neismesk.lt komanda</p>" +
+                           $"</body></html>";
+            message.IsBodyHtml = true;
+
+            try
+            {
+                smtpClient.Send(message);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Error sending email to questionnaire winner: {0}", ex.Message);
+            }
+        }
     }
 }

@@ -24,6 +24,7 @@ namespace mainykdovanok.Controllers
         private readonly ImageRepo _imageRepo;
         private readonly UserRepo _userRepo;
         private readonly QuestionnaireService _questionnaireService;
+        private readonly ExchangeService _exchangeService;
 
         public ItemController()
         {
@@ -33,6 +34,7 @@ namespace mainykdovanok.Controllers
             _imageRepo = new ImageRepo();
             _userRepo = new UserRepo();
             _questionnaireService = new QuestionnaireService();
+            _exchangeService = new ExchangeService();
         }
 
         [HttpGet("getItems")]
@@ -411,6 +413,69 @@ namespace mainykdovanok.Controllers
                 }
 
                 return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpGet("getOffers/{itemId}")]
+        [Authorize]
+        public async Task<IActionResult> GetOffers(int itemId)
+        {
+            try
+            {
+                var result = await _itemRepo.GetOffers(itemId);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("submitOffer/{itemId}")]
+        public async Task<IActionResult> SubmitOffer(int itemId)
+        {
+            var form = await Request.ReadFormAsync();
+            ExchangeOfferModel offer = new ExchangeOfferModel()
+            {
+                SelectedItem = Convert.ToInt32(form["selectedItem"]),
+                Message = form["message"].ToString(),
+            };
+
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _itemRepo.SubmitExchangeOffer(itemId, offer);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("chooseExchangeOfferWinner")]
+        public async Task<IActionResult> ChooseExchangeOfferWinner([FromBody] ExchangeOfferWinnerModel winner)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            try
+            {
+                _exchangeService.NotifyWinner(winner, userId);
+
+                return Ok();
             }
             catch (Exception ex)
             {
