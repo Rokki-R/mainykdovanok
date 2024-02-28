@@ -1,6 +1,6 @@
 ﻿namespace mainykdovanok.Models
 {
-    public class QuestionnaireWinnerModel
+    public class MotivationalLetterWinnerModel
     {
         public string User { get; set; }
 

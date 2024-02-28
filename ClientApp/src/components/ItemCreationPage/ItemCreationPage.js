@@ -17,39 +17,6 @@ const ItemCreationPage = () => {
     const [endDate, setEndDate] = useState('Pasirinkite datą');
     const navigate = useNavigate();
 
-    const questionArray = [
-        {
-            type: "text",
-            id: "1",
-            value: ""
-        }
-    ];
-    const [questions, setQuestions] = useState(questionArray);
-    const addInput = () => {
-        setQuestions(s => {
-            return [
-                ...s,
-                {
-                    type: "text",
-                    value: ""
-                }
-            ];
-        });
-    };
-
-    const handleChange = e => {
-        e.preventDefault();
-
-        const index = e.target.id;
-        setQuestions(s => {
-            const newArr = s.slice();
-            newArr[index].value = e.target.value;
-
-            return newArr;
-        });
-    };
-
-
     useEffect(() => {
         Promise.all([
             axios.get("api/item/getCategories"),
@@ -112,19 +79,6 @@ const ItemCreationPage = () => {
     }
 
     function checkFields() {
-        let containsEmptyQuestions = false;
-        questions.forEach((question) => {
-            if (question.value.trim() === "") {
-                containsEmptyQuestions = true;
-            }
-        });
-        console.log(name)
-        console.log(description)
-        console.log(location)
-        console.log(category)
-        console.log(itemType)
-        console.log(endDate)
-        console.log(containsEmptyQuestions)
         if (name === '' || description === '' || location === '' || category === 'Pasirinkite kategoriją' || itemType === 'Pasirinkite, kaip norite atiduoti' || endDate === 'Pasirinkite datą') {
             toast.error('Reikia užpildyti visus laukus!');
             return false;
@@ -145,9 +99,6 @@ const ItemCreationPage = () => {
                 formData.append('category', category);
                 formData.append('type', itemType);
                 formData.append('endDate', endDate);
-                for (let i = 0; i < questions.length; i++) {
-                    formData.append('questions', questions[i].value);
-                }
                 for (let i = 0; i < images.length; i++) {
                     formData.append('images', images[i]);
                 }
@@ -250,27 +201,6 @@ const ItemCreationPage = () => {
                                     {getAllItemTypes()}
                                 </Form.Select>
                             </Form.Group>
-                            {itemType === '2' && (
-                                <>
-                                    {questions.map((item, i) => {
-                                        return (
-                                            <Form.Group className="d-flex align-items-center mb-2">
-                                                <Form.Control
-                                                    onChange={handleChange}
-                                                    value={item.value}
-                                                    id={i.toString()}
-                                                    type={item.type}
-                                                    placeholder='Įrašykite klausimą'
-                                                    className='questionInput'
-                                                />
-                                                <div className='addQuestion mt-2 ml-5'>
-                                                    {questions.length - 1 === i && <Button className='btn btn-primary' onClick={addInput}>+</Button>}
-                                                </div>
-                                            </Form.Group>
-                                        );
-                                    })}
-                                </>
-                            )}
                             <Form.Group>
                                 <Form.Label>Pasirinkite skelbimo pabaigos datą:</Form.Label>
                                 <Form.Control

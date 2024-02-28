@@ -11,6 +11,7 @@ using mainykdovanok.Tools;
 using mainykdovanok.Repositories.User;
 using Newtonsoft.Json.Linq;
 using mainykdovanok.Services;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace mainykdovanok.Controllers
 {
@@ -23,7 +24,7 @@ namespace mainykdovanok.Controllers
         private readonly ItemRepo _itemRepo;
         private readonly ImageRepo _imageRepo;
         private readonly UserRepo _userRepo;
-        private readonly QuestionnaireService _questionnaireService;
+        private readonly MotivationalLetterService _motivationalLetterService;
         private readonly ExchangeService _exchangeService;
 
         public ItemController()
@@ -33,7 +34,7 @@ namespace mainykdovanok.Controllers
             _itemRepo = new ItemRepo();
             _imageRepo = new ImageRepo();
             _userRepo = new UserRepo();
-            _questionnaireService = new QuestionnaireService();
+            _motivationalLetterService = new MotivationalLetterService();
             _exchangeService = new ExchangeService();
         }
 
@@ -143,17 +144,12 @@ namespace mainykdovanok.Controllers
                     Category = Convert.ToInt32(form["category"]),
                     Type = Convert.ToInt32(form["type"]),
                     Images = form.Files.GetFiles("images").ToList(),
-                    Questions = form["questions"].ToList(),
                     EndDate = Convert.ToDateTime(form["endDate"]),
                 };
 
                 item.Id = await _itemRepo.Create(item);
 
                 bool success = await _imageRepo.InsertImages(item);
-                if (item.Type == 2)
-                {
-                    success = await _itemRepo.InsertQuestions(item);
-                }
                 return success == true ? Ok(item.Id) : BadRequest();
             }
             catch (Exception)
@@ -306,63 +302,6 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpPost("submitAnswers/{itemId}")]
-        public async Task<IActionResult> SubmitAnswers(int itemId, [FromBody] List<AnswerModel> answers)
-        {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return Unauthorized();
-            }
-
-            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-            try
-            {
-                var result = await _itemRepo.InsertAnswers(itemId, answers, userId);
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet("getQuestionsAndAnswers/{itemId}")]
-        [Authorize]
-        public async Task<IActionResult> GetQuestionsAndAnswers(int itemId)
-        {
-            try
-            {
-                var result = await _itemRepo.GetQuestionsAndAnswers(itemId);
-
-                return Ok(new { questionnaires = result });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost("chooseQuestionnaireWinner")]
-        public async Task<IActionResult> ChooseQuestionnaireWinner([FromBody] QuestionnaireWinnerModel winner)
-        {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return Unauthorized();
-            }
-
-            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-            try
-            {
-                _questionnaireService.NotifyWinner(winner, userId);
-
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
 
         [HttpPost("submitWinnerDetails")]
         [Authorize]
@@ -474,6 +413,75 @@ namespace mainykdovanok.Controllers
             try
             {
                 _exchangeService.NotifyWinner(winner, userId);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("submitLetter/{itemId}")]
+        public async Task<IActionResult> SubmitLetter(int itemId)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+            try
+            {
+                int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+
+                bool hasSubmittedLetter = await _itemRepo.HasSubmittedLetter(itemId, userId);
+                if (hasSubmittedLetter)
+                {
+                    return Conflict();
+                }
+
+                var form = await Request.ReadFormAsync();
+                MotivationalLetterModel letter = new MotivationalLetterModel()
+                {
+                    Letter = form["letter"].ToString()
+                };
+
+                var result = await _itemRepo.InsertLetter(itemId, letter, userId);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("getLetters/{itemId}")]
+        [Authorize]
+        public async Task<IActionResult> GetLetters(int itemId)
+        {
+            try
+            {
+                var result = await _itemRepo.GetLetters(itemId);
+
+                return Ok(new { letters = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpPost("chooseLetterWinner")]
+        public async Task<IActionResult> ChooseLetterWinner([FromBody] MotivationalLetterWinnerModel winner)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            try
+            {
+                _motivationalLetterService.NotifyWinner(winner, userId);
 
                 return Ok();
             }

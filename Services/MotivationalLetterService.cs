@@ -2,21 +2,22 @@
 using mainykdovanok.Repositories.User;
 using mainykdovanok.Models;
 using mainykdovanok.Tools;
+using Org.BouncyCastle.Bcpg.Sig;
 
 namespace mainykdovanok.Services
 {
-    public class QuestionnaireService
+    public class MotivationalLetterService
     {
         private ItemRepo _itemRepo;
         private UserRepo _userRepo;
 
-        public QuestionnaireService()
+        public MotivationalLetterService()
         {
             _itemRepo = new ItemRepo();
             _userRepo = new UserRepo();
         }
 
-        public async void NotifyWinner(QuestionnaireWinnerModel winner, int posterUserId)
+        public async void NotifyWinner(MotivationalLetterWinnerModel winner, int posterUserId)
         {
             SendEmail emailer = new SendEmail();
 
@@ -25,11 +26,12 @@ namespace mainykdovanok.Services
 
             await _itemRepo.SetItemWinner(winner.ItemId, user.Id);
 
-            //await emailer.notifyLotteryPosterWin(posterUserEmail, lottery.Name, winnerUserEmail);
-            await emailer.notifyQuestionnaireWinner(user.Email, itemName, winner.ItemId);
+            await emailer.notifyLetterWinner(user.Email, itemName, winner.ItemId);
 
-            // Update item status to 'Ištrinktas laimėtojas'
             await _itemRepo.UpdateItemStatus(winner.ItemId, 2);
+
+            await _userRepo.IncrementUserQuantityOfItemsGifted(posterUserId);
+            await _userRepo.IncrementUserQuantityOfItemsWon(user.Id);
         }
     }
 }

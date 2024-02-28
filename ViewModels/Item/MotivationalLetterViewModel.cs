@@ -2,16 +2,13 @@
 
 namespace mainykdovanok.ViewModels.Item
 {
-    public class QuestionnaireViewModel
+    public class MotivationalLetterViewModel
     {
         [JsonProperty("id")]
         public int Id { get; set; }
 
-        [JsonProperty("question")]
-        public string Question { get; set; }
-
-        [JsonProperty("answer")]
-        public string Answer { get; set; }
+        [JsonProperty("letter")]
+        public string Letter { get; set; }
 
         [JsonProperty("user")]
         public string User { get; set; }

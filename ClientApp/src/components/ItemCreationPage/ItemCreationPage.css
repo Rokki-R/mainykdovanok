@@ -28,9 +28,6 @@ input, input:focus, #description, select {
     width: 100%;
 }
 
-.questionInput {
-    margin-left: 5%;
-}
 
 button {
     border: none;
@@ -51,14 +48,9 @@ button {
     display: flex;
 }
 
-.addQuestionButton {
-    width: 3.5vw;
-    height: 3vw;
-    border-radius: 10px;
-    margin-left: 20px;
-}
 
-.create:hover, .cancel:hover, .addQuestionButton:hover {
+
+.create:hover, .cancel:hover {
     background-color: rgb(229, 225, 225);
 }
 
