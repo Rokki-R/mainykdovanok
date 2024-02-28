@@ -20,7 +20,7 @@ export const ItemViewPage = () => {
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [message, setMessage] = useState("");
-  const [answers, setAnswers] = useState({});
+  const [letter, setLetter] = useState("");
   const [item, setItem] = useState(null);
   const [userItems, setUserItems] = useState(null);
   const [viewerId, setViewerId] = useState(null);
@@ -142,12 +142,10 @@ export const ItemViewPage = () => {
     setMessage(event.target.value);
   };
 
-  const handleAnswerChange = (event, questionId) => {
-    setAnswers({
-      ...answers,
-      [questionId]: event.target.value,
-    });
+  const handleLetterChange = (event) => {
+    setLetter(event.target.value);
   };
+
 
   const handleSubmit = async (event, isParticipating) => {
     event.preventDefault();
@@ -160,20 +158,17 @@ export const ItemViewPage = () => {
     if (item.type === "Mainai į kita prietaisą" && !selectedItem) {
       toast.error("Pasirinkite skelbimą, kurį norite pasiūlyti keitimui.");
       return;
-    } else if (item.type === "Klausimynas") {
-      const unansweredQuestions = item.questions.filter((q) => !answers[q.id]);
-
-      if (unansweredQuestions.length > 0) {
-        toast.error("Atsakykite į visus klausimus.");
-        return;
-      }
+    } 
+    
+    else if (item.type === "Motyvacinis laiškas" && letter.length === 0) {
+      toast.error("Negalite pateikti tuščio motyvacinio laiško!")
+      return; 
     }
 
     const data = {
       selectedItem,
       message,
-      ...(item.type === "Klausimynas" && { answers }),
-    };
+  };
 
     if (item.type === "Loterija") {
       if (!isParticipating) {
@@ -223,34 +218,33 @@ export const ItemViewPage = () => {
             }
           });
       }
-    } else if (item.type === "Klausimynas") {
-      const answersList = Object.entries(data.answers).map(([key, value]) => ({
-        question: parseInt(key),
-        text: value,
-      }));
-      console.log(answersList);
+    } else if (item.type === "Motyvacinis laiškas") {
+      const formData = new FormData();
+      formData.append("letter", letter);
       axios
-        .post(`api/item/submitAnswers/${itemId}`, answersList)
+        .post(`api/item/submitLetter/${itemId}`, formData)
         .then((response) => {
           if (response.data) {
-            toast.success("Sėkmingai atsakėte į klausimus!");
-
-            setIsUserParticipating(true);
-            setItem({
-              ...item,
-              participants: item.participants + 1,
-            });
-          } else {
+          toast.success("Sėkmingai išsiuntėte motyvacinį laišką")
+        }
+        else {     
             toast.error("Įvyko klaida, susisiekite su administratoriumi!");
-          }
+        }
         })
         .catch((error) => {
           if (error.response.status === 401) {
             toast.error("Turite būti prisijungęs!");
-          } else {
+            return;
+          }
+           else if (error.response.status === 409) {
+            toast.error("Jūs jau esate pateikęs laišką šiam skelbimui.");
+            return;
+          }
+          {
             toast.error("Įvyko klaida, susisiekite su administratoriumi!");
           }
         });
+      
     } else if (item.type === "Mainai į kita prietaisą") {
       const formData = new FormData();
       formData.append("selectedItem", data.selectedItem);
@@ -442,20 +436,17 @@ export const ItemViewPage = () => {
                     </Row>
                   </Form>
                 )}
-                {item.type === "Klausimynas" && (
+                {item.type === "Motyvacinis laiškas" && (
                   <Form onSubmit={handleSubmit}>
-                    {item.questions.map((question) => (
-                      <Form.Group key={question.id}>
-                        <Form.Label>{question.question}</Form.Label>
-                        <Form.Control
-                          type="text"
-                          onChange={(event) =>
-                            handleAnswerChange(event, question.id)
-                          }
-                        />
-                      </Form.Group>
-                    ))}
                     <Row>
+                    <Form.Control 
+                        as="textarea" 
+                        rows={3} 
+                        id="letter"
+                        value={letter}
+                        onChange={(e) => setLetter(e.target.value)}
+                        placeholder="Čia galite parašyti motyvacinį laišką, kuriame galite pagrįsti savo norą laimėti elektronikos prietaisą"
+                    />
                       <Col>
                         <Button
                           variant="primary"

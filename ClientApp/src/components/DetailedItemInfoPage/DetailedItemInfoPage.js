@@ -11,7 +11,7 @@ export const DetailedItemInfoPage = () => {
     const [item, setItem] = useState(null);
     const [isLoggedInAsAdmin, setIsLoggedInAsAdmin] = useState(false);
     const [viewerId, setViewerId] = useState(null);
-    const [itemQuestions_Answers, setItemQuestions_Answers] = useState(null);
+    const [itemLetters, setItemLetters] = useState(null);
     const [itemOffers, setItemOffers] = useState(null);
     const [itemLotteryParticipants, setItemLotteryParticipants] = useState(null);
     const [isSubmitting, setSubmitting] = useState(false);
@@ -80,18 +80,17 @@ export const DetailedItemInfoPage = () => {
         }
     }
 
-    //Palieku kaip atskirus, bet gal bekuriant endpointus iseis kazkaip apjungt ar kaip tik reiks ju daugiau?
     useEffect(() => {
-        const fetchItemQuestions_Answers = async () => {
+        const fetchItemLetters = async () => {
             try {
-                const response = await axios.get(`api/item/getQuestionsAndAnswers/${itemId}`);
-                setItemQuestions_Answers(response.data);
+                const response = await axios.get(`api/item/getLetters/${itemId}`);
+                setItemLetters(response.data);
             } catch (error) {
                 toast.error('Įvyko klaida, susisiekite su administratoriumi!');
             }
         };
 
-        fetchItemQuestions_Answers();
+        fetchItemLetters();
     }, []);
     
      useEffect(() => {
@@ -128,7 +127,7 @@ export const DetailedItemInfoPage = () => {
             };
             setSubmitting(true);
             
-            await axios.post(`/api/item/chooseQuestionnaireWinner`, requestBody)
+            await axios.post(`/api/item/chooseLetterWinner`, requestBody)
             .then(response => {
                 if (response) {
                     toast.success('Išsirinkote, kam padovanoti! Laimėtojui išsiųstas el. laiškas dėl susisiekimo.');
@@ -179,7 +178,7 @@ export const DetailedItemInfoPage = () => {
         setSubmitting(false);
     };
 
-    return item && ((item.type === 'Klausimynas' && itemQuestions_Answers) || (item.type === 'Loterija' && itemLotteryParticipants) || (item.type === 'Mainai į kita prietaisą' && itemOffers)) ? (
+    return item && ((item.type === 'Motyvacinis laiškas' && itemLetters) || (item.type === 'Loterija' && itemLotteryParticipants) || (item.type === 'Mainai į kita prietaisą' && itemOffers)) ? (
         <div className="my-div" style={{ marginTop: "120px" }}>
             {item.type === 'Mainai į kita prietaisą' && (
                 <Container className="home">
@@ -225,25 +224,23 @@ export const DetailedItemInfoPage = () => {
                 </Container>
             )}
 
-            {item.type === 'Klausimynas' && (
+            {item.type === 'Motyvacinis laiškas' && (
                 <ListGroup>
-                    {Object.keys(itemQuestions_Answers.questionnaires).length > 0 ? (
-                        Object.keys(itemQuestions_Answers.questionnaires).map((user) => (
+                    {Object.keys(itemLetters).length > 0 ? (
+                        Object.keys(itemLetters.letters).map((user) => (
                             <Container key={user}>
                                 <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenWinner(user)}>Atiduoti</Button>
-                                <ListGroupItem variant="primary"><b>Klausimyno atsakymai:</b> {user} </ListGroupItem>
-                                {itemQuestions_Answers.questionnaires[user].map((questionnaire, index) => (
-                                    <ListGroup key={questionnaire.id}>
-                                        <ListGroupItem variant="info"><b>Klausimas nr. {index + 1}</b> {questionnaire.question} </ListGroupItem>
-                                        <ListGroupItem variant="light"><b>Atsakymas:</b> {questionnaire.answer} </ListGroupItem>
+                                <ListGroupItem variant="primary"><b>Motyvacinis laiškas:</b> {user} </ListGroupItem>
+                                {itemLetters.letters[user].map((letter, index) => (
+                                    <ListGroup key={letter.id}>
+                                        <ListGroupItem variant="light"> {letter.letter} </ListGroupItem>
                                     </ListGroup>
                                 ))}
                             </Container>
                         ))
                     ) : (
                         <Container>
-                            <ListGroupItem variant="primary"><b>Klausimyno atsakymai</b></ListGroupItem>
-                            <ListGroupItem>Klausimyno atsakymų nėra.</ListGroupItem>
+                            <ListGroupItem>Motyvacinių laiškų nėra.</ListGroupItem>
                         </Container>
                     )}
                 </ListGroup>
