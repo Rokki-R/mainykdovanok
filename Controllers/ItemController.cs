@@ -12,6 +12,7 @@ using mainykdovanok.Repositories.User;
 using Newtonsoft.Json.Linq;
 using mainykdovanok.Services;
 using static System.Net.Mime.MediaTypeNames;
+using mainykdovanok.Repositories.Comment;
 
 namespace mainykdovanok.Controllers
 {
@@ -24,6 +25,7 @@ namespace mainykdovanok.Controllers
         private readonly ItemRepo _itemRepo;
         private readonly ImageRepo _imageRepo;
         private readonly UserRepo _userRepo;
+        private readonly CommentRepo _commentRepo;
         private readonly MotivationalLetterService _motivationalLetterService;
         private readonly ExchangeService _exchangeService;
 
@@ -34,6 +36,7 @@ namespace mainykdovanok.Controllers
             _itemRepo = new ItemRepo();
             _imageRepo = new ImageRepo();
             _userRepo = new UserRepo();
+            _commentRepo = new CommentRepo();
             _motivationalLetterService = new MotivationalLetterService();
             _exchangeService = new ExchangeService();
         }
@@ -490,6 +493,48 @@ namespace mainykdovanok.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("getComments/{itemId}")]
+        public async Task<IActionResult> GetComments(int itemId)
+        {
+            try
+            {
+                var result = await _commentRepo.GetAllItemComments(itemId);
+
+                return Ok(new { comments = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("postComment/{itemId}")]
+        public async Task<IActionResult> PostComment(int itemId, [FromBody] CommentModel comment)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+            try
+            {
+                int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+
+                comment.UserId = userId;
+                comment.ItemId = itemId;
+                comment.PostedDateTime = DateTime.Now;
+
+                var result = await _commentRepo.InsertComment(comment);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
 
     }
 }
