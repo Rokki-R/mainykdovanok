@@ -30,6 +30,8 @@ export const ItemViewPage = () => {
   const [isLoggedInAsAdmin, setIsLoggedInAsAdmin] = useState(false);
   const [itemOwner, setItemOwner] = useState(null);
   const [userImage, setUserImage] = useState("./images/profile.png");
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -134,6 +136,19 @@ export const ItemViewPage = () => {
     fetchUserRole();
   }, []);
 
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const response = await axios.get(`api/item/getComments/${itemId}`);
+        setComments(response.data.comments);
+      } catch (error) {
+        toast.error("Įvyko klaida, nepavyko gauti komentarų!");
+      }
+    };
+
+    fetchComments();
+  }, [itemId]);
+
   const handleItemSelect = (event) => {
     setSelectedItem(event.target.value);
   };
@@ -146,6 +161,35 @@ export const ItemViewPage = () => {
     setLetter(event.target.value);
   };
 
+  const handleCommentChange = (event) => {
+    setNewComment(event.target.value);
+  };
+
+  const handleSubmitComment = async (event) => {
+    event.preventDefault();
+
+    if (viewerId === null) {
+      toast.error("Turite būti prisijungęs!");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`api/item/postComment/${itemId}`, {
+        comment: newComment,
+      });
+      const newCommentData = response.data;
+      setNewComment(""); // Clear the input field after posting the comment
+      toast.success("Komentaras sėkmingai pridėtas!");
+
+      // Fetch comments again to update the comments list
+      const commentsResponse = await axios.get(
+        `api/item/getComments/${itemId}`
+      );
+      setComments(commentsResponse.data.comments);
+    } catch (error) {
+      toast.error("Įvyko klaida, nepavyko pridėti komentaro!");
+    }
+  };
 
   const handleSubmit = async (event, isParticipating) => {
     event.preventDefault();
@@ -158,17 +202,15 @@ export const ItemViewPage = () => {
     if (item.type === "Mainai į kita prietaisą" && !selectedItem) {
       toast.error("Pasirinkite skelbimą, kurį norite pasiūlyti keitimui.");
       return;
-    } 
-    
-    else if (item.type === "Motyvacinis laiškas" && letter.length === 0) {
-      toast.error("Negalite pateikti tuščio motyvacinio laiško!")
-      return; 
+    } else if (item.type === "Motyvacinis laiškas" && letter.length === 0) {
+      toast.error("Negalite pateikti tuščio motyvacinio laiško!");
+      return;
     }
 
     const data = {
       selectedItem,
       message,
-  };
+    };
 
     if (item.type === "Loterija") {
       if (!isParticipating) {
@@ -225,18 +267,16 @@ export const ItemViewPage = () => {
         .post(`api/item/submitLetter/${itemId}`, formData)
         .then((response) => {
           if (response.data) {
-          toast.success("Sėkmingai išsiuntėte motyvacinį laišką")
-        }
-        else {     
+            toast.success("Sėkmingai išsiuntėte motyvacinį laišką");
+          } else {
             toast.error("Įvyko klaida, susisiekite su administratoriumi!");
-        }
+          }
         })
         .catch((error) => {
           if (error.response.status === 401) {
             toast.error("Turite būti prisijungęs!");
             return;
-          }
-           else if (error.response.status === 409) {
+          } else if (error.response.status === 409) {
             toast.error("Jūs jau esate pateikęs laišką šiam skelbimui.");
             return;
           }
@@ -244,7 +284,6 @@ export const ItemViewPage = () => {
             toast.error("Įvyko klaida, susisiekite su administratoriumi!");
           }
         });
-      
     } else if (item.type === "Mainai į kita prietaisą") {
       const formData = new FormData();
       formData.append("selectedItem", data.selectedItem);
@@ -342,10 +381,12 @@ export const ItemViewPage = () => {
                         </div>
                         <div className="owner-info-2">
                           <p>
-                            <strong>Padovanotų prietaisų kiekis:</strong> {itemOwner.itemsGifted}{" "}
+                            <strong>Padovanotų prietaisų kiekis:</strong>{" "}
+                            {itemOwner.itemsGifted}{" "}
                           </p>
                           <p>
-                            <strong>Laimėtų prietaisų kiekis:</strong> {itemOwner.itemsWon}{" "}
+                            <strong>Laimėtų prietaisų kiekis:</strong>{" "}
+                            {itemOwner.itemsWon}{" "}
                           </p>
                         </div>
                       </div>
@@ -439,14 +480,14 @@ export const ItemViewPage = () => {
                 {item.type === "Motyvacinis laiškas" && (
                   <Form onSubmit={handleSubmit}>
                     <Row>
-                    <Form.Control 
-                        as="textarea" 
-                        rows={3} 
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
                         id="letter"
                         value={letter}
                         onChange={(e) => setLetter(e.target.value)}
                         placeholder="Čia galite parašyti motyvacinį laišką, kuriame galite pagrįsti savo norą laimėti elektronikos prietaisą"
-                    />
+                      />
                       <Col>
                         <Button
                           variant="primary"
@@ -546,6 +587,51 @@ export const ItemViewPage = () => {
                 {item.location} |{" "}
                 {new Date(item.creationDateTime).toLocaleString("lt-LT")}
               </Card.Footer>
+            </Card>
+
+            <Card>
+              <Card.Body>
+                <Card.Title>Komentarai</Card.Title>
+                {comments.length > 0 ? (
+                  <ul className="list-group">
+                    {comments.map((comment) => (
+                      <li
+                        key={comment.id}
+                        className="list-group-item d-flex justify-content-between align-items-center"
+                      >
+                        <div>
+                          <strong>
+                            {comment.userName} {comment.userSurname}
+                          </strong>
+                          : {comment.comment}
+                        </div>
+                        <div>
+                          {new Date(comment.postDateTime).toLocaleString(
+                            "lt-LT"
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>Nėra komentarų.</p>
+                )}
+
+                <Form onSubmit={handleSubmitComment}>
+                  <Form.Group controlId="comment">
+                    <Form.Label>Palikite komentarą:</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      value={newComment}
+                      onChange={handleCommentChange}
+                    />
+                  </Form.Group>
+                  <Button variant="primary" type="submit">
+                    Pridėti komentarą
+                  </Button>
+                </Form>
+              </Card.Body>
             </Card>
           </Col>
         </Row>
