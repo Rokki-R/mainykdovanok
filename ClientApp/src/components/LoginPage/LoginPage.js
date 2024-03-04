@@ -36,6 +36,12 @@ export const LoginPage = () => {
     const handleSubmit = (event) => {
         event.preventDefault();
 
+        if (password.length === 0 || email === 0)
+        {
+          toast.error("Užpildykite visus laukus!");
+          return;
+        }
+
         if (password.length < 8 || /^(?=.*\d)(?=.*[!@#$%^&*+\-])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(password) === false) {
             toast.error("Prisijungimo duomenys neteisingi!");
             return;
@@ -52,19 +58,22 @@ export const LoginPage = () => {
         fetch("api/user/login", requestOptions)
             .then(response => {
                 if (response.status === 200) {
-                    // Hack to make the NavMenu update the user avatar.
                     window.location.reload();
                     window.location.href = "/";
                 }
-                else if (response.status === 404) {
-                    toast.error("Prisijungimo duomenys neteisingi!");
-                }
                 else if (response.status === 401) {
-                    toast.error("El. pašto adresas nepatvirtintas. Patikrinkite savo elektroninį paštą!");
-                }
-                else {
-                    toast.error("Įvyko klaida, susisiekite su administratoriumi!");
-                }
+                  response.json().then(data => {
+                      toast.error(data.message); // Display the unauthorized message from the backend
+                  });
+              }
+              else if (response.status === 404) {
+                  response.json().then(data => {
+                      toast.error(data.message); // Display the not found message from the backend
+                  });
+              }
+              else {
+                  toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+              }
             })
     }
     

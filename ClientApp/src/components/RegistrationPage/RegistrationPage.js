@@ -68,16 +68,11 @@ const handleSubmit = (event) => {
               if (response.status === 200) {
                   toast.success('Sėkmingai prisiregistravote. Elektroninio pašto patvirtinimas išsiųstas.');
                   navigate("/prisijungimas");
-              }
-              else if (response.status === 401) {
-                  toast.error("Nepavyko išsiųsti patvirtinimo laiško! Susisiekite su administratoriumi.", {
-                      style: {
-                          backgroundColor: 'red',
-                          color: 'white',
-                      },
+                } else if (response.status === 400) {
+                  response.json().then(data => {
+                      toast.error(data.message);
                   });
-              }
-              else {
+              } else {
                   toast.error("Įvyko klaida, susisiekite su administratoriumi!", {
                       style: {
                           backgroundColor: 'red',

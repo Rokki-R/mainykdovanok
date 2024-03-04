@@ -5,6 +5,8 @@ import HomePage from "./components/HomePage/HomePage";
 import { LoginPage } from "./components/LoginPage/LoginPage";
 import RegistrationPage from "./components/RegistrationPage/RegistrationPage";
 import VerifyEmailPage from "./components/VerifyEmailPage/VerifyEmailPage";
+import ForgotPasswordPage from "./components/ForgotPasswordPage/ForgotPasswordPage";
+import PasswordChangePage from "./components/PasswordChangePage/PasswordChangePage";
 
 import ItemCreationPage from "./components/ItemCreationPage/ItemCreationPage";
 import { ItemViewPage } from "./components/ItemViewPage/ItemViewPage";
@@ -79,6 +81,14 @@ const AppRoutes = [
     path: '/search/category/:categoryId',
     element: <SearchResultsByCategoryPage />
   },
+  {
+    path: '/pamirsau-slaptazodi',
+    element: <ForgotPasswordPage />
+  },
+  {
+    path: '/pakeisti-slaptazodi',
+    element: <PasswordChangePage />
+},
 ];
 
 export default AppRoutes;

@@ -236,5 +236,28 @@ namespace mainykdovanok.Tools
                 _logger.Error("Error sending email to motivational letter winner: {0}", ex.Message);
             }
         }
+        public async Task<bool> changePassword(DataTable result, string resetURL)
+        {
+            message.To.Clear();
+            message.To.Add(new MailAddress(result.Rows[0]["email"].ToString()));
+
+            message.Subject = "Pasikeiskite slaptažodį";
+            message.Body = $"<html><body><p>Sveiki,</p>" +
+                $"<p>Norėdami pasikeisti slaptažodį, spauskite <a href=\"{resetURL}\">čia</a>.</p>" +
+                $"<p>Linkėjimai,</p>" +
+                $"<p>mainyk.lt</p>" +
+                $"</body></html>";
+
+            try
+            {
+                smtpClient.Send(message);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("Error sending email for password change: {0}", ex.Message);
+                return false;
+            }
+        }
     }
 }
