@@ -272,5 +272,26 @@ namespace mainykdovanok.Repositories.User
                 return user;
             }
         }
+
+        public async Task<bool> CheckEmailExists(string email)
+        {
+            try
+            {
+                using MySqlConnection connection = GetConnection();
+                string sql = "SELECT COUNT(*) FROM users WHERE email = @Email";
+                using MySqlCommand command = new MySqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@Email", email);
+
+                await connection.OpenAsync();
+                int count = Convert.ToInt32(await command.ExecuteScalarAsync());
+
+                return count > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error checking email existence in database!");
+                return false;
+            }
+        }
     }
 }

@@ -36,13 +36,13 @@ namespace mainykdovanok.Controllers.UserAuthentication
 
             if (result.Rows.Count == 0)
             {
-                return StatusCode(404);
+                return NotFound(new { message = "Šis naudotojas nėra registruotas sistemoje" });
             }
 
-            if (!String.Equals(result.Rows[0]["verification_token"].ToString(), ""))
-            {
-                return StatusCode(401);
-            }
+            //if (!String.Equals(result.Rows[0]["verification_token"].ToString(), ""))
+            //{
+             //   return StatusCode(401);
+           // }
 
             string hashed_password = result.Rows[0]["password_hash"].ToString();
             string password_salt = result.Rows[0]["password_salt"].ToString();
@@ -84,7 +84,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
 
             else
             {
-                return StatusCode(404);
+                return Unauthorized(new { message = "Neteisingas slaptažodis!" });
             }
 
         }
@@ -111,7 +111,12 @@ namespace mainykdovanok.Controllers.UserAuthentication
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegistrationViewModel registration)
         {
-            // Retrieve a hashed version of the user's plain text password.
+            bool emailExists = await _userRepo.CheckEmailExists(registration.Email);
+            if (emailExists)
+            {
+                return BadRequest(new { message = "Šis elektroninis paštas jau yra užregistruotas!" });
+            }
+
             byte[] salt;
             string password_hash = PasswordHash.hashPassword(registration.Password, out salt);
             string password_salt = Convert.ToBase64String(salt);
@@ -129,19 +134,20 @@ namespace mainykdovanok.Controllers.UserAuthentication
 
             if (success)
             {
-                string verifyUrl;
-                verifyUrl = $"https://localhost:44456/verifyemail?email={HttpUtility.UrlEncode(registration.Email)}&token={HttpUtility.UrlEncode(token)}";
+                //string verifyUrl;
+                //verifyUrl = $"https://localhost:44456/verifyemail?email={HttpUtility.UrlEncode(registration.Email)}&token={HttpUtility.UrlEncode(token)}";
 
-                SendEmail emailer = new SendEmail();
-                if (await emailer.verifyEmail(registration.Email, verifyUrl))
-                {
-                    return Ok();
-                }
-                else
-                {
-                    _logger.LogError("Failed to send email");
-                    return StatusCode(401);
-                }
+                //SendEmail emailer = new SendEmail();
+                //if (await emailer.verifyEmail(registration.Email, verifyUrl))
+                // {
+                //  return Ok();
+                //}
+                //else
+                //{
+                //    _logger.LogError("Failed to send email");
+                //   return StatusCode(401);
+                // }
+                return Ok();
 
             }
             else
@@ -425,6 +431,92 @@ namespace mainykdovanok.Controllers.UserAuthentication
                 return Ok(email);
             }
             return BadRequest();
+        }
+
+        [HttpPost("forgotPassword")]
+        public async Task<IActionResult> ForgotPassword(PasswordResetViewModel resetRequest)
+        {
+            string sql = "SELECT email FROM users WHERE email = @email";
+            var parameters = new { email = resetRequest.Email };
+            var result = await _userRepo.LoadData(sql, parameters);
+
+            if (result.Rows.Count == 0)
+            {
+                return StatusCode(404);
+            }
+            else
+            {
+                byte[] tokenData = new byte[32]; // 256-bit token
+                using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
+                {
+                    rng.GetBytes(tokenData);
+                }
+
+                string token = BitConverter.ToString(tokenData).Replace("-", ""); // Convert byte array to hex string
+                DateTime changeTimer = DateTime.Now;
+                changeTimer = changeTimer.AddHours(1);
+                string time = changeTimer.ToString("yyyy-MM-dd HH:mm:ss.fff");
+
+                bool success = await _userRepo.SaveData("UPDATE users SET password_change_token = @token, password_change_time = @time WHERE email = @email",
+                                new { token, time, resetRequest.Email });
+
+                if (!success) { return BadRequest(); }
+
+
+                string resetUrl = $"https://localhost:44492/pakeisti-slaptazodi?email={HttpUtility.UrlEncode(resetRequest.Email)}&token={HttpUtility.UrlEncode(token)}";
+
+                SendEmail emailer = new SendEmail();
+                if (await emailer.changePassword(result, resetUrl))
+                {
+                    return Ok();
+                }
+                else
+                {
+                    _logger.LogError("Failed to send email");
+                    return StatusCode(401);
+                }
+            }
+        }
+
+        [HttpPost("changePassword")]
+        public async Task<IActionResult> ChangePassword(PasswordChangeViewModel passwordChange)
+        {
+            string sql = "SELECT password_change_token, password_change_time FROM users WHERE email = @email AND password_change_token = @token";
+            var parameters = new { email = passwordChange.Email, token = passwordChange.Token };
+            var result = await _userRepo.LoadData(sql, parameters);
+
+            if (result.Rows.Count == 0)
+            {
+                return StatusCode(401);
+            }
+            else
+            {
+                DateTime timer = DateTime.Parse(result.Rows[0]["password_change_time"].ToString());
+
+                if (timer > DateTime.Now)
+                {
+                    byte[] salt;
+                    string password_hash = PasswordHash.hashPassword(passwordChange.Password, out salt);
+                    string password_salt = Convert.ToBase64String(salt);
+
+                    bool success = await _userRepo.SaveData("UPDATE users SET password_hash = @password_hash, password_salt = @password_salt, password_change_token = NULL, password_change_time = NULL WHERE password_change_token = @token",
+                    new { password_hash, password_salt, token = passwordChange.Token });
+
+                    if (success)
+                    {
+                        return Ok();
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
+                }
+                else
+                {
+                    return StatusCode(300);
+                }
+
+            }
         }
     }
 }

@@ -27,6 +27,7 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.C
         options.SlidingExpiration = true;
     });
 
+
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
