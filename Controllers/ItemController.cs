@@ -28,6 +28,7 @@ namespace mainykdovanok.Controllers
         private readonly CommentRepo _commentRepo;
         private readonly MotivationalLetterService _motivationalLetterService;
         private readonly ExchangeService _exchangeService;
+        private readonly QuestionnaireService _questionnaireService;
 
         public ItemController()
         {
@@ -39,6 +40,7 @@ namespace mainykdovanok.Controllers
             _commentRepo = new CommentRepo();
             _motivationalLetterService = new MotivationalLetterService();
             _exchangeService = new ExchangeService();
+            _questionnaireService = new QuestionnaireService();
         }
 
         [HttpGet("getItems")]
@@ -147,6 +149,7 @@ namespace mainykdovanok.Controllers
                     Category = Convert.ToInt32(form["category"]),
                     Type = Convert.ToInt32(form["type"]),
                     Images = form.Files.GetFiles("images").ToList(),
+                    Questions = form["questions"].ToList(),
                     EndDate = Convert.ToDateTime(form["endDate"]),
                 };
 
@@ -531,6 +534,71 @@ namespace mainykdovanok.Controllers
                 var result = await _commentRepo.InsertComment(comment);
 
                 return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("getQuestionsAndAnswers/{itemId}")]
+        [Authorize]
+        public async Task<IActionResult> GetQuestionsAndAnswers(int itemId)
+        {
+            try
+            {
+                var result = await _itemRepo.GetQuestionsAndAnswers(itemId);
+
+                return Ok(new { questionnaires = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("submitAnswers/{itemId}")]
+        public async Task<IActionResult> SubmitAnswers(int itemId, [FromBody] List<AnswerModel> answers)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+
+            bool hasSubmittedLetter = await _itemRepo.HasSubmittedAnswers(itemId, userId);
+            if (hasSubmittedLetter)
+            {
+                return Conflict();
+            }
+
+            try
+            {
+                var result = await _itemRepo.InsertAnswers(itemId, answers, userId);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("chooseQuestionnaireWinner")]
+        public async Task<IActionResult> ChooseQuestionnaireWinner([FromBody] QuestionnaireWinnerModel winner)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            try
+            {
+                _questionnaireService.NotifyWinner(winner, userId);
+
+                return Ok();
             }
             catch (Exception ex)
             {

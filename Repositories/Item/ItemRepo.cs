@@ -88,6 +88,7 @@ namespace mainykdovanok.Repositories.Item
             var item = new ItemViewModel();
 
             var images = await _imageRepo.GetByItem(itemId);
+            var questions = await GetQuestions(itemId);
             using (MySqlConnection connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
@@ -119,6 +120,7 @@ namespace mainykdovanok.Repositories.Item
                         item.EndDateTime = Convert.ToDateTime(reader["end_datetime"]);
                         item.WinnerId = reader["fk_winner"] == DBNull.Value ? null : (int?)Convert.ToInt32(reader["fk_winner"]);
                         item.Images = images;
+                        item.Questions = questions;
 
                         return item;
                     }
@@ -655,6 +657,22 @@ namespace mainykdovanok.Repositories.Item
             return count > 0;
         }
 
+        public async Task<bool> HasSubmittedAnswers(int itemId, int userId)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "SELECT COUNT(*) FROM answers WHERE fk_item = @itemId AND fk_user = @userId", connection);
+
+            command.Parameters.AddWithValue("@itemId", itemId);
+            command.Parameters.AddWithValue("@userId", userId);
+
+            int count = Convert.ToInt32(await command.ExecuteScalarAsync());
+
+            return count > 0;
+        }
+
         public async Task<Dictionary<string, List<MotivationalLetterViewModel>>> GetLetters(int itemId)
         {
             using MySqlConnection connection = GetConnection();
@@ -712,6 +730,83 @@ namespace mainykdovanok.Repositories.Item
                 _logger.Error(ex, "Error saving questions to database!");
                 return false;
             }
+        }
+
+        public async Task<List<ItemQuestionViewModel>> GetQuestions(int itemId)
+        {
+            List<ItemQuestionViewModel> questions = new List<ItemQuestionViewModel>();
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "SELECT question, id FROM questions where fk_item=@itemId", connection);
+            command.Parameters.AddWithValue("@itemId", itemId);
+
+            using DbDataReader reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                int id = reader.GetInt32("id");
+                string text = reader.GetString("question");
+                ItemQuestionViewModel question = new ItemQuestionViewModel { Id = id, Question = text };
+                questions.Add(question);
+            }
+
+            return questions;
+        }
+
+        public async Task<Dictionary<string, List<QuestionnaireViewModel>>> GetQuestionsAndAnswers(int itemId)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "SELECT a.id AS id, a.answer, q.question, CONCAT(u.name, ' ', u.surname) AS user " +
+                "FROM answers AS a " +
+                "INNER JOIN questions AS q ON a.fk_question = q.id " +
+                "INNER JOIN users AS u ON a.fk_user = u.user_id " +
+                "WHERE a.fk_item=@itemId", connection);
+            command.Parameters.AddWithValue("@itemId", itemId);
+
+            using DbDataReader reader = await command.ExecuteReaderAsync();
+
+            List<QuestionnaireViewModel> results = new List<QuestionnaireViewModel>();
+            while (await reader.ReadAsync())
+            {
+                int id = reader.GetInt32("id");
+                string text = reader.GetString("question");
+                string answer = reader.GetString("answer");
+                string user = reader.GetString("user");
+                QuestionnaireViewModel result = new QuestionnaireViewModel { Id = id, Question = text, Answer = answer, User = user };
+                results.Add(result);
+            }
+
+            Dictionary<string, List<QuestionnaireViewModel>> groupedResults = results.GroupBy(r => r.User)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            return groupedResults;
+        }
+
+
+        public async Task<bool> InsertAnswers(int itemId, List<AnswerModel> answers, int userId)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            foreach (AnswerModel answer in answers)
+            {
+                using MySqlCommand command = new MySqlCommand(
+                    "INSERT INTO answers (answer, fk_question, fk_user, fk_item) VALUES (@answer, @fk_question, @fk_user, @fk_item)", connection);
+
+                // Add parameters
+                command.Parameters.AddWithValue("@answer", answer.Text);
+                command.Parameters.AddWithValue("@fk_question", answer.Question);
+                command.Parameters.AddWithValue("@fk_user", userId);
+                command.Parameters.AddWithValue("@fk_item", itemId);
+
+                await command.ExecuteNonQueryAsync();
+            }
+
+            return true;
         }
 
     }
