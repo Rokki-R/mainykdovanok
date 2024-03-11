@@ -686,5 +686,33 @@ namespace mainykdovanok.Repositories.Item
             return groupedResults;
         }
 
+        public async Task<bool> InsertQuestions(ItemModel item)
+        {
+            try
+            {
+                using MySqlConnection connection = GetConnection();
+                await connection.OpenAsync();
+
+                foreach (string question in item.Questions)
+                {
+                    using MySqlCommand command = new MySqlCommand(
+                        "INSERT INTO questions (question, fk_item) VALUES (@question, @fk_item)", connection);
+
+                    // Add parameters
+                    command.Parameters.AddWithValue("@question", question);
+                    command.Parameters.AddWithValue("@fk_item", item.Id);
+
+                    await command.ExecuteNonQueryAsync();
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error saving questions to database!");
+                return false;
+            }
+        }
+
     }
 }

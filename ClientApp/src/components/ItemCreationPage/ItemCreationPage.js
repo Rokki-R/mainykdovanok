@@ -17,6 +17,38 @@ const ItemCreationPage = () => {
     const [endDate, setEndDate] = useState('Pasirinkite datą');
     const navigate = useNavigate();
 
+    const questionArray = [
+        {
+            type: "text",
+            id: "1",
+            value: ""
+        }
+    ];
+    const [questions, setQuestions] = useState(questionArray);
+    const addInput = () => {
+        setQuestions(s => {
+            return [
+                ...s,
+                {
+                    type: "text",
+                    value: ""
+                }
+            ];
+        });
+    };
+
+    const handleChange = e => {
+        e.preventDefault();
+
+        const index = e.target.id;
+        setQuestions(s => {
+            const newArr = s.slice();
+            newArr[index].value = e.target.value;
+
+            return newArr;
+        });
+    };
+
     useEffect(() => {
         Promise.all([
             axios.get("api/item/getCategories"),
@@ -57,6 +89,13 @@ const ItemCreationPage = () => {
         }
     }
 
+    const removeInput = (indexToRemove) => {
+        setQuestions((prevQuestions) => {
+            return prevQuestions.filter((item, index) => index !== indexToRemove);
+        });
+    };
+    
+
     const getAllItemTypes = () => {
         try {
             return itemTypes.map((itemType) => {
@@ -91,6 +130,20 @@ const ItemCreationPage = () => {
     const handleCreate = (event) => {
         event.preventDefault()
         if (checkFields()) {
+            if (itemType === '4') {
+                let hasEmptyQuestion = false;
+                questions.forEach((question) => {
+                    if (question.value.trim() === "") {
+                        hasEmptyQuestion = true;
+                        return;
+                    }
+                });
+                if (hasEmptyQuestion) 
+                {
+                    toast.error("Negalite palikti tuščių klausimų!");
+                    return;
+                }
+            }
             try {
                 const formData = new FormData();
                 formData.append('name', name);
@@ -201,6 +254,32 @@ const ItemCreationPage = () => {
                                     {getAllItemTypes()}
                                 </Form.Select>
                             </Form.Group>
+                            {itemType === '4' && (
+                                <>
+                                    {questions.map((item, i) => {
+    return (
+        <Form.Group className="d-flex align-items-center mb-2" key={i}>
+            <Form.Control
+                onChange={handleChange}
+                value={item.value}
+                id={i.toString()}
+                type={item.type}
+                placeholder='Įrašykite klausimą'
+                className='questionInput'
+            />
+            <div className='mt-2 ml-2'>
+                {questions.length - 1 === i && <Button className='btn btn-primary' onClick={addInput}>+</Button>}
+            </div>
+            {i > 0 && (
+                <div className='mt-2 ml-2'>
+                    <Button className='btn btn-danger' onClick={() => removeInput(i)}>-</Button>
+                </div>
+            )}
+        </Form.Group>
+    );
+})}
+                                </>
+                            )}
                             <Form.Group>
                                 <Form.Label>Pasirinkite skelbimo pabaigos datą:</Form.Label>
                                 <Form.Control
