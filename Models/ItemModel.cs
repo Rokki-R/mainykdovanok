@@ -18,6 +18,7 @@
 
         public int Type { get; set; }
 
+        public List<string> Questions { get; set; }
         public List<IFormFile> Images { get; set; }
 
         public DateTime EndDate { get; set; }

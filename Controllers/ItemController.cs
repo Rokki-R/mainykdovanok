@@ -153,6 +153,10 @@ namespace mainykdovanok.Controllers
                 item.Id = await _itemRepo.Create(item);
 
                 bool success = await _imageRepo.InsertImages(item);
+                if (item.Type == 4)
+                {
+                    success = await _itemRepo.InsertQuestions(item);
+                }
                 return success == true ? Ok(item.Id) : BadRequest();
             }
             catch (Exception)
