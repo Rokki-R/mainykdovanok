@@ -32,6 +32,8 @@ export const ItemViewPage = () => {
   const [userImage, setUserImage] = useState("./images/profile.png");
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [answers, setAnswers] = useState({});
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -165,6 +167,13 @@ export const ItemViewPage = () => {
     setNewComment(event.target.value);
   };
 
+  const handleAnswerChange = (event, questionId) => {
+    setAnswers({
+        ...answers,
+        [questionId]: event.target.value,
+    });
+};
+
   const handleSubmitComment = async (event) => {
     event.preventDefault();
 
@@ -202,14 +211,26 @@ export const ItemViewPage = () => {
     if (item.type === "Mainai į kita prietaisą" && !selectedItem) {
       toast.error("Pasirinkite skelbimą, kurį norite pasiūlyti keitimui.");
       return;
-    } else if (item.type === "Motyvacinis laiškas" && letter.length === 0) {
+    } 
+    
+    else if (item.type === "Motyvacinis laiškas" && letter.length === 0) {
       toast.error("Negalite pateikti tuščio motyvacinio laiško!");
       return;
     }
 
+    else if (item.type === 'Klausimynas') {
+      const unansweredQuestions = item.questions.filter(q => !answers[q.id]);
+
+      if (unansweredQuestions.length > 0) {
+          toast.error('Atsakykite į visus klausimus.');
+          return;
+      }
+  }
+
     const data = {
       selectedItem,
       message,
+      ...(item.type === 'Klausimynas' && { answers })
     };
 
     if (item.type === "Loterija") {
@@ -310,6 +331,36 @@ export const ItemViewPage = () => {
           }
         });
     }
+    else if (item.type === 'Klausimynas') {
+      const answersList = Object.entries(data.answers).map(([key, value]) => ({ question: parseInt(key), text: value }));
+      axios.post(`api/item/submitAnswers/${itemId}`, answersList)
+          .then(response => {
+              if (response.data) {
+                  toast.success('Sėkmingai atsakėte į klausimus!');
+
+                  setIsUserParticipating(true);
+                  setItem({
+                      ...item,
+                      participants: item.participants + 1,
+                  });
+              }
+              else {
+                  toast.error('Įvyko klaida, susisiekite su administratoriumi!');
+              }
+          })
+          .catch(error => {
+              if (error.response.status === 401) {
+                  toast.error('Turite būti prisijungęs!');
+              }
+              else if (error.response.status === 409) {
+                toast.error("Jūs jau esate atsakęs į šio skelbimo klausimus.");
+                return;
+              }
+              else {
+                  toast.error('Įvyko klaida, susisiekite su administratoriumi!');
+              }
+          });
+  }
   };
 
   const handleDelete = async (itemId) => {
@@ -582,6 +633,34 @@ export const ItemViewPage = () => {
                     </Row>
                   </Form>
                 )}
+                {item.type === 'Klausimynas' && (
+                                    <Form onSubmit={handleSubmit}>
+                                        {item.questions.map((question) => (
+                                            <Form.Group key={question.id}>
+                                                <Form.Label>{question.question}</Form.Label>
+                                                <Form.Control type="text" onChange={(event) => handleAnswerChange(event, question.id)} />
+                                            </Form.Group>
+                                        ))}
+                                        <Row>
+                                            <Col>
+                                                <Button variant="primary" type="submit" disabled={isPastEndTime || item.userId === viewerId}>Atsakyti</Button>
+                                            </Col>
+                                            <Col className="d-flex justify-content-end">
+                                                {isLoggedInAsAdmin || item.userId === viewerId ? (
+                                                    <>
+                                                        <Button style={{ marginRight: '10px' }} variant="primary" onClick={() => handleDelete(item.id)}>Ištrinti</Button>
+                                                        <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/redaguoti/${item.id}`}>
+                                                            <Button variant="primary">Redaguoti</Button>
+                                                        </Link>
+                                                        <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/info/${item.id}`}>
+                                                            <Button variant="primary">Atsakymai</Button>
+                                                        </Link>
+                                                    </>
+                                                ) : null}
+                                            </Col>
+                                        </Row>
+                                    </Form>
+                                )}
               </Card.Body>
               <Card.Footer>
                 {item.location} |{" "}

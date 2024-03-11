@@ -152,6 +152,9 @@ const ItemCreationPage = () => {
                 formData.append('category', category);
                 formData.append('type', itemType);
                 formData.append('endDate', endDate);
+                for (let i = 0; i < questions.length; i++) {
+                    formData.append('questions', questions[i].value);
+                }
                 for (let i = 0; i < images.length; i++) {
                     formData.append('images', images[i]);
                 }

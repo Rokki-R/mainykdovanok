@@ -42,5 +42,7 @@ namespace mainykdovanok.ViewModels.Item
 
         [JsonProperty("images")]
         public List<ItemImageViewModel> Images { get; set; }
+        [JsonProperty("questions")]
+        public List<ItemQuestionViewModel>? Questions { get; set; }
     }
 }
