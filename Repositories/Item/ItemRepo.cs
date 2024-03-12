@@ -191,7 +191,7 @@ namespace mainykdovanok.Repositories.Item
                     "JOIN item_categories ON items.fk_category = item_categories.id " +
                     "JOIN item_status ON items.fk_status = item_status.id " +
                     "LEFT JOIN item_lottery_participants ON items.id = item_lottery_participants.fk_item " +
-                    "WHERE items.fk_category = @categoryId " +
+                    "WHERE items.fk_category = @categoryId AND items.fk_status = 1 " +
                     "GROUP BY items.id, item_type.type, item_categories.name ", connection))
                 {
                     await connection.OpenAsync();

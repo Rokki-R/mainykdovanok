@@ -27,7 +27,6 @@ export const ItemViewPage = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isPastEndTime, setIsPastEndTime] = useState(true);
   const [isUserParticipating, setIsUserParticipating] = useState(false);
-  const [isLoggedInAsAdmin, setIsLoggedInAsAdmin] = useState(false);
   const [itemOwner, setItemOwner] = useState(null);
   const [userImage, setUserImage] = useState("./images/profile.png");
   const [comments, setComments] = useState([]);
@@ -39,7 +38,6 @@ export const ItemViewPage = () => {
   useEffect(() => {
     const fetchItemOwnerInfo = async () => {
       try {
-        // Fetch item owner information
         const response = await axios.get(`api/item/getItemOwnerInfo/${itemId}`);
         const itemOwnerData = response.data;
         setItemOwner(itemOwnerData);
@@ -121,24 +119,6 @@ export const ItemViewPage = () => {
   }, []);
 
   useEffect(() => {
-    const fetchUserRole = async () => {
-      try {
-        const response = await axios.get("api/user/isloggedin/1");
-        if (response.status == 200) {
-          setIsLoggedInAsAdmin(true);
-        }
-      } catch (error) {
-        if (error.response.status === 401) {
-          setIsLoggedInAsAdmin(false);
-        } else {
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
-        }
-      }
-    };
-    fetchUserRole();
-  }, []);
-
-  useEffect(() => {
     const fetchComments = async () => {
       try {
         const response = await axios.get(`api/item/getComments/${itemId}`);
@@ -187,18 +167,23 @@ export const ItemViewPage = () => {
         comment: newComment,
       });
       const newCommentData = response.data;
-      setNewComment(""); // Clear the input field after posting the comment
+      setNewComment("");
       toast.success("Komentaras sėkmingai pridėtas!");
-
-      // Fetch comments again to update the comments list
       const commentsResponse = await axios.get(
         `api/item/getComments/${itemId}`
       );
       setComments(commentsResponse.data.comments);
     } catch (error) {
-      toast.error("Įvyko klaida, nepavyko pridėti komentaro!");
+      if (error.response.status === 401) {
+        toast.error("Turite būti prisijungęs!");
+      } else if (error.response.status === 403) {
+        toast.error("Neturite privilegijų palikti komentarą!");
+      } else {
+        console.log(error);
+        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+      }
     }
-  };
+  }
 
   const handleSubmit = async (event, isParticipating) => {
     event.preventDefault();
@@ -236,27 +221,33 @@ export const ItemViewPage = () => {
     if (item.type === "Loterija") {
       if (!isParticipating) {
         axios
-          .post(`api/item/enterLottery/${itemId}`, data)
-          .then((response) => {
-            if (response.data) {
-              toast.success("Sėkmingai prisijungėte prie loterijos!");
+  .post(`api/item/enterLottery/${itemId}`, data)
+  .then((response) => {
+    if (response.data) {
+      toast.success("Sėkmingai prisijungėte prie loterijos!");
+      setIsUserParticipating(true);
+      setItem({
+        ...item,
+        participants: item.participants + 1,
+      });
+    } else {
+      toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+    }
+  })
+  .catch((error) => {
+    console.log(error.response.status)
+    if (error.response.status === 401) {
+      toast.error("Turite būti prisijungęs!");
+    } else if (error.response.status === 403) {
+      toast.error("Neturite privilegijų dalyvauti loterijoje!");
+    } else {
+      console.log(error)
+      toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+    }
+  });
 
-              setIsUserParticipating(true);
-              setItem({
-                ...item,
-                participants: item.participants + 1,
-              });
-            } else {
-              toast.error("Įvyko klaida, susisiekite su administratoriumi!");
-            }
-          })
-          .catch((error) => {
-            if (error.response.status === 401) {
-              toast.error("Turite būti prisijungęs!");
-            } else {
-              toast.error("Įvyko klaida, susisiekite su administratoriumi!");
-            }
-          });
+
+
       } else {
         axios
           .post(`api/item/leaveLottery/${itemId}`, data)
@@ -297,7 +288,13 @@ export const ItemViewPage = () => {
           if (error.response.status === 401) {
             toast.error("Turite būti prisijungęs!");
             return;
-          } else if (error.response.status === 409) {
+          } 
+          else if (error.response.status === 403)
+          {
+            toast.error("Jūs neturite privilegijų pateikti motyvacinį laišką");
+            return;
+          }
+          else if (error.response.status === 409) {
             toast.error("Jūs jau esate pateikęs laišką šiam skelbimui.");
             return;
           }
@@ -326,7 +323,14 @@ export const ItemViewPage = () => {
         .catch((error) => {
           if (error.response.status === 401) {
             toast.error("Turite būti prisijungęs!");
-          } else {
+          } 
+          else if (error.response.status === 403)
+          {
+            toast.error("Jūs neturite privilegijų siūlyti elektronikos prietaisą mainais");
+            return;
+          }
+          
+          else {
             toast.error("Įvyko klaida, susisiekite su administratoriumi!");
           }
         });
@@ -356,6 +360,11 @@ export const ItemViewPage = () => {
                 toast.error("Jūs jau esate atsakęs į šio skelbimo klausimus.");
                 return;
               }
+              else if (error.response.status === 403)
+          {
+            toast.error("Jūs neturite privilegijų atsakyti į skelbimo klausimus");
+            return;
+          }
               else {
                   toast.error('Įvyko klaida, susisiekite su administratoriumi!');
               }
@@ -501,7 +510,7 @@ export const ItemViewPage = () => {
                         </Button>
                       </Col>
                       <Col className="d-flex justify-content-end">
-                        {isLoggedInAsAdmin || item.userId === viewerId ? (
+                        {item.userId === viewerId ? (
                           <>
                             <Button
                               style={{ marginRight: "10px" }}
@@ -549,7 +558,7 @@ export const ItemViewPage = () => {
                         </Button>
                       </Col>
                       <Col className="d-flex justify-content-end">
-                        {isLoggedInAsAdmin || item.userId === viewerId ? (
+                        {item.userId === viewerId ? (
                           <>
                             <Button
                               style={{ marginRight: "10px" }}
@@ -606,7 +615,7 @@ export const ItemViewPage = () => {
                         )}
                       </Col>
                       <Col className="d-flex justify-content-end">
-                        {isLoggedInAsAdmin || item.userId === viewerId ? (
+                        {item.userId === viewerId ? (
                           <>
                             <Button
                               style={{ marginRight: "10px" }}
@@ -646,7 +655,7 @@ export const ItemViewPage = () => {
                                                 <Button variant="primary" type="submit" disabled={isPastEndTime || item.userId === viewerId}>Atsakyti</Button>
                                             </Col>
                                             <Col className="d-flex justify-content-end">
-                                                {isLoggedInAsAdmin || item.userId === viewerId ? (
+                                                {item.userId === viewerId ? (
                                                     <>
                                                         <Button style={{ marginRight: '10px' }} variant="primary" onClick={() => handleDelete(item.id)}>Ištrinti</Button>
                                                         <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/redaguoti/${item.id}`}>

@@ -14,7 +14,7 @@ export const LoginPage = () => {
     useEffect(() => {
         const fetchUserLogin = async () => {
             try {
-                const response = await axios.get('api/user/isloggedin/0');
+                const response = await axios.get('api/user/isloggedin');
                 if (response.status == 200)
                 {
                   toast.error("Jūs jau esate prisijungęs!")

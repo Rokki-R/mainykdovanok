@@ -14,7 +14,7 @@ function MyItemsPage() {
     useEffect(() => {
         const fetchUserLogin = async () => {
             try {
-                const response = await axios.get('api/user/isloggedin/0');
+                const response = await axios.get('api/user/isloggedin');
                 if (response.status === 200) {
                     console.log('User is logged in.');
                 }

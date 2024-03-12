@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using mainykdovanok.Services;
 using static System.Net.Mime.MediaTypeNames;
 using mainykdovanok.Repositories.Comment;
+using System.Reflection;
 
 namespace mainykdovanok.Controllers
 {
@@ -44,6 +45,7 @@ namespace mainykdovanok.Controllers
         }
 
         [HttpGet("getItems")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetItems()
         {
             try
@@ -64,6 +66,7 @@ namespace mainykdovanok.Controllers
         }
 
         [HttpGet("getItem/{itemId}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetItem(int itemId)
         {
             try
@@ -83,6 +86,7 @@ namespace mainykdovanok.Controllers
             }
         }
         [HttpGet("getItemOwnerInfo/{itemId}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetItemOwnerInfo(int itemId)
         {
             try
@@ -110,6 +114,12 @@ namespace mainykdovanok.Controllers
                 return Unauthorized();
             }
 
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
+
             try
             {
                 int viewerId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
@@ -134,6 +144,12 @@ namespace mainykdovanok.Controllers
             if (!User.Identity.IsAuthenticated)
             {
                 return Unauthorized();
+            }
+
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
             }
 
             try
@@ -277,11 +293,31 @@ namespace mainykdovanok.Controllers
                 return Unauthorized();
             }
 
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
+
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+
             try
             {
-                var result = await _itemRepo.EnterLottery(id, userId);
+                var item = await _itemRepo.GetFullById(id);
 
+                if (item == null)
+                {
+                    return NotFound();
+                }
+
+                // Check if item type is a lottery
+                if (item.Type != "Loterija")
+                {
+                    return BadRequest("Šis skelbimas yra ne loterijos tipo.");
+                }
+
+                // Proceed with entering the lottery
+                var result = await _itemRepo.EnterLottery(id, userId);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -317,6 +353,13 @@ namespace mainykdovanok.Controllers
         [Authorize]
         public async Task<IActionResult> SubmitWinnerDetails(ItemWinnerViewModel itemWinnerDetails)
         {
+
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
+
             try
             {
                 // Send an email to the item poster with winner details.
@@ -372,6 +415,23 @@ namespace mainykdovanok.Controllers
         [Authorize]
         public async Task<IActionResult> GetOffers(int itemId)
         {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            var item = await _itemRepo.GetFullById(itemId);
+            if (item == null || item.UserId != userId)
+            {
+                return StatusCode(403);
+            }
+
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
             try
             {
                 var result = await _itemRepo.GetOffers(itemId);
@@ -399,8 +459,27 @@ namespace mainykdovanok.Controllers
                 return Unauthorized();
             }
 
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
+
             try
             {
+                var item = await _itemRepo.GetFullById(itemId);
+
+                if (item == null)
+                {
+                    return NotFound();
+                }
+
+                // Check if item type is a lottery
+                if (item.Type != "Mainai į kita prietaisą")
+                {
+                    return BadRequest("Šis skelbimas yra ne mainų tipo.");
+                }
+
                 var result = await _itemRepo.SubmitExchangeOffer(itemId, offer);
 
                 return Ok(result);
@@ -420,6 +499,17 @@ namespace mainykdovanok.Controllers
             }
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            var item = await _itemRepo.GetFullById(winner.ItemId);
+            if (item == null || item.UserId != userId)
+            {
+                return StatusCode(403);
+            }
+
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
             try
             {
                 _exchangeService.NotifyWinner(winner, userId);
@@ -439,8 +529,28 @@ namespace mainykdovanok.Controllers
             {
                 return Unauthorized();
             }
+
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
+
             try
             {
+                var item = await _itemRepo.GetFullById(itemId);
+
+                if (item == null)
+                {
+                    return NotFound();
+                }
+
+                // Check if item type is a motivational letter
+                if (item.Type != "Motyvacinis laiškas")
+                {
+                    return BadRequest("Šis skelbimas yra ne motyvacinio laiško tipo.");
+                }
+
                 int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
                 bool hasSubmittedLetter = await _itemRepo.HasSubmittedLetter(itemId, userId);
@@ -469,12 +579,32 @@ namespace mainykdovanok.Controllers
         [Authorize]
         public async Task<IActionResult> GetLetters(int itemId)
         {
+
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            var item = await _itemRepo.GetFullById(itemId);
+            if (item == null || item.UserId != userId)
+            {
+                return StatusCode(403);
+            }
+
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
+
             try
             {
                 var result = await _itemRepo.GetLetters(itemId);
 
                 return Ok(new { letters = result });
             }
+
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
@@ -489,6 +619,18 @@ namespace mainykdovanok.Controllers
             }
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            var item = await _itemRepo.GetFullById(winner.ItemId);
+            if (item == null || item.UserId != userId)
+            {
+                return StatusCode(403);
+            }
+
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
+
             try
             {
                 _motivationalLetterService.NotifyWinner(winner, userId);
@@ -523,6 +665,13 @@ namespace mainykdovanok.Controllers
             {
                 return Unauthorized();
             }
+
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
+
             try
             {
                 int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
@@ -545,6 +694,25 @@ namespace mainykdovanok.Controllers
         [Authorize]
         public async Task<IActionResult> GetQuestionsAndAnswers(int itemId)
         {
+
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            var item = await _itemRepo.GetFullById(itemId);
+            if (item == null || item.UserId != userId)
+            {
+                return StatusCode(403);
+            }
+
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
+
             try
             {
                 var result = await _itemRepo.GetQuestionsAndAnswers(itemId);
@@ -560,9 +728,29 @@ namespace mainykdovanok.Controllers
         [HttpPost("submitAnswers/{itemId}")]
         public async Task<IActionResult> SubmitAnswers(int itemId, [FromBody] List<AnswerModel> answers)
         {
+
             if (!User.Identity.IsAuthenticated)
             {
                 return Unauthorized();
+            }
+
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
+
+            var item = await _itemRepo.GetFullById(itemId);
+
+            if (item == null)
+            {
+                return NotFound();
+            }
+
+            // Check if item type is a questionnaire
+            if (item.Type != "Klausimynas")
+            {
+                return BadRequest("Šis skelbimas yra ne klausimyno tipo.");
             }
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
@@ -594,6 +782,17 @@ namespace mainykdovanok.Controllers
             }
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            var item = await _itemRepo.GetFullById(winner.ItemId);
+            if (item == null || item.UserId != userId)
+            {
+                return StatusCode(403);
+            }
+
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
             try
             {
                 _questionnaireService.NotifyWinner(winner, userId);
@@ -605,8 +804,5 @@ namespace mainykdovanok.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
-
-
     }
 }

@@ -177,6 +177,9 @@ const ItemCreationPage = () => {
                             toast.error('Turite būti prisijungęs!')
                             navigate('/prisijungimas');
                         }
+                        else if (error.response.status === 403) {
+                            toast.error('Jūs neturite privilegijų sukurti skelbimo!')
+                        }
                         else {
                             toast.error("Įvyko klaida, susisiekite su administratoriumi!");
                         }
