@@ -39,11 +39,6 @@ namespace mainykdovanok.Controllers.UserAuthentication
                 return NotFound(new { message = "Šis naudotojas nėra registruotas sistemoje" });
             }
 
-            //if (!String.Equals(result.Rows[0]["verification_token"].ToString(), ""))
-            //{
-             //   return StatusCode(401);
-           // }
-
             string hashed_password = result.Rows[0]["password_hash"].ToString();
             string password_salt = result.Rows[0]["password_salt"].ToString();
 
@@ -182,25 +177,16 @@ namespace mainykdovanok.Controllers.UserAuthentication
             }
         }
 
-        [HttpGet("isLoggedIn/{requiredRole?}")]
-        public IActionResult IsLoggedIn(int requiredRole = 0)
+        [HttpGet("isLoggedIn")]
+        public IActionResult IsLoggedIn()
         {
             if (HttpContext.User.Identity.IsAuthenticated)
             {
                 int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
                 int userRole = Convert.ToInt32(HttpContext.User.FindFirst(ClaimTypes.Role).Value);
                 string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
-
-                if (userRole >= requiredRole)
-                {
-                    _logger.LogInformation($"User #{userId} with email {userEmail} is logged in and is the required role.");
-                    return Ok();
-                }
-                else
-                {
-                    _logger.LogInformation($"User #{userId} with email {userEmail} is logged in but is not the required role.");
-                    return Unauthorized();
-                }
+                _logger.LogInformation($"User #{userId} with email {userEmail} is logged in and is the required role.");
+                return Ok(new { UserId = userId, UserRole = userRole });
             }
             else
             {
@@ -261,9 +247,13 @@ namespace mainykdovanok.Controllers.UserAuthentication
         }
 
         [HttpPost("updateProfileDetails")]
-        [Authorize]
         public async Task<IActionResult> UpdateProfileDetails()
         {
+            if (!HttpContext.User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
             var form = await Request.ReadFormAsync();
             string name = form["name"].ToString();
             string surname = form["surname"].ToString();
@@ -379,6 +369,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
             byte[] user_profile_image = (byte[])result.Rows[0]["image"];
             return Ok(new { user_id, user_profile_image });
         }
+
         [HttpGet("getUserDetails/{userId}")]
         public async Task<IActionResult> GetUserDetails(int userId)
         {

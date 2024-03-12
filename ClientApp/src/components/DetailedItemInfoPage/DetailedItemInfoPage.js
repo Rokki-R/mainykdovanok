@@ -9,7 +9,6 @@ import './DetailedItemInfoPage.css';
 export const DetailedItemInfoPage = () => {
     const { itemId } = useParams();
     const [item, setItem] = useState(null);
-    const [isLoggedInAsAdmin, setIsLoggedInAsAdmin] = useState(false);
     const [viewerId, setViewerId] = useState(null);
     const [itemLetters, setItemLetters] = useState(null);
     const [itemOffers, setItemOffers] = useState(null);
@@ -33,25 +32,6 @@ export const DetailedItemInfoPage = () => {
     }, [itemId]);
 
     useEffect(() => {
-        const fetchUserRole = async () => {
-            try {
-                const response = await axios.get('api/user/isloggedin/1');
-                if (response.status == 200) {
-                    setIsLoggedInAsAdmin(true);
-                }
-            } catch (error) {
-                if (error.response.status === 401) {
-                    setIsLoggedInAsAdmin(false);
-                }
-                else {
-                    toast.error('Įvyko klaida, susisiekite su administratoriumi!');
-                }
-            }
-        };
-        fetchUserRole();
-    }, []);
-
-    useEffect(() => {
         const fetchViewerId = async () => {
             try {
                 const response = await axios.get('api/user/getCurrentUserId');
@@ -68,73 +48,51 @@ export const DetailedItemInfoPage = () => {
         };
         fetchViewerId();
     }, []);
+    
+    useEffect(() => {
+        if (item && viewerId && item.userId !== viewerId) {
+            navigate('/');
+            toast.error('Negalite peržiūrėti šio skelbimo informacijos');
+        }
+    }, [item, viewerId, navigate]);
 
     const handleSubmit = (event) => {
         event.preventDefault();
 
     };
 
-    if (!isLoggedInAsAdmin) {
-        if (item && viewerId && item.userId !== viewerId) {
-            alert('Jūs nesate šio skelbimo savininkas!');
-            navigate(`/`);
-        }
-    }
-
     useEffect(() => {
-        const fetchItemLetters = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axios.get(`api/item/getLetters/${itemId}`);
-                setItemLetters(response.data);
-            } catch (error) {
-                toast.error('Įvyko klaida, susisiekite su administratoriumi!');
-            }
-        };
-
-        fetchItemLetters();
-    }, []);
-    
-     useEffect(() => {
-         const fetchItemOffers = async () => {
-             try { 
-                 const response = await axios.get(`api/item/getOffers/${itemId}`);
-                 setItemOffers(response.data);
-             } catch (error) {
-                 toast.error('Įvyko klaida, susisiekite su administratoriumi!');
-             }
-         };
-    
-         fetchItemOffers();
-     }, []);
-        
-    
-        useEffect(() => {
-            const fetchItemLotteryParticipants = async () => {
-                try {
+                if (item && item.type === 'Motyvacinis laiškas') {
+                    const response = await axios.get(`api/item/getLetters/${itemId}`);
+                    setItemLetters(response.data);
+                } else if (item && item.type === 'Mainai į kita prietaisą') {
+                    const response = await axios.get(`api/item/getOffers/${itemId}`);
+                    setItemOffers(response.data);
+                } else if (item && item.type === 'Loterija') {
                     const response = await axios.get(`api/item/getLotteryParticipants/${itemId}`);
                     setItemLotteryParticipants(response.data);
-                } catch (error) {
-                    toast.error('Įvyko klaida, susisiekite su administratoriumi!');
-                }
-            };
-    
-            fetchItemLotteryParticipants();
-        }, []);
-
-        useEffect(() => {
-            const fetchItemQuestions_Answers = async () => {
-                try {
+                } else if (item && item.type === 'Klausimynas') {
                     const response = await axios.get(`api/item/getQuestionsAndAnswers/${itemId}`);
                     setItemQuestions_Answers(response.data);
-                } catch (error) {
-                    toast.error('Įvyko klaida, susisiekite su administratoriumi!');
                 }
-            };
+            } catch (error) {
+                if(error.status.code === 403)
+                {
+                    toast.error("Jūs neturite prieigos peržiūrėti šio skelbimo informaciją")
+                }
+                else {
+                toast.error('Įvyko klaida, susisiekite su administratoriumi!');
+                }
+            }
+        };
     
-            fetchItemQuestions_Answers();
-        }, []);
+        fetchData();
+    }, [item, itemId]);
+    
 
-        const handleChosenWinner = async (user) => {
+        const handleChosenLetterWinner = async (user) => {
             const requestBody = {
                 itemId,
                 user
@@ -155,12 +113,47 @@ export const DetailedItemInfoPage = () => {
                 if (error.response.status === 401) {
                     toast.success('Turite būti prisijungęs!');
                 }
+                else if (error.response.status === 403) {
+                    console.log(error.response.data);
+                    toast.error(error.response.data.message);
+                }
                 else {
                     toast.error('Įvyko klaida, susisiekite su administratoriumi!');   
                 }
             });
             setSubmitting(false);
     };
+
+    const handleChosenQuestionnaireWinner = async (user) => {
+        const requestBody = {
+            itemId,
+            user
+        };
+        setSubmitting(true);
+        
+        await axios.post(`/api/item/chooseQuestionnaireWinner`, requestBody)
+        .then(response => {
+            if (response) {
+                toast.success('Išsirinkote, kam padovanoti! Laimėtojui išsiųstas el. laiškas dėl susisiekimo.');
+                navigate(`/`);
+            }
+            else {
+                toast.error('Įvyko klaida, susisiekite su administratoriumi!');
+            }
+        })
+        .catch(error => {
+            if (error.response.status === 401) {
+                toast.success('Turite būti prisijungęs!');
+            }
+            else if (error.response.status === 403) {
+                toast.error('Jūs negalite atiduoti ne savo skelbimą!')
+            }
+            else {
+                toast.error('Įvyko klaida, susisiekite su administratoriumi!');   
+            }
+        });
+        setSubmitting(false);
+};
 
     const handleOfferWinner = async (user, itemName, userItemId) => {
         const requestBody = {
@@ -243,7 +236,7 @@ export const DetailedItemInfoPage = () => {
                     {Object.keys(itemLetters).length > 0 ? (
                         Object.keys(itemLetters.letters).map((user) => (
                             <Container key={user}>
-                                <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenWinner(user)}>Atiduoti</Button>
+                                <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenLetterWinner(user)}>Atiduoti</Button>
                                 <ListGroupItem variant="primary"><b>Motyvacinis laiškas:</b> {user} </ListGroupItem>
                                 {itemLetters.letters[user].map((letter, index) => (
                                     <ListGroup key={letter.id}>
@@ -283,7 +276,7 @@ export const DetailedItemInfoPage = () => {
                     {Object.keys(itemQuestions_Answers.questionnaires).length > 0 ? (
                         Object.keys(itemQuestions_Answers.questionnaires).map((user) => (
                             <Container key={user}>
-                                <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenWinner(user)}>Atiduoti</Button>
+                                <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenQuestionnaireWinner(user)}>Atiduoti</Button>
                                 <ListGroupItem variant="primary"><b>Klausimyno atsakymai:</b> {user} </ListGroupItem>
                                 {itemQuestions_Answers.questionnaires[user].map((questionnaire, index) => (
                                     <ListGroup key={questionnaire.id}>

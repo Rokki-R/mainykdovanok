@@ -24,8 +24,7 @@ export class NavMenu extends Component {
       searchQuery: "",
       isClicked: false,
       isLogged: false,
-      isLoggedIn: false, // Assume the user is not logged in by default
-      isLoggedInAsAdmin: false,
+      isLoggedIn: false,
       dropdownOpen: false,
       selectedCategory: "Filtras",
       userProfileImage: "./images/profile.png",
@@ -112,23 +111,28 @@ this.setState({
 this.props.navigate(`/search/category/0`);
 };
 
-  handleLoginClick = () => {
-    this.setState({
-      isClicked: !this.state.isClicked,
-    });
-    fetch("api/user/isloggedin/0", { method: "GET" }).then((response) => {
-      if (response.status == 200) {
-        // 200 - Ok, we are logged in.
-        this.setState({ isLogged: true });
+handleLoginClick = () => {
+  this.setState({
+    isClicked: !this.state.isClicked,
+  });
+  
+  fetch("api/user/isloggedin/", { method: "GET" })
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        throw new Error("User is not logged in");
       }
+    })
+    .then((data) => {
+      const userRole = data.userRole;
+      console.log(userRole)
+      this.setState({ isLogged: true, userRole: userRole });
+    })
+    .catch((error) => {
+      console.error("Error checking login status:", error);
     });
-    console.log(this.isLogged);
-    axios.get("api/user/isloggedin/1").then((response) => {
-      if (response.status === 200) {
-        this.setState({ isLoggedInAsAdmin: true });
-      }
-    });
-  };
+};
 
   handleLogoutClick = () => {
     fetch("api/user/logout", { method: "GET" }).then((response) => {
@@ -160,7 +164,7 @@ this.props.navigate(`/search/category/0`);
   };
 
   render() {
-    const { userProfileImage } = this.state;
+    const { userProfileImage, userRole } = this.state;
     const ProfileImage =
       userProfileImage.length < 100
         ? userProfileImage
@@ -213,6 +217,7 @@ this.props.navigate(`/search/category/0`);
                                 <NavDropdown.Divider />
                                 <NavDropdown.Item onClick={() => this.getAllItems()}>Visi</NavDropdown.Item>
                             </NavDropdown>
+                            {userRole === 0 && ( // Check if user role is 0 (assuming 0 means the user has the required role)
               <div className="d-inline-block align-middle">
                 <Button
                   className="buttoncreate"
@@ -223,6 +228,7 @@ this.props.navigate(`/search/category/0`);
                   Dovanoti!
                 </Button>
               </div>
+            )}
 
               {this.state.isLogged ? (
                 <NavDropdown
@@ -243,20 +249,14 @@ this.props.navigate(`/search/category/0`);
                   >
                     Profilis
                   </NavDropdown.Item>
-                  {this.state.isLoggedInAsAdmin ? (
-                    <NavDropdown.Item
-                      href="/admin/taisyklos"
-                      onClick={this.handleClick}
-                    >
-                      Taisyklos
-                    </NavDropdown.Item>
-                  ) : null}
+                  {userRole === 0 && (
                   <NavDropdown.Item
                     href="/manoskelbimai"
                     onClick={this.handleClick}
                   >
                     Mano skelbimai
                   </NavDropdown.Item>
+                  )}
                   <NavDropdown.Item
                     onClick={() => {
                       this.handleLogoutClick();
