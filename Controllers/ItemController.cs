@@ -725,6 +725,28 @@ namespace mainykdovanok.Controllers
             }
         }
 
+        [HttpGet("getQuestions/{itemId}")]
+        [Authorize]
+        public async Task<IActionResult> GetQuestions(int itemId)
+        {
+
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _itemRepo.GetQuestions(itemId);
+
+                return Ok(new { questionnaires = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpPost("submitAnswers/{itemId}")]
         public async Task<IActionResult> SubmitAnswers(int itemId, [FromBody] List<AnswerModel> answers)
         {
@@ -788,7 +810,6 @@ namespace mainykdovanok.Controllers
                 return StatusCode(403);
             }
 
-            //Patikrinti ar prisijungęs naudotojas nėra admin
             if (!User.IsInRole("0"))
             {
                 return StatusCode(403);
@@ -804,5 +825,126 @@ namespace mainykdovanok.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> UpdateItem(int id, IFormCollection form)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            var item = await _itemRepo.GetFullById(id);
+            if (item == null || item.UserId != userId)
+            {
+                return StatusCode(403);
+            }
+
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
+
+            try
+            {   
+                ItemModel updateItem = new ItemModel()
+                {
+                    Id = id,
+                    Name = form["name"],
+                    Description = form["description"],
+                    Category = Convert.ToInt32(form["fk_Category"]),
+                    Images = Request.Form.Files.GetFiles("images").ToList(),
+                    Type = Convert.ToInt32(form["type"]),
+                    Questions = form["questions"].ToList()
+                };
+                var updateItemType = await _typeRepo.GetType(updateItem.Type);
+
+                var answers = await _itemRepo.GetAnswers(id);
+                if (item.Type != updateItemType.Name)
+                {
+                    switch (item.Type)
+                    {
+                        case "Motyvacinis laiškas":
+                            var letters = await _itemRepo.GetLetters(id);
+                            if (letters.Any())
+                            {
+                                return BadRequest("Negalite pakeisti skelbimo tipo, nes jūsų skelbimas jau sulaukė susidomėjimo!");
+                            }
+                            break;
+                        case "Mainai į kita prietaisą":
+                            var offers = await _itemRepo.GetOffers(id);
+                            if (offers.Any())
+                            {
+                                return BadRequest("Negalite pakeisti skelbimo tipo, nes jūsų skelbimas jau sulaukė susidomėjimo!");
+                            }
+                            break;
+                        case "Loterija":
+                            var participants = await _itemRepo.GetLotteryParticipants(id);
+                            if (participants.Any())
+                            {
+                                return BadRequest("Negalite pakeisti skelbimo tipo, nes jūsų skelbimas jau sulaukė susidomėjimo!");
+                            }
+                            break;
+                        case "Klausimynas":
+                            if (answers.Any())
+                            {
+                                return BadRequest("Negalite pakeisti skelbimo tipo, nes jūsų skelbimas jau sulaukė susidomėjimo!");
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                //If updated item type is 'Klausimynas'
+                if (updateItem.Type == 4)
+                {
+                    var itemQuestions = await _itemRepo.GetQuestions(id);
+                    List<string> itemQuestionStrings = itemQuestions.Select(question => question.Question).ToList();
+
+                    bool questionsEdited = !Enumerable.SequenceEqual<string>(updateItem.Questions, itemQuestionStrings);
+
+                    if (questionsEdited)
+                    {
+                        if (!answers.Any())
+                        {
+                            await _itemRepo.DeleteQuestions(id);
+                            await _itemRepo.InsertQuestions(updateItem);
+                        }
+                        else
+                        {
+                            return BadRequest("Negalite pakeisti skelbimo klausimų, nes į dabartinius klausimus jau atsakė bent 1 asmuo!");
+                        }
+                    }
+                }
+
+                //If item type before update was klausimynas and updated item type is different
+                if (item.Type == "Klausimynas" && updateItemType.Name != "Klausimynas")
+                {
+                    await _itemRepo.DeleteQuestions(id);
+                }
+                var imagesToDelete = form["imagesToDelete"].Select(idStr => Convert.ToInt32(idStr)).ToList();
+
+                if (imagesToDelete.Count > 0)
+                {
+                    await _imageRepo.Delete(imagesToDelete);
+                }
+
+                await _itemRepo.Update(updateItem);
+
+                await _imageRepo.InsertImages(updateItem);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
+
     }
 }

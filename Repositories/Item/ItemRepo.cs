@@ -260,7 +260,7 @@ namespace mainykdovanok.Repositories.Item
             {
                 await connection.OpenAsync();
 
-                using (var command = new MySqlCommand("SELECT id, fk_type FROM items WHERE id=@id", connection))
+                using (var command = new MySqlCommand("SELECT id, name FROM items WHERE id=@id", connection))
                 {
                     command.Parameters.AddWithValue("@id", id);
 
@@ -269,7 +269,7 @@ namespace mainykdovanok.Repositories.Item
                         await reader.ReadAsync();
 
                         item.Id = reader.GetInt32("id");
-                        item.Name = reader.GetString("fk_type");
+                        item.Name = reader.GetString("name");
 
                         return item;
                     }
@@ -754,6 +754,28 @@ namespace mainykdovanok.Repositories.Item
             return questions;
         }
 
+        public async Task<List<AnswerModel>> GetAnswers(int itemId)
+        {
+            List<AnswerModel> answers = new List<AnswerModel>();
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "SELECT id, answer FROM answers WHERE fk_item = @itemId", connection);
+            command.Parameters.AddWithValue("@itemId", itemId);
+
+            using DbDataReader reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                string answer_text= reader.GetString("answer");
+                AnswerModel answer = new AnswerModel { Text = answer_text };
+                answers.Add(answer);
+            }
+
+            return answers;
+        }
+
+
         public async Task<Dictionary<string, List<QuestionnaireViewModel>>> GetQuestionsAndAnswers(int itemId)
         {
             using MySqlConnection connection = GetConnection();
@@ -808,6 +830,67 @@ namespace mainykdovanok.Repositories.Item
 
             return true;
         }
+
+        public async Task<bool> Update(ItemModel item)
+        {
+            using MySqlConnection connection = GetConnection();
+            using MySqlCommand command = new MySqlCommand(
+                "UPDATE items SET name=@Name, description=@Description, fk_category=@Category, fk_type=@Type WHERE id=@Id", connection);
+
+            command.Parameters.AddWithValue("@Id", item.Id);
+            command.Parameters.AddWithValue("@Name", item.Name);
+            command.Parameters.AddWithValue("@Description", item.Description);
+            command.Parameters.AddWithValue("@Category", item.Category);
+            command.Parameters.AddWithValue("@Type", item.Type);
+
+            await connection.OpenAsync();
+            await command.ExecuteNonQueryAsync();
+
+            return true;
+        }
+
+        public async Task<bool> DeleteQuestions(int itemId)
+        {
+            try
+            {
+                using MySqlConnection connection = GetConnection();
+                await connection.OpenAsync();
+
+                using MySqlCommand command = new MySqlCommand(
+                    "DELETE FROM questions WHERE fk_item = @itemId", connection);
+
+                // Add parameter
+                command.Parameters.AddWithValue("@itemId", itemId);
+
+                await command.ExecuteNonQueryAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error deleting questions from database!");
+                return false;
+            }
+        }
+
+
+        private async Task InsertQuestions(int itemId, List<ItemQuestionViewModel> updatedQuestions)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            foreach (var question in updatedQuestions)
+            {
+                using MySqlCommand command = new MySqlCommand(
+                    "INSERT INTO questions (fk_item, question) VALUES (@itemId, @questionText)", connection);
+                command.Parameters.AddWithValue("@itemId", itemId);
+                command.Parameters.AddWithValue("@questionText", question.Question);
+
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+
+
 
     }
 }

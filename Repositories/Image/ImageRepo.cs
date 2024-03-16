@@ -127,14 +127,17 @@ namespace mainykdovanok.Repositories.Image
 
             using MySqlCommand command = new MySqlCommand(
                 "DELETE FROM item_images WHERE id = @id", connection);
+
             foreach (int id in ids)
             {
+                // Clear parameters before adding new ones
+                command.Parameters.Clear();
                 command.Parameters.AddWithValue("@id", id);
+                await command.ExecuteNonQueryAsync();
             }
 
-            int rowsAffected = await command.ExecuteNonQueryAsync();
-
-            return rowsAffected > 0;
+            return true;
         }
+
     }
 }
