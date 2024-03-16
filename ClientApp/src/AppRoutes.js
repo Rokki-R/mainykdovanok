@@ -17,6 +17,7 @@ import SearchResultsByCategoryPage from "./components/SearchResultsByCategoryPag
 import MyProfilePage from "./components/MyProfilePage/MyProfilePage";
 import { UserProfilePage } from "./components/UserProfilePage/UserProfilePage";
 import  MyItemsPage from "./components/MyItemsPage/MyItemsPage"
+import ItemUpdatePage from './components/ItemUpdatePage/ItemUpdatePage';
 
 import { ItemWinnerPage } from "./components/ItemWinnerPage/ItemWinnerPage";
 
@@ -88,7 +89,11 @@ const AppRoutes = [
   {
     path: '/pakeisti-slaptazodi',
     element: <PasswordChangePage />
-},
+  },
+  {
+    path: '/skelbimas/redaguoti/:itemId',
+    element: <ItemUpdatePage />
+  },
 ];
 
 export default AppRoutes;

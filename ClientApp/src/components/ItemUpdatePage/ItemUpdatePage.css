@@ -1,0 +1,77 @@
+.aa
+{
+    text-align: center;
+    margin-top: 500px;
+}
+.itemOuterBox {
+    background-color: rgba(49, 131, 171, 0.9);
+    width: 75%;
+    padding: 2em;
+    margin: auto;
+    margin-top: 8em;
+    margin-bottom: 10em;
+    border-radius: 20px;
+}
+
+.submit, .cancel {
+    width: 40%;
+}
+
+
+.submitButton, .cancelButton {
+    flex: 1;   
+    width: 20%;
+    display: flex;
+}
+
+.submit:hover, .cancel:hover, .addQuestionButton:hover {
+    background-color: rgb(229, 225, 225);
+}
+
+.cancelButton {
+    justify-content: flex-end;
+}
+
+
+.ItemInnerBox {
+    padding: 20px 10px;
+}
+.itemInputWrapper {
+    margin-bottom: 1.5em;
+    display: flex;
+}
+
+img.image-preview {
+    max-width: 128px;
+    max-height: 128px;
+    margin-right: -35px;
+  }
+
+input, input:focus, #description, select {
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    padding: 1% 1% 1% 1%;
+    width: 100%;
+}
+.Message
+{
+    font-size: 30px;
+    text-align: center;
+    color: rgb(131, 4, 4)
+}
+button {
+    border: none;
+    background-color: white;
+    padding: .9%;
+    margin-top: 3%;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+
+.itemBoxLabel {
+    color:white;
+    margin-bottom: 10%;
+    font-size: 4vmin;
+}

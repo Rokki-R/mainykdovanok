@@ -57,5 +57,32 @@ namespace mainykdovanok.Repositories.Type
                 }
             }
         }
+
+        public async Task<ItemTypeViewModel> GetType(int id)
+        {
+            ItemTypeViewModel type = null;
+
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                using (var command = new MySqlCommand("SELECT * FROM item_type WHERE id = @Id", connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+                    await connection.OpenAsync();
+                    var reader = await command.ExecuteReaderAsync();
+
+                    if (await reader.ReadAsync())
+                    {
+                        type = new ItemTypeViewModel
+                        {
+                            Id = Convert.ToInt32(reader["id"]),
+                            Name = reader["type"].ToString()
+                        };
+                    }
+                }
+            }
+
+            return type;
+        }
+
     }
 }
