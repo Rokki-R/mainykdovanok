@@ -170,7 +170,7 @@ namespace mainykdovanok.Repositories.User
                 await connection.OpenAsync();
 
                 using MySqlCommand command = new MySqlCommand(
-                    "SELECT email FROM users " +
+                    "SELECT email FROM user " +
                     "WHERE user_id = @id", connection);
                 command.Parameters.AddWithValue("@id", userId);
 
@@ -188,14 +188,14 @@ namespace mainykdovanok.Repositories.User
             }
         }
 
-        public async Task<bool> IncrementUserQuantityOfItemsWon(int userId)
+        public async Task<bool> IncrementUserQuantityOfDevicesWon(int userId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "UPDATE users " +
-                "SET items_won = items_won + 1 " +
+                "UPDATE user " +
+                "SET devices_won = devices_won + 1 " +
                 "WHERE user_id = @id", connection);
             command.Parameters.AddWithValue("@id", userId);
 
@@ -203,14 +203,14 @@ namespace mainykdovanok.Repositories.User
             return true;
         }
 
-        public async Task<bool> IncrementUserQuantityOfItemsGifted(int userId)
+        public async Task<bool> IncrementUserQuantityOfDevicesGifted(int userId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "UPDATE users " +
-                "SET items_gifted = items_gifted + 1 " +
+                "UPDATE user " +
+                "SET devices_gifted = devices_gifted + 1 " +
                 "WHERE user_id = @id", connection);
             command.Parameters.AddWithValue("@id", userId);
 
@@ -224,7 +224,7 @@ namespace mainykdovanok.Repositories.User
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT user_id, name, surname, email FROM users " +
+                "SELECT user_id, name, surname, email FROM user " +
                 "WHERE CONCAT(name, ' ', surname) = @name", connection);
             command.Parameters.AddWithValue("@name", name);
 
@@ -250,7 +250,7 @@ namespace mainykdovanok.Repositories.User
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT user_id, name, surname, email, items_gifted, items_won FROM users " +
+                "SELECT user_id, name, surname, email, devices_gifted, devices_won FROM user " +
                 "WHERE user_id = @id", connection);
             command.Parameters.AddWithValue("@id", userId);
 
@@ -264,8 +264,8 @@ namespace mainykdovanok.Repositories.User
                     Name = reader["name"].ToString(),
                     Surname = reader["surname"].ToString(),
                     Email = reader["email"].ToString(),
-                    itemsGifted = Convert.ToInt32(reader["items_gifted"]),
-                    itemsWon = Convert.ToInt32(reader["items_won"]),
+                    devicesGifted = Convert.ToInt32(reader["devices_gifted"]),
+                    devicesWon = Convert.ToInt32(reader["devices_won"]),
 
                 };
 
@@ -278,7 +278,7 @@ namespace mainykdovanok.Repositories.User
             try
             {
                 using MySqlConnection connection = GetConnection();
-                string sql = "SELECT COUNT(*) FROM users WHERE email = @Email";
+                string sql = "SELECT COUNT(*) FROM user WHERE email = @Email";
                 using MySqlCommand command = new MySqlCommand(sql, connection);
                 command.Parameters.AddWithValue("@Email", email);
 

@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Carousel, Col, Container, Row, Form, Button, Card, Spinner } from 'react-bootstrap';
 import toast, { Toaster } from 'react-hot-toast';
-import './ItemWinnerPage.css'
+import './DeviceWinnerPage.css'
 import axios from 'axios';
 
-export const ItemWinnerPage = () => {
-    const { itemId } = useParams();
+export const DeviceWinnerPage = () => {
+    const { deviceId } = useParams();
     const [viewerId, setViewerId] = useState(null);
     const [canAccess, setCanAccess] = useState(null);
     const [phone, setPhone] = useState('');
     const [message, setMessage] = useState('');
-    const [item, setItem] = useState(null);
+    const [device, setDevice] = useState(null);
     const [posterEmail, setPosterEmail] = useState(null);
     const [sending, setSending] = useState(false);
     const navigate = useNavigate();
@@ -22,9 +22,9 @@ export const ItemWinnerPage = () => {
                 const response = await axios.get('api/user/getCurrentUserId');
                 setViewerId(response.data);
 
-                if (response.data === item?.winnerId && item?.status === 'Išrinktas laimėtojas') {
+                if (response.data === device?.winnerId && device?.status === 'Išrinktas laimėtojas') {
                     setCanAccess(true);
-                } else if (item && response.data !== item?.winnerId) {
+                } else if (device && response.data !== device?.winnerId) {
                     navigate('/');
                 }
             } catch (error) {
@@ -39,33 +39,33 @@ export const ItemWinnerPage = () => {
             }
         };
         fetchViewerId();
-    }, [item]);
+    }, [device]);
 
     useEffect(() => {
-        const fetchItem = async () => {
+        const fetchDevice = async () => {
             try {
-                const response = await axios.get(`api/item/getItem/${itemId}`);
-                setItem(response.data);
+                const response = await axios.get(`api/device/getDevice/${deviceId}`);
+                setDevice(response.data);
             } catch (error) {
                 toast.error('Įvyko klaida, susisiekite su administratoriumi!');
             }
         };
-        fetchItem();
-    }, [itemId, canAccess]);
+        fetchDevice();
+    }, [deviceId, canAccess]);
 
     useEffect(() => {
         const fetchPosterEmail = async () => {
             try {
-                const response = await axios.get(`api/user/getUserEmail/${item.userId}`);
+                const response = await axios.get(`api/user/getUserEmail/${device.userId}`);
                 setPosterEmail(response.data);
             } catch (error) {
                 toast.error('Įvyko klaida, susisiekite su administratoriumi!');
             }
         };
-        if (item && item.userId) {
+        if (device && device.userId) {
             fetchPosterEmail();
         }
-    }, [item]);
+    }, [device]);
 
 
     const handleMessageChange = (event) => {
@@ -87,14 +87,14 @@ export const ItemWinnerPage = () => {
         const data = {
             phone: phone,
             message: message,
-            itemId: itemId,
-            itemName: item.name,
+            deviceId: deviceId,
+            deviceName: device.name,
             posterEmail: posterEmail,
             winnerId: viewerId
         }
 
         setSending(true);
-        axios.post('api/item/submitWinnerDetails', data)
+        axios.post('api/device/submitWinnerDetails', data)
             .then(response => {
                 if (response.data) {
                     toast.success('Sėkmingai išsiųstas pranešimas skelbėjui!');
@@ -110,15 +110,15 @@ export const ItemWinnerPage = () => {
             });
     };
 
-    return item && viewerId && canAccess && posterEmail ? (
+    return device && viewerId && canAccess && posterEmail ? (
         <div className='outerBoxWrapper'>
             <Toaster />
             <Container className="my-5">
                 <Row>
                     <Col md={4}>
-                        {item.images && item.images.length > 0 && (
+                        {device.images && device.images.length > 0 && (
                             <Carousel>
-                                {item.images.map((image, index) => (
+                                {device.images.map((image, index) => (
                                     <Carousel.Item key={index}>
                                         <img className="d-block w-100" 
                                         src={`data:image/png;base64,${image.data}`}
@@ -133,10 +133,10 @@ export const ItemWinnerPage = () => {
                     </Col>
                     <Col md={8}>
                         <Card>
-                            <Card.Header>{item.category}</Card.Header>
+                            <Card.Header>{device.category}</Card.Header>
                             <Card.Body>
-                                <Card.Title>Laimėjote: {item.name}</Card.Title>
-                                <Card.Text>{item.description}</Card.Text>
+                                <Card.Title>Laimėjote: {device.name}</Card.Title>
+                                <Card.Text>{device.description}</Card.Text>
                                 <hr></hr>
                                 <Card.Text>Norint suderinti atsiėmimą ar pristatymą, pateikite savo kontaktinius duomenis, su kuriais skelbėjas galės su Jumis susisiekti:</Card.Text>
                                 <Form onSubmit={handleSubmit}>
@@ -151,7 +151,7 @@ export const ItemWinnerPage = () => {
                                 </Form>
                                 <br></br>
                             </Card.Body>
-                            <Card.Footer>{item.location} | Skelbėjo el. paštas: {posterEmail}</Card.Footer>
+                            <Card.Footer>{device.location} | Skelbėjo el. paštas: {posterEmail}</Card.Footer>
                         </Card>
                     </Col>
                 </Row>

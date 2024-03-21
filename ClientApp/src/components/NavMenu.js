@@ -29,8 +29,8 @@ export class NavMenu extends Component {
       selectedCategory: "Filtras",
       userProfileImage: "./images/profile.png",
       categories: [],
-      items: [],
-      allItems: false,
+      devices: [],
+      allDevices: false,
     };
     this.handleClick = this.handleClick.bind(this);
   }
@@ -56,7 +56,7 @@ export class NavMenu extends Component {
 
   getCategories()
   {
-      axios.get("api/item/getCategories")
+      axios.get("api/device/getCategories")
       .then(response => { this.setState({
           categories : response.data
       })
@@ -83,7 +83,7 @@ export class NavMenu extends Component {
     }
 
     axios
-      .get("/api/item/search", {
+      .get("/api/device/search", {
         params: {
           searchWord: this.state.searchQuery,
         }
@@ -101,12 +101,12 @@ export class NavMenu extends Component {
       });
   };
 
-  getItemsByCategory(categoryId) {
+  getDevicesByCategory(categoryId) {
     this.props.navigate(`/search/category/${categoryId}`);
 }
-getAllItems = () => {
+getAllDevices = () => {
 this.setState({
-    allItems: true
+    allDevices: true
 });
 this.props.navigate(`/search/category/0`);
 };
@@ -212,10 +212,10 @@ handleLoginClick = () => {
             <Nav className="ms-auto">
             <NavDropdown title={displayCategory} className="categories">
                                 {this.state.categories.map(category => (
-                                    <NavDropdown.Item key={category.id} onClick={() => this.getItemsByCategory(category.id)}>{category.name}</NavDropdown.Item>
+                                    <NavDropdown.Item key={category.id} onClick={() => this.getDevicesByCategory(category.id)}>{category.name}</NavDropdown.Item>
                                 ))}
                                 <NavDropdown.Divider />
-                                <NavDropdown.Item onClick={() => this.getAllItems()}>Visi</NavDropdown.Item>
+                                <NavDropdown.Item onClick={() => this.getAllDevices()}>Visi</NavDropdown.Item>
                             </NavDropdown>
                             {userRole === 0 && ( // Check if user role is 0 (assuming 0 means the user has the required role)
               <div className="d-inline-block align-middle">

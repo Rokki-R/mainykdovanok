@@ -11,8 +11,8 @@ namespace mainykdovanok.ViewModels.Item
         public string Comment { get; set; }
         [JsonProperty("userId")]
         public int UserId { get; set; }
-        [JsonProperty("itemId")]
-        public int ItemId { get; set; }
+        [JsonProperty("deviceId")]
+        public int DeviceId { get; set; }
         [JsonProperty("username")]
         public string UserName { get; set; }
         [JsonProperty("userSurname")]

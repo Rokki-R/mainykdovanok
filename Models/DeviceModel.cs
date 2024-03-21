@@ -1,6 +1,6 @@
 ﻿namespace mainykdovanok.Models
 {
-    public class ItemModel
+    public class DeviceModel
     {
         public int? Id { get; set; }
 

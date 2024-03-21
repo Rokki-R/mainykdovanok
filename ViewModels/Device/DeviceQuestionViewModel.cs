@@ -2,7 +2,7 @@
 
 namespace mainykdovanok.ViewModels.Item
 {
-    public class ItemQuestionViewModel
+    public class DeviceQuestionViewModel
     {
         [JsonProperty("id")]
         public int Id { get; set; }

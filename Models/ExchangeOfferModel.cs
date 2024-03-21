@@ -2,7 +2,7 @@
 {
     public class ExchangeOfferModel
     {
-        public int SelectedItem { get; set; }
+        public int SelectedDevice { get; set; }
 
         public string Message { get; set; }
     }

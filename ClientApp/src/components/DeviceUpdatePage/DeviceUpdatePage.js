@@ -4,20 +4,20 @@ import toast, { Toaster } from 'react-hot-toast';
 import { Spinner, Form, Button, Card, InputGroup } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import './ItemUpdatePage.css';
+import './DeviceUpdatePage.css';
 
-function ItemUpdatePage() {
-  const { itemId } = useParams();
+function DeviceUpdatePage() {
+  const { deviceId } = useParams();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [viewerId, setViewerId] = useState(null);
   const [category, setCategory] = useState('Pasirinkite kategoriją');
   const [categories, setCategories] = useState([]);
-  const [itemType, setType] = useState('Pasirinkite, kaip norite atiduoti');
-  const [itemTypes, setItemTypes] = useState([]);
+  const [deviceType, setType] = useState('Pasirinkite, kaip norite atiduoti');
+  const [deviceTypes, setDeviceTypes] = useState([]);
   const [images, setImages] = useState([]);
   const [imagesToDelete, setImagesToDelete] = useState([]);
-  const [item, setItem] = useState(null);
+  const [device, setDevice] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [showMessage, setShowMessage] = useState(false);
   const [isLoggedInAsAdmin, setIsLoggedInAsAdmin] = useState(false);
@@ -26,9 +26,9 @@ function ItemUpdatePage() {
 
 
   useEffect(() => {
-    async function fetchItem() {
-      const response = await axios.get(`/api/item/getItem/${itemId}`);
-      setItem(response.data);
+    async function fetchDevice() {
+      const response = await axios.get(`/api/device/getDevice/${deviceId}`);
+      setDevice(response.data);
       setName(response.data.name);
       setDescription(response.data.description);
       setCategory(response.data.fk_Category);
@@ -36,7 +36,7 @@ function ItemUpdatePage() {
   
       if (response.data.type === 'Klausimynas') {
         try {
-          const questionsResponse = await axios.get(`/api/item/getQuestions/${itemId}`);
+          const questionsResponse = await axios.get(`/api/device/getQuestions/${deviceId}`);
           setQuestions(questionsResponse.data.questionnaires);
           console.log(questionsResponse.data);
         } catch (error) {
@@ -44,19 +44,19 @@ function ItemUpdatePage() {
         }
       }
     }
-    fetchItem();
-  }, [itemId]);
+    fetchDevice();
+  }, [deviceId]);
   
   
   useEffect(() => {
     async function fetchData() {
         try {
-            const [categoriesResponse, itemTypesResponse] = await Promise.all([
-                axios.get("api/item/getCategories"),
-                axios.get("api/item/getItemTypes")
+            const [categoriesResponse, deviceTypesResponse] = await Promise.all([
+                axios.get("api/device/getCategories"),
+                axios.get("api/device/getDeviceTypes")
             ]);
             setCategories(categoriesResponse.data);
-            setItemTypes(itemTypesResponse.data);
+            setDeviceTypes(deviceTypesResponse.data);
         } catch (error) {
             console.log(error);
             toast.error("Įvyko klaida, susisiekite su administratoriumi!");
@@ -89,7 +89,7 @@ function ItemUpdatePage() {
 
 
   if (!isLoggedInAsAdmin) {
-    if (item && viewerId && item.userId !== viewerId) {
+    if (device && viewerId && device.userId !== viewerId) {
       navigate('/');
       toast.error('Jūs nesate šio skelbimo savininkas');
     }
@@ -101,21 +101,21 @@ function ItemUpdatePage() {
     try {
       event.preventDefault();
       const data = new FormData();
-      data.append('name', name || item.name);
-      data.append('description', description || item.description);
-      data.append('fk_Category', category || item.fk_Category);
-      data.append('type', itemType || item.type);
-      if (item.images.length === 0 && images.length === 0) {
+      data.append('name', name || device.name);
+      data.append('description', description || device.description);
+      data.append('fk_Category', category || device.fk_Category);
+      data.append('type', deviceType || device.type);
+      if (device.images.length === 0 && images.length === 0) {
         toast.error('Negalite palikti skelbimo be nuotraukos');
         await new Promise(resolve => setTimeout(resolve, 1000));
         window.location.reload();
         return;
       }
-      if (name === '' || description === '' || category === 'Pasirinkite kategoriją'|| itemType === 'Pasirinkite, kaip norite atiduoti') {
+      if (name === '' || description === '' || category === 'Pasirinkite kategoriją'|| deviceType === 'Pasirinkite, kaip norite atiduoti') {
         toast.error('Užpildykite visus laukus!');
         return;
       }
-      if (itemType === '4') {
+      if (deviceType === '4') {
         let hasEmptyQuestion = false;
         questions.forEach((question) => {
             if (question.question.trim() === "") {
@@ -130,7 +130,7 @@ function ItemUpdatePage() {
         }
     }
       
-      if (images.length > 6 || images.length + item.images.length > 6) {
+      if (images.length > 6 || images.length + device.images.length > 6) {
         toast.error('Daugiausiai galite įkelti 6 nuotraukas');
         await new Promise(resolve => setTimeout(resolve, 1000));
         window.location.reload();
@@ -149,14 +149,14 @@ function ItemUpdatePage() {
         data.append('questions', questions[i].question);
         }
 
-      await axios.put(`/api/item/update/${itemId}`, data);
+      await axios.put(`/api/device/update/${deviceId}`, data);
       toast.success('Skelbimas sėkmingai atnaujintas!');
       setName('');
       setDescription('');
       setCategory('');
       setImages([]);
       setImagesToDelete([]);
-      navigate(`/skelbimas/${itemId}`);
+      navigate(`/skelbimas/${deviceId}`);
     } catch (error) {
         console.log(error);
         if (error.response) {
@@ -197,7 +197,7 @@ function ItemUpdatePage() {
   function getExistingImages() {
     return (
       <div className="d-flex flex-wrap">
-        {item.images.map((image, index) => (
+        {device.images.map((image, index) => (
           <Form.Group key={index} className="d-inline-block mr-3" style={{ width: '128px', marginRight: '10px' }}>
             <img
               className="image-preview"
@@ -224,9 +224,9 @@ function ItemUpdatePage() {
   function handleDeleteImage(id) {
     setImagesToDelete((prevImagesToDelete) => [...prevImagesToDelete, id]);
     setShowMessage(true);
-    setItem((prevItem) => ({
-      ...prevItem,
-      images: prevItem.images.filter((image) => image.id !== id),
+    setDevice((prevDevice) => ({
+      ...prevDevice,
+      images: prevDevice.images.filter((image) => image.id !== id),
     }));
   }
 
@@ -242,10 +242,10 @@ function ItemUpdatePage() {
     }
   }
 
-  const getAllItemTypes = () => {
+  const getAllDeviceTypes = () => {
     try {
-        return itemTypes.map((itemType) => {
-            return <option value={itemType.id}>{itemType.name}</option>;
+        return deviceTypes.map((deviceType) => {
+            return <option value={deviceType.id}>{deviceType.name}</option>;
         });
     }
     catch (error) {
@@ -255,10 +255,10 @@ function ItemUpdatePage() {
 }
   
   const handleCancel = () => {
-    navigate(`/skelbimas/${itemId}`);
+    navigate(`/skelbimas/${deviceId}`);
   }
 
-  if (!item || !categories) {
+  if (!device || !categories) {
     return <div><Spinner>Loading...</Spinner></div>;
   }
 
@@ -335,14 +335,14 @@ function ItemUpdatePage() {
                 </Form.Select>
               </Form.Group>
               <Form.Group className='text-center mb-3'>
-  <Form.Select value={itemType} onChange={(e) => setType(e.target.value)}>
+  <Form.Select value={deviceType} onChange={(e) => setType(e.target.value)}>
     <option>Pasirinkite, kaip norite atiduoti</option>
-    {getAllItemTypes()}
+    {getAllDeviceTypes()}
   </Form.Select>
 </Form.Group>
 
 <Form.Group>
-{item && item.type === 'Klausimynas' && (itemType === 'Pasirinkite, kaip norite atiduoti' || itemType === '4') && (
+{device && device.type === 'Klausimynas' && (deviceType === 'Pasirinkite, kaip norite atiduoti' || deviceType === '4') && (
     <>
       <h4>Klausimai:</h4>
       {questions.map((question, index) => (
@@ -361,7 +361,7 @@ function ItemUpdatePage() {
       <Button variant="primary" onClick={addQuestion}>Pridėti klausimą</Button>
     </>
   )}
-  {item && item.type !== 'Klausimynas' && itemType === '4' && (
+  {device && device.type !== 'Klausimynas' && deviceType === '4' && (
     <>
       <h4>Klausimai:</h4>
       {questions.map((question, index) => (
@@ -396,4 +396,4 @@ function ItemUpdatePage() {
   );
 }
 
-export default ItemUpdatePage;
+export default DeviceUpdatePage;

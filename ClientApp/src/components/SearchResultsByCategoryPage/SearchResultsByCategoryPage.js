@@ -6,29 +6,29 @@ import './SearchResultsByCategoryPage.css';
 
 function SearchResultsByCategoryPage() {
   const { categoryId } = useParams();  
-  const [items, setItems] = useState(null);
+  const [devices, setDevices] = useState(null);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function fetchItems() {
+    async function fetchDevices() {
     setLoading(true);
     
     if (categoryId != 0)
     {
-        const response = await axios.get(`/api/item/search/category/${categoryId}`);
-        setItems(response.data);
+        const response = await axios.get(`/api/device/search/category/${categoryId}`);
+        setDevices(response.data);
         setLoading(false);
     }
     else
     {
-        const response = await axios.get('/api/item/getItems');
-        setItems(response.data); 
+        const response = await axios.get('/api/device/getDevices');
+        setDevices(response.data); 
         setLoading(false);
     }
   }
-  fetchItems();
+  fetchDevices();
 }, [categoryId]);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ function SearchResultsByCategoryPage() {
     {
       if (categoryId != 0)
       { 
-        const response = await axios.get(`/api/item/category/${categoryId}`);
+        const response = await axios.get(`/api/device/category/${categoryId}`);
         setCategory(response.data);
       }
       else
@@ -47,14 +47,14 @@ function SearchResultsByCategoryPage() {
     fetchCategory();
 }, [categoryId]);
 
-  const handleOpen = (itemId) => {
-    navigate(`/skelbimas/${itemId}`);
+  const handleOpen = (deviceId) => {
+    navigate(`/skelbimas/${deviceId}`);
   };
 
-  return items && !loading ? (
+  return devices && !loading ? (
     <Container className="home">
         <Row className="justify-content-center">
-            {items.length == 0 ? (
+            {devices.length == 0 ? (
                 <Container className="my-5">
                     <div className='outerBoxWrapper d-flex justify-content-center'>
                         <h3 style={{ textAlign: "center", marginTop: "50px" }}>Nerasta jokių prietaisų pagal kategorija: {category.name} </h3>
@@ -67,31 +67,31 @@ function SearchResultsByCategoryPage() {
                     <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Visi prietaisai esantys skelbimuose:</h3>
                 )
             )}
-        {items.map((item) => (
-       <Col sm={4} key={item.id} style={{ width: '300px' }}>
+        {devices.map((device) => (
+       <Col sm={4} key={device.id} style={{ width: '300px' }}>
             <Card className="mb-4">
                             <img
                                 className="d-block w-100"
                                 style={{ objectFit: "cover" }}
                                 height="256"
-                                src={item.images && item.images.length > 0 ? `data:image/png;base64,${item.images[0].data}` : ""}
-                                alt={item.name}
+                                src={device.images && device.images.length > 0 ? `data:image/png;base64,${device.images[0].data}` : ""}
+                                alt={device.name}
                             />
             <Card.Body>
-                <Card.Title>{item.name}</Card.Title>
-                <Card.Text>{item.description}</Card.Text>
+                <Card.Title>{device.name}</Card.Title>
+                <Card.Text>{device.description}</Card.Text>
                 <ul className="list-group list-group-flush mb-3">
                 <li className="list-group-item d-flex justify-content-between align-items-center">
-                    <span>{item.type}</span>
-                    <span>{item.location}</span>
+                    <span>{device.type}</span>
+                    <span>{device.location}</span>
                 </li>
                 <li className="list-group-item d-flex justify-content-between align-items-center">
                     <span>Baigiasi:</span>
-                    <span>{new Date(item.endDateTime).toLocaleString('lt-LT').slice(5, -3)}</span>
+                    <span>{new Date(device.endDateTime).toLocaleString('lt-LT').slice(5, -3)}</span>
                                     </li>
                                 </ul>
                                 <div className="d-flex justify-content-end">
-                                    <Button variant="primary" onClick={() => handleOpen(item.id)}>Peržiūrėti</Button>
+                                    <Button variant="primary" onClick={() => handleOpen(device.id)}>Peržiūrėti</Button>
                                 </div>
                             </Card.Body>
                         </Card>

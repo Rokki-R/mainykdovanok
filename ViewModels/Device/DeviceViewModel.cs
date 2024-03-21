@@ -2,7 +2,7 @@
 
 namespace mainykdovanok.ViewModels.Item
 {
-    public class ItemViewModel
+    public class DeviceViewModel
     {
         [JsonProperty("id")]
         public int Id { get; set; }
@@ -41,8 +41,8 @@ namespace mainykdovanok.ViewModels.Item
         public int? WinnerId { get; set; }
 
         [JsonProperty("images")]
-        public List<ItemImageViewModel> Images { get; set; }
+        public List<DeviceImageViewModel> Images { get; set; }
         [JsonProperty("questions")]
-        public List<ItemQuestionViewModel>? Questions { get; set; }
+        public List<DeviceQuestionViewModel>? Questions { get; set; }
     }
 }

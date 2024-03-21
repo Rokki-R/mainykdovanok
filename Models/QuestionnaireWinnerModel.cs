@@ -4,6 +4,6 @@
     {
         public string User { get; set; }
 
-        public int ItemId { get; set; }
+        public int DeviceId { get; set; }
     }
 }

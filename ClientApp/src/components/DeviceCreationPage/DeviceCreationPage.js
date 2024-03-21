@@ -3,17 +3,17 @@ import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
 import { Form, Button, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router';
-import './ItemCreationPage.css'
+import './DeviceCreationPage.css'
 
-const ItemCreationPage = () => {
+const DeviceCreationPage = () => {
     const [name, setName] = useState('');
     const [images, setImages] = useState([]);
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState('');
     const [category, setCategory] = useState('Pasirinkite kategoriją');
     const [categories, setCategories] = useState([]);
-    const [itemType, setType] = useState('Pasirinkite, kaip norite atiduoti');
-    const [itemTypes, setItemTypes] = useState([]);
+    const [deviceType, setType] = useState('Pasirinkite, kaip norite atiduoti');
+    const [deviceTypes, setDeviceTypes] = useState([]);
     const [endDate, setEndDate] = useState('Pasirinkite datą');
     const navigate = useNavigate();
 
@@ -51,12 +51,12 @@ const ItemCreationPage = () => {
 
     useEffect(() => {
         Promise.all([
-            axios.get("api/item/getCategories"),
-            axios.get("api/item/getItemTypes")
+            axios.get("api/device/getCategories"),
+            axios.get("api/device/getDeviceTypes")
         ])
-            .then(([categoriesResponse, itemTypesResponse]) => {
+            .then(([categoriesResponse, deviceTypesResponse]) => {
                 setCategories(categoriesResponse.data);
-                setItemTypes(itemTypesResponse.data);
+                setDeviceTypes(deviceTypesResponse.data);
             })
             .catch(error => {
                 console.log(error);
@@ -91,15 +91,15 @@ const ItemCreationPage = () => {
 
     const removeInput = (indexToRemove) => {
         setQuestions((prevQuestions) => {
-            return prevQuestions.filter((item, index) => index !== indexToRemove);
+            return prevQuestions.filter((device, index) => index !== indexToRemove);
         });
     };
     
 
-    const getAllItemTypes = () => {
+    const getAllDeviceTypes = () => {
         try {
-            return itemTypes.map((itemType) => {
-                return <option value={itemType.id}>{itemType.name}</option>;
+            return deviceTypes.map((deviceType) => {
+                return <option value={deviceType.id}>{deviceType.name}</option>;
             });
         }
         catch (error) {
@@ -118,7 +118,7 @@ const ItemCreationPage = () => {
     }
 
     function checkFields() {
-        if (name === '' || description === '' || location === '' || category === 'Pasirinkite kategoriją' || itemType === 'Pasirinkite, kaip norite atiduoti' || endDate === 'Pasirinkite datą') {
+        if (name === '' || description === '' || location === '' || category === 'Pasirinkite kategoriją' || deviceType === 'Pasirinkite, kaip norite atiduoti' || endDate === 'Pasirinkite datą') {
             toast.error('Reikia užpildyti visus laukus!');
             return false;
         }
@@ -130,7 +130,7 @@ const ItemCreationPage = () => {
     const handleCreate = (event) => {
         event.preventDefault()
         if (checkFields()) {
-            if (itemType === '4') {
+            if (deviceType === '4') {
                 let hasEmptyQuestion = false;
                 questions.forEach((question) => {
                     if (question.value.trim() === "") {
@@ -150,7 +150,7 @@ const ItemCreationPage = () => {
                 formData.append('description', description);
                 formData.append('location', location);
                 formData.append('category', category);
-                formData.append('type', itemType);
+                formData.append('type', deviceType);
                 formData.append('endDate', endDate);
                 for (let i = 0; i < questions.length; i++) {
                     formData.append('questions', questions[i].value);
@@ -158,7 +158,7 @@ const ItemCreationPage = () => {
                 for (let i = 0; i < images.length; i++) {
                     formData.append('images', images[i]);
                 }
-                axios.post("api/item/create", formData)
+                axios.post("api/device/create", formData)
                     .then(response => {
                         if (response.status === 200) {
                             toast.success('Sėkmingai sukūrėtė skelbimą!');
@@ -255,21 +255,21 @@ const ItemCreationPage = () => {
                                 </Form.Select>
                             </Form.Group>
                             <Form.Group className='text-center mb-3'>
-                                <Form.Select value={itemType} onChange={(e) => setType(e.target.value)}>
+                                <Form.Select value={deviceType} onChange={(e) => setType(e.target.value)}>
                                     <option>Pasirinkite, kaip norite atiduoti</option>
-                                    {getAllItemTypes()}
+                                    {getAllDeviceTypes()}
                                 </Form.Select>
                             </Form.Group>
-                            {itemType === '4' && (
+                            {deviceType === '4' && (
                                 <>
-                                    {questions.map((item, i) => {
+                                    {questions.map((device, i) => {
     return (
         <Form.Group className="d-flex align-items-center mb-2" key={i}>
             <Form.Control
                 onChange={handleChange}
-                value={item.value}
+                value={device.value}
                 id={i.toString()}
-                type={item.type}
+                type={device.type}
                 placeholder='Įrašykite klausimą'
                 className='questionInput'
             />
@@ -314,4 +314,4 @@ const ItemCreationPage = () => {
         </div>
     )
 }
-export default ItemCreationPage
+export default DeviceCreationPage

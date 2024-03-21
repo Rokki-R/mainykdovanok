@@ -8,12 +8,12 @@ namespace mainykdovanok.Services
 {
     public class MotivationalLetterService
     {
-        private ItemRepo _itemRepo;
+        private DeviceRepo _deviceRepo;
         private UserRepo _userRepo;
 
         public MotivationalLetterService()
         {
-            _itemRepo = new ItemRepo();
+            _deviceRepo = new DeviceRepo();
             _userRepo = new UserRepo();
         }
 
@@ -21,17 +21,17 @@ namespace mainykdovanok.Services
         {
             SendEmail emailer = new SendEmail();
 
-            string itemName = await _itemRepo.GetItemName(winner.ItemId);
+            string deviceName = await _deviceRepo.GetDeviceName(winner.DeviceId);
             UserModel user = await _userRepo.GetUser(winner.User);
 
-            await _itemRepo.SetItemWinner(winner.ItemId, user.Id);
+            await _deviceRepo.SetDeviceWinner(winner.DeviceId, user.Id);
 
-            await emailer.notifyLetterWinner(user.Email, itemName, winner.ItemId);
+            await emailer.notifyLetterWinner(user.Email, deviceName, winner.DeviceId);
 
-            await _itemRepo.UpdateItemStatus(winner.ItemId, 2);
+            await _deviceRepo.UpdateDeviceStatus(winner.DeviceId, 2);
 
-            await _userRepo.IncrementUserQuantityOfItemsGifted(posterUserId);
-            await _userRepo.IncrementUserQuantityOfItemsWon(user.Id);
+            await _userRepo.IncrementUserQuantityOfDevicesGifted(posterUserId);
+            await _userRepo.IncrementUserQuantityOfDevicesWon(user.Id);
         }
     }
 }
