@@ -11,13 +11,13 @@ using System.Data.Common;
 
 namespace mainykdovanok.Repositories.Item
 {
-    public class ItemRepo
+    public class DeviceRepo
     {
         private Serilog.ILogger _logger;
         private readonly string _connectionString;
         private readonly ImageRepo _imageRepo;
 
-        public ItemRepo()
+        public DeviceRepo()
         {
             CreateLogger();
 
@@ -25,7 +25,7 @@ namespace mainykdovanok.Repositories.Item
             _imageRepo = new ImageRepo();
         }
 
-        public ItemRepo(string connectionString)
+        public DeviceRepo(string connectionString)
         {
             CreateLogger();
 
@@ -44,24 +44,24 @@ namespace mainykdovanok.Repositories.Item
             return new MySqlConnection(_connectionString);
         }
 
-        public async Task<List<ItemViewModel>> GetAll()
+        public async Task<List<DeviceViewModel>> GetAll()
         {
-            var items = new List<ItemViewModel>();
+            var devices = new List<DeviceViewModel>();
 
             using (MySqlConnection connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                using (MySqlCommand command = new MySqlCommand("SELECT items.id, items.name, items.description, " +
-                "items.fk_user, items.location, items.end_datetime, item_type.type as type " +
-                "FROM items " +
-                "LEFT JOIN item_type ON items.fk_type = item_type.id " +
-                "WHERE items.fk_status = 1", connection))
+                using (MySqlCommand command = new MySqlCommand("SELECT device_ad.id, device_ad.name, device_ad.description, " +
+                "device_ad.fk_user, device_ad.location, device_ad.end_datetime, device_type.type as type " +
+                "FROM device_ad " +
+                "LEFT JOIN device_type ON device_ad.fk_type = device_type.id " +
+                "WHERE device_ad.fk_status = 1", connection))
                 {
                     using (DbDataReader reader = await command.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync())
                         {
-                            var item = new ItemViewModel()
+                            var device = new DeviceViewModel()
                             {
                                 Id = Convert.ToInt32(reader["id"]),
                                 UserId = Convert.ToInt32(reader["fk_user"]),
@@ -72,77 +72,77 @@ namespace mainykdovanok.Repositories.Item
                                 EndDateTime = Convert.ToDateTime(reader["end_datetime"])
                             };
 
-                            item.Images = await _imageRepo.GetByItemFirst(item.Id);
+                            device.Images = await _imageRepo.GetByDeviceFirst(device.Id);
 
-                            items.Add(item);
+                            devices.Add(device);
                         }
                     }
                 }
             }
 
-            return items;
+            return devices;
         }
 
-        public async Task<ItemViewModel> GetFullById(int itemId)
+        public async Task<DeviceViewModel> GetFullById(int deviceId)
         {
-            var item = new ItemViewModel();
+            var device = new DeviceViewModel();
 
-            var images = await _imageRepo.GetByItem(itemId);
-            var questions = await GetQuestions(itemId);
+            var images = await _imageRepo.GetByDevice(deviceId);
+            var questions = await GetQuestions(deviceId);
             using (MySqlConnection connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                using (MySqlCommand command = new MySqlCommand("SELECT items.*, item_type.type AS item_type, item_categories.name AS category_name, item_status.name AS status_name, " +
-                    "COUNT(item_lottery_participants.id) AS participants_count " +
-                    "FROM items " +
-                    "JOIN item_type ON items.fk_type = item_type.id " +
-                    "JOIN item_categories ON items.fk_category = item_categories.id " +
-                    "JOIN item_status ON items.fk_status = item_status.id " +
-                    "LEFT JOIN item_lottery_participants ON items.id = item_lottery_participants.fk_item " +
-                    "WHERE items.id = @itemId " +
-                    "GROUP BY items.id, item_type.type, item_categories.name", connection))
+                using (MySqlCommand command = new MySqlCommand("SELECT device_ad.*, device_type.type AS device_type, device_category.name AS category_name, device_status.name AS status_name, " +
+                    "COUNT(device_lottery_participant.id) AS participants_count " +
+                    "FROM device_ad " +
+                    "JOIN device_type ON device_ad.fk_type = device_type.id " +
+                    "JOIN device_category ON device_ad.fk_category = device_category.id " +
+                    "JOIN device_status ON device_ad.fk_status = device_status.id " +
+                    "LEFT JOIN device_lottery_participant ON device_ad.id = device_lottery_participant.fk_device " +
+                    "WHERE device_ad.id = @deviceId " +
+                    "GROUP BY device_ad.id, device_type.type, device_category.name", connection))
                 {
-                    command.Parameters.AddWithValue("@itemId", itemId);
+                    command.Parameters.AddWithValue("@deviceId", deviceId);
                     using (DbDataReader reader = await command.ExecuteReaderAsync())
                     {
                         await reader.ReadAsync();
 
-                        item.Id = Convert.ToInt32(reader["id"]);
-                        item.UserId = Convert.ToInt32(reader["fk_user"]);
-                        item.Name = reader["name"].ToString();
-                        item.Description = reader["description"].ToString();
-                        item.Status = reader["status_name"].ToString();
-                        item.Type = reader["item_type"].ToString();
-                        item.Participants = Convert.ToInt32(reader["participants_count"]);
-                        item.Location = reader["location"].ToString();
-                        item.Category = reader["category_name"].ToString();
-                        item.CreationDateTime = Convert.ToDateTime(reader["creation_datetime"]);
-                        item.EndDateTime = Convert.ToDateTime(reader["end_datetime"]);
-                        item.WinnerId = reader["fk_winner"] == DBNull.Value ? null : (int?)Convert.ToInt32(reader["fk_winner"]);
-                        item.Images = images;
-                        item.Questions = questions;
+                        device.Id = Convert.ToInt32(reader["id"]);
+                        device.UserId = Convert.ToInt32(reader["fk_user"]);
+                        device.Name = reader["name"].ToString();
+                        device.Description = reader["description"].ToString();
+                        device.Status = reader["status_name"].ToString();
+                        device.Type = reader["device_type"].ToString();
+                        device.Participants = Convert.ToInt32(reader["participants_count"]);
+                        device.Location = reader["location"].ToString();
+                        device.Category = reader["category_name"].ToString();
+                        device.CreationDateTime = Convert.ToDateTime(reader["creation_datetime"]);
+                        device.EndDateTime = Convert.ToDateTime(reader["end_datetime"]);
+                        device.WinnerId = reader["fk_winner"] == DBNull.Value ? null : (int?)Convert.ToInt32(reader["fk_winner"]);
+                        device.Images = images;
+                        device.Questions = questions;
 
-                        return item;
+                        return device;
                     }
                 }
             }
         }
 
-        public async Task<List<ItemViewModel>> GetAllByUser(int userId)
+        public async Task<List<DeviceViewModel>> GetAllByUser(int userId)
         {
-            List<ItemViewModel> items = new List<ItemViewModel>();
+            List<DeviceViewModel> devices = new List<DeviceViewModel>();
 
             using (var connection = new MySqlConnection(_connectionString))
             {
-                using (MySqlCommand command = new MySqlCommand("SELECT items.*, item_type.type AS item_type, item_categories.name AS category_name, item_status.name AS status_name, " +
-                    "COUNT(item_lottery_participants.id) AS participants_count " +
-                    "FROM items " +
-                    "JOIN item_type ON items.fk_type = item_type.id " +
-                    "JOIN item_categories ON items.fk_category = item_categories.id " +
-                    "JOIN item_status ON items.fk_status = item_status.id " +
-                    "LEFT JOIN item_lottery_participants ON items.id = item_lottery_participants.fk_item " +
-                    "WHERE items.fk_user = @userId AND items.fk_status = 1 " +
-                    "GROUP BY items.id, item_type.type, item_categories.name ", connection))
+                using (MySqlCommand command = new MySqlCommand("SELECT device_ad.*, device_type.type AS device_type, device_category.name AS category_name, device_status.name AS status_name, " +
+                    "COUNT(device_lottery_participant.id) AS participants_count " +
+                    "FROM device_ad " +
+                    "JOIN device_type ON device_ad.fk_type = device_type.id " +
+                    "JOIN device_category ON device_ad.fk_category = device_category.id " +
+                    "JOIN device_status ON device_ad.fk_status = device_status.id " +
+                    "LEFT JOIN device_lottery_participant ON device_ad.id = device_lottery_participant.fk_device " +
+                    "WHERE device_ad.fk_user = @userId AND device_ad.fk_status = 1 " +
+                    "GROUP BY device_ad.id, device_type.type, device_category.name ", connection))
                 {
                     await connection.OpenAsync();
                     command.Parameters.AddWithValue("@userId", userId);
@@ -151,48 +151,48 @@ namespace mainykdovanok.Repositories.Item
                     {
                         while (await reader.ReadAsync())
                         {
-                            var item = new ItemViewModel()
+                            var device = new DeviceViewModel()
                             {
                                 Id = Convert.ToInt32(reader["id"]),
                                 UserId = Convert.ToInt32(reader["fk_user"]),
                                 Name = reader["name"].ToString(),
                                 Description = reader["description"].ToString(),
                                 Status = reader["status_name"].ToString(),
-                                Type = reader["item_type"].ToString(),
+                                Type = reader["device_type"].ToString(),
                                 Participants = Convert.ToInt32(reader["participants_count"]),
                                 Location = reader["location"].ToString(),
                                 Category = reader["category_name"].ToString(),
                                 CreationDateTime = Convert.ToDateTime(reader["creation_datetime"]),
                                 EndDateTime = Convert.ToDateTime(reader["end_datetime"]),
                                 WinnerId = reader["fk_winner"] == DBNull.Value ? null : (int?)Convert.ToInt32(reader["fk_winner"]),
-                                Images = await _imageRepo.GetByItem(Convert.ToInt32(reader["id"])),
+                                Images = await _imageRepo.GetByDevice(Convert.ToInt32(reader["id"])),
                             };
 
-                            items.Add(item);
+                            devices.Add(device);
                         }
                     }
 
-                    return items;
+                    return devices;
                 }
             }
         }
 
-        public async Task<List<ItemViewModel>> GetAllByCategory(int categoryId)
+        public async Task<List<DeviceViewModel>> GetAllByCategory(int categoryId)
         {
-            List<ItemViewModel> items = new List<ItemViewModel>();
+            List<DeviceViewModel> devices = new List<DeviceViewModel>();
 
 
             using (var connection = new MySqlConnection(_connectionString))
             {
-                using (MySqlCommand command = new MySqlCommand("SELECT items.*, item_type.type AS item_type, item_categories.name AS category_name, item_status.name AS status_name, " +
-                    "COUNT(item_lottery_participants.id) AS participants_count " +
-                    "FROM items " +
-                    "JOIN item_type ON items.fk_type = item_type.id " +
-                    "JOIN item_categories ON items.fk_category = item_categories.id " +
-                    "JOIN item_status ON items.fk_status = item_status.id " +
-                    "LEFT JOIN item_lottery_participants ON items.id = item_lottery_participants.fk_item " +
-                    "WHERE items.fk_category = @categoryId AND items.fk_status = 1 " +
-                    "GROUP BY items.id, item_type.type, item_categories.name ", connection))
+                using (MySqlCommand command = new MySqlCommand("SELECT device_ad.*, device_type.type AS device_type, device_category.name AS category_name, device_status.name AS status_name, " +
+                    "COUNT(device_lottery_participant.id) AS participants_count " +
+                    "FROM device_ad " +
+                    "JOIN device_type ON device_ad.fk_type = device_type.id " +
+                    "JOIN device_category ON device_ad.fk_category = device_category.id " +
+                    "JOIN device_status ON device_ad.fk_status = device_status.id " +
+                    "LEFT JOIN device_lottery_participant ON device_ad.id = device_lottery_participant.fk_device " +
+                    "WHERE device_ad.fk_category = @categoryId AND device_ad.fk_status = 1 " +
+                    "GROUP BY device_ad.id, device_type.type, device_category.name ", connection))
                 {
                     await connection.OpenAsync();
                     command.Parameters.AddWithValue("@categoryId", categoryId);
@@ -201,48 +201,48 @@ namespace mainykdovanok.Repositories.Item
                     {
                         while (await reader.ReadAsync())
                         {
-                            var item = new ItemViewModel()
+                            var device = new DeviceViewModel()
                             {
                                 Id = Convert.ToInt32(reader["id"]),
                                 UserId = Convert.ToInt32(reader["fk_user"]),
                                 Name = reader["name"].ToString(),
                                 Description = reader["description"].ToString(),
                                 Status = reader["status_name"].ToString(),
-                                Type = reader["item_type"].ToString(),
+                                Type = reader["device_type"].ToString(),
                                 Participants = Convert.ToInt32(reader["participants_count"]),
                                 Location = reader["location"].ToString(),
                                 Category = reader["category_name"].ToString(),
                                 CreationDateTime = Convert.ToDateTime(reader["creation_datetime"]),
                                 EndDateTime = Convert.ToDateTime(reader["end_datetime"]),
-                                Images = await _imageRepo.GetByItem(Convert.ToInt32(reader["id"])),
+                                Images = await _imageRepo.GetByDevice(Convert.ToInt32(reader["id"])),
                             };
 
-                            items.Add(item);
+                            devices.Add(device);
                         }
                     }
 
-                    return items;
+                    return devices;
                 }
             }
         }
 
-        public async Task<int> Create(ItemModel item)
+        public async Task<int> Create(DeviceModel device)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "INSERT INTO items (name, description, location, fk_category, fk_user, fk_status, fk_type, end_datetime) " +
+                "INSERT INTO device_ad (name, description, location, fk_category, fk_user, fk_status, fk_type, end_datetime) " +
                 "VALUES (@Name, @Description, @Location, @Category, @User, @Status, @Type, @EndDate)", connection);
 
-            command.Parameters.AddWithValue("@Name", item.Name);
-            command.Parameters.AddWithValue("@Description", item.Description);
-            command.Parameters.AddWithValue("@Location", item.Location);
-            command.Parameters.AddWithValue("@Category", item.Category);
-            command.Parameters.AddWithValue("@User", item.User);
-            command.Parameters.AddWithValue("@Status", item.Status);
-            command.Parameters.AddWithValue("@Type", item.Type);
-            command.Parameters.AddWithValue("@EndDate", item.EndDate);
+            command.Parameters.AddWithValue("@Name", device.Name);
+            command.Parameters.AddWithValue("@Description", device.Description);
+            command.Parameters.AddWithValue("@Location", device.Location);
+            command.Parameters.AddWithValue("@Category", device.Category);
+            command.Parameters.AddWithValue("@User", device.User);
+            command.Parameters.AddWithValue("@Status", device.Status);
+            command.Parameters.AddWithValue("@Type", device.Type);
+            command.Parameters.AddWithValue("@EndDate", device.EndDate);
 
             await command.ExecuteNonQueryAsync();
 
@@ -252,15 +252,15 @@ namespace mainykdovanok.Repositories.Item
             return id;
         }
 
-        public async Task<ItemViewModel> Find(int id)
+        public async Task<DeviceViewModel> Find(int id)
         {
-            ItemViewModel item = new ItemViewModel();
+            DeviceViewModel device = new DeviceViewModel();
 
             using (var connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
 
-                using (var command = new MySqlCommand("SELECT id, name FROM items WHERE id=@id", connection))
+                using (var command = new MySqlCommand("SELECT id, name FROM device_ad WHERE id=@id", connection))
                 {
                     command.Parameters.AddWithValue("@id", id);
 
@@ -268,20 +268,20 @@ namespace mainykdovanok.Repositories.Item
                     {
                         await reader.ReadAsync();
 
-                        item.Id = reader.GetInt32("id");
-                        item.Name = reader.GetString("name");
+                        device.Id = reader.GetInt32("id");
+                        device.Name = reader.GetString("name");
 
-                        return item;
+                        return device;
                     }
                 }
             }
         }
       
-        public async Task<bool> DeleteItem(int id)
+        public async Task<bool> DeleteDevice(int id)
         {
             using MySqlConnection connection = GetConnection();
             using MySqlCommand command = new MySqlCommand(
-                "DELETE FROM items WHERE id=@Id", connection);
+                "DELETE FROM device_ad WHERE id=@Id", connection);
 
             command.Parameters.AddWithValue("@Id", id);
 
@@ -291,44 +291,44 @@ namespace mainykdovanok.Repositories.Item
             return true;
         }
 
-        public async Task<bool> EnterLottery(int itemId, int userId)
+        public async Task<bool> EnterLottery(int deviceId, int userId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "INSERT INTO item_lottery_participants " +
-                "(fk_item, fk_user) VALUES (@fk_item, @fk_user)", connection);
-            command.Parameters.AddWithValue("@fk_item", itemId);
+                "INSERT INTO device_lottery_participant " +
+                "(fk_device, fk_user) VALUES (@fk_device, @fk_user)", connection);
+            command.Parameters.AddWithValue("@fk_device", deviceId);
             command.Parameters.AddWithValue("@fk_user", userId);
 
             await command.ExecuteNonQueryAsync();
             return true;
         }
-        public async Task<bool> LeaveLottery(int itemId, int userId)
+        public async Task<bool> LeaveLottery(int deviceId, int userId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "DELETE FROM item_lottery_participants " +
-                "WHERE fk_item = @fk_item AND fk_user = @fk_user ", connection);
-            command.Parameters.AddWithValue("@fk_item", itemId);
+                "DELETE FROM device_lottery_participant " +
+                "WHERE fk_device = @fk_device AND fk_user = @fk_user ", connection);
+            command.Parameters.AddWithValue("@fk_device", deviceId);
             command.Parameters.AddWithValue("@fk_user", userId);
 
             await command.ExecuteNonQueryAsync();
             return true;
         }
 
-        public async Task<bool> IsUserParticipatingInLottery(int itemId, int userId)
+        public async Task<bool> IsUserParticipatingInLottery(int deviceId, int userId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT id FROM item_lottery_participants " +
-                "WHERE fk_item = @fk_item AND fk_user = @fk_user ", connection);
-            command.Parameters.AddWithValue("@fk_item", itemId);
+                "SELECT id FROM device_lottery_participant " +
+                "WHERE fk_device = @fk_device AND fk_user = @fk_user ", connection);
+            command.Parameters.AddWithValue("@fk_device", deviceId);
             command.Parameters.AddWithValue("@fk_user", userId);
 
 
@@ -336,18 +336,18 @@ namespace mainykdovanok.Repositories.Item
             return reader.HasRows;
         }
 
-        public async Task<List<UserModel>> GetLotteryParticipants(int itemId)
+        public async Task<List<UserModel>> GetLotteryParticipants(int deviceId)
         {
             List<UserModel> lotteryParticipants = new List<UserModel>();
 
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
-            using MySqlCommand command = new MySqlCommand("SELECT users.user_id, users.name, users.surname, users.email " +
-                "FROM users " +
-                "JOIN item_lottery_participants ON users.user_id = item_lottery_participants.fk_user " +
-                "WHERE item_lottery_participants.fk_item = @itemId", connection);
-            command.Parameters.AddWithValue("@itemId", itemId);
+            using MySqlCommand command = new MySqlCommand("SELECT user.user_id, user.name, user.surname, user.email " +
+                "FROM user " +
+                "JOIN device_lottery_participant ON user.user_id = device_lottery_participant.fk_user " +
+                "WHERE device_lottery_participant.fk_device = @deviceId", connection);
+            command.Parameters.AddWithValue("@deviceId", deviceId);
 
             using DbDataReader reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
@@ -362,89 +362,89 @@ namespace mainykdovanok.Repositories.Item
             }
             return lotteryParticipants;
         }
-        public async Task<UserViewModel> GetItemOwnerByItemId(int itemId)
+        public async Task<UserViewModel> GetDeviceOwnerByDeviceId(int deviceId)
         {
-            UserViewModel itemOwner = new UserViewModel();
+            UserViewModel deviceOwner = new UserViewModel();
 
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             string query = "SELECT u.user_id AS UserId, u.name AS Name, u.surname AS Surname, u.email AS Email " +
-                           "FROM items AS i " +
-                           "JOIN users AS u ON i.fk_user = u.user_id " +
-                           "WHERE i.id = @itemId";
+                           "FROM device_ad AS i " +
+                           "JOIN user AS u ON i.fk_user = u.user_id " +
+                           "WHERE i.id = @deviceId";
 
             using MySqlCommand command = new MySqlCommand(query, connection);
-            command.Parameters.AddWithValue("@itemId", itemId);
+            command.Parameters.AddWithValue("@deviceId", deviceId);
 
             using (DbDataReader reader = await command.ExecuteReaderAsync())
             {
                 if (await reader.ReadAsync())
                 {
-                    itemOwner.Id = reader.GetInt32("UserId");
-                    itemOwner.Name = reader.GetString("Name");
-                    itemOwner.Surname = reader.GetString("Surname");
-                    itemOwner.Email = reader.GetString("Email");
+                    deviceOwner.Id = reader.GetInt32("UserId");
+                    deviceOwner.Name = reader.GetString("Name");
+                    deviceOwner.Surname = reader.GetString("Surname");
+                    deviceOwner.Email = reader.GetString("Email");
                 }
             }
 
-            return itemOwner;
+            return deviceOwner;
         }
 
-        public async Task<List<ItemLotteryViewModel>> GetDueLotteries()
+        public async Task<List<DeviceLotteryViewModel>> GetDueLotteries()
         {
-            List<ItemLotteryViewModel> lotteriesList = new List<ItemLotteryViewModel>();
+            List<DeviceLotteryViewModel> lotteriesList = new List<DeviceLotteryViewModel>();
             DateTime dateTimeNow = DateTime.Now;
 
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
-            using (MySqlCommand command = new MySqlCommand("SELECT items.id, items.fk_user AS UserId, items.name AS Name, items.description AS Description, COUNT(item_lottery_participants.id) " +
-                "AS Participants, items.location AS Location, item_categories.name AS Category " +
-                "FROM items " +
-                "JOIN item_categories ON items.fk_category = item_categories.id " +
-                "LEFT JOIN item_lottery_participants ON items.id = item_lottery_participants.fk_item " +
-                "WHERE items.end_datetime <= @dateTimeNow AND items.fk_status = 1 AND items.fk_type = 1 " +
-                "GROUP BY items.id, items.fk_user, items.name, items.description, items.location, item_categories.name", connection))
+            using (MySqlCommand command = new MySqlCommand("SELECT device_ad.id, device_ad.fk_user AS UserId, device_ad.name AS Name, device_ad.description AS Description, COUNT(device_lottery_participant.id) " +
+                "AS participant, device_ad.location AS Location, device_category.name AS Category " +
+                "FROM device_ad " +
+                "JOIN device_category ON device_ad.fk_category = device_category.id " +
+                "LEFT JOIN device_lottery_participant ON device_ad.id = device_lottery_participant.fk_device " +
+                "WHERE device_ad.end_datetime <= @dateTimeNow AND device_ad.fk_status = 1 AND device_ad.fk_type = 1 " +
+                "GROUP BY device_ad.id, device_ad.fk_user, device_ad.name, device_ad.description, device_ad.location, device_category.name", connection))
             {
                 command.Parameters.AddWithValue("@dateTimeNow", dateTimeNow);
 
                 using DbDataReader reader = await command.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    ItemLotteryViewModel item = new ItemLotteryViewModel();
-                    item.Id = reader.GetInt32("id");
-                    item.UserId = reader.GetInt32("UserId");
-                    item.Name = reader.GetString("Name");
-                    item.Description = reader.GetString("Description");
-                    item.Participants = reader.GetInt32("Participants");
-                    item.Location = reader.GetString("Location");
-                    item.Category = reader.GetString("Category");
+                    DeviceLotteryViewModel device = new DeviceLotteryViewModel();
+                    device.Id = reader.GetInt32("id");
+                    device.UserId = reader.GetInt32("UserId");
+                    device.Name = reader.GetString("Name");
+                    device.Description = reader.GetString("Description");
+                    device.Participants = reader.GetInt32("Participants");
+                    device.Location = reader.GetString("Location");
+                    device.Category = reader.GetString("Category");
 
-                    lotteriesList.Add(item);
+                    lotteriesList.Add(device);
                 }
             }
             return lotteriesList;
         }
 
-        public async Task<List<ItemViewModel>> GetPastEndDateItems()
+        public async Task<List<DeviceViewModel>> GetPastEndDateDevices()
         {
-            List<ItemViewModel> items = new List<ItemViewModel>();
+            List<DeviceViewModel> devices = new List<DeviceViewModel>();
 
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT items.id, items.name, items.description, items.location, items.end_datetime, items.fk_status, items.fk_user, items.fk_winner, item_status.name AS status_name " +
-                "FROM items " +
-                "JOIN item_status ON items.fk_status = item_status.id " +
+                "SELECT device_ad.id, device_ad.name, device_ad.description, device_ad.location, device_ad.end_datetime, device_ad.fk_status, device_ad.fk_user, device_ad.fk_winner, device_status.name AS status_name " +
+                "FROM device_ad " +
+                "JOIN device_status ON device_ad.fk_status = device_status.id " +
                 "WHERE end_datetime < NOW() AND fk_status = 1", connection);
 
             using (DbDataReader reader = await command.ExecuteReaderAsync())
             {
                 while (await reader.ReadAsync())
                 {
-                    ItemViewModel item = new ItemViewModel
+                    DeviceViewModel device = new DeviceViewModel
                     {
                         Id = reader.GetInt32("id"),
                         Name = reader.GetString("name"),
@@ -454,23 +454,23 @@ namespace mainykdovanok.Repositories.Item
                         Status = reader.GetString("status_name"),
                         UserId = reader.GetInt32("fk_user")
                     };
-                    items.Add(item);
+                    devices.Add(device);
                 }
             }
-            return items;
+            return devices;
         }
 
-        public async Task<int> DrawLotteryWinner(int itemId)
+        public async Task<int> DrawLotteryWinner(int deviceId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT fk_user FROM item_lottery_participants " +
-                "WHERE fk_item = @fk_item " +
+                "SELECT fk_user FROM device_lottery_participant " +
+                "WHERE fk_device = @fk_device " +
                 "ORDER BY RAND() " +
                 "LIMIT 1", connection);
-            command.Parameters.AddWithValue("@fk_item", itemId);
+            command.Parameters.AddWithValue("@fk_device", deviceId);
 
             using DbDataReader reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
@@ -480,49 +480,49 @@ namespace mainykdovanok.Repositories.Item
             throw new Exception("Failed to draw lottery winner from database!");
         }
 
-        public async Task<bool> UpdateItemStatus(int itemId, int newStatusId)
+        public async Task<bool> UpdateDeviceStatus(int deviceId, int newStatusId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "UPDATE items " +
+                "UPDATE device_ad " +
                 "SET fk_status = @fk_status " +
                 "WHERE id = @id", connection);
             command.Parameters.AddWithValue("@fk_status", newStatusId);
-            command.Parameters.AddWithValue("@id", itemId);
+            command.Parameters.AddWithValue("@id", deviceId);
 
             await command.ExecuteNonQueryAsync();
             return true;
         }
 
-        public async Task<bool> SetItemWinner(int itemId, int winnerId)
+        public async Task<bool> SetDeviceWinner(int deviceId, int winnerId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "UPDATE items " +
+                "UPDATE device_ad " +
                 "SET fk_winner = @fk_winner " +
                 "WHERE id = @id", connection);
             command.Parameters.AddWithValue("@fk_winner", winnerId);
-            command.Parameters.AddWithValue("@id", itemId);
+            command.Parameters.AddWithValue("@id", deviceId);
 
             await command.ExecuteNonQueryAsync();
             return true;
         }
 
-        public async Task<string> GetItemName(int itemId)
+        public async Task<string> GetDeviceName(int deviceId)
         {
             using (MySqlConnection connection = new MySqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
                 using (MySqlCommand command = new MySqlCommand(
                     "SELECT name " +
-                    "FROM items " +
-                    "WHERE id = @itemId ", connection))
+                    "FROM device_ad " +
+                    "WHERE id = @deviceId ", connection))
                 {
-                    command.Parameters.AddWithValue("@itemId", itemId);
+                    command.Parameters.AddWithValue("@deviceId", deviceId);
                     using (DbDataReader reader = await command.ExecuteReaderAsync())
                     {
                         await reader.ReadAsync();
@@ -535,14 +535,14 @@ namespace mainykdovanok.Repositories.Item
             }
         }
 
-        public async Task<List<ItemViewModel>> Search(string searchWord)
+        public async Task<List<DeviceViewModel>> Search(string searchWord)
         {
-            List<ItemViewModel> foundItems = new List<ItemViewModel>();
+            List<DeviceViewModel> foundDevices = new List<DeviceViewModel>();
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-               "SELECT id, name, description, fk_user, fk_status, end_datetime FROM items " +
+               "SELECT id, name, description, fk_user, fk_status, end_datetime FROM device_ad " +
                 "WHERE (name LIKE CONCAT('%', @searchWord, '%') OR description LIKE CONCAT('%', @searchWord, '%')) " +
                 "AND fk_status = 1", connection);
             command.Parameters.AddWithValue("@searchWord", searchWord);
@@ -550,21 +550,21 @@ namespace mainykdovanok.Repositories.Item
             using DbDataReader reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                ItemViewModel item = new()
+                DeviceViewModel Device = new()
                 {
                     Id = reader.GetInt32("id"),
                     Name = reader.GetString("name"),
                     Description = reader.GetString("description"),
                     UserId = reader.GetInt32("fk_user"),
-                    Images = await _imageRepo.GetByItemFirst(reader.GetInt32("id")),
+                    Images = await _imageRepo.GetByDeviceFirst(reader.GetInt32("id")),
                     EndDateTime = reader.GetDateTime("end_datetime")
                 };
-                foundItems.Add(item);
+                foundDevices.Add(Device);
             }
-            return foundItems;
+            return foundDevices;
         }
 
-        public async Task<List<ExchangeViewModel>> GetOffers(int itemId)
+        public async Task<List<ExchangeViewModel>> GetOffers(int deviceId)
         {
             List<ExchangeViewModel> results = new List<ExchangeViewModel>();
 
@@ -573,14 +573,14 @@ namespace mainykdovanok.Repositories.Item
 
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT e.fk_offered_item, e.offer_message, i.name, i.description, i.location, i.end_datetime, CONCAT(u.name, ' ', u.surname) AS user " +
-                "FROM item_exchange_offers AS e " +
-                "INNER JOIN items AS i ON i.id = e.fk_offered_item " +
-        "JOIN users AS u ON i.fk_user = u.user_id " +
-                "WHERE e.fk_main_item = @itemId ",
+                "SELECT e.fk_offered_device, e.offer_message, i.name, i.description, i.location, i.end_datetime, CONCAT(u.name, ' ', u.surname) AS user " +
+                "FROM device_exchange_offer AS e " +
+                "INNER JOIN device_ad AS i ON i.id = e.fk_offered_device " +
+        "JOIN user AS u ON i.fk_user = u.user_id " +
+                "WHERE e.fk_main_device = @deviceId ",
                 connection);
 
-            command.Parameters.AddWithValue("@itemId", itemId);
+            command.Parameters.AddWithValue("@deviceId", deviceId);
 
 
             using (DbDataReader reader = await command.ExecuteReaderAsync())
@@ -589,13 +589,13 @@ namespace mainykdovanok.Repositories.Item
                 {
                     ExchangeViewModel result = new ExchangeViewModel
                     {
-                        Id = reader.GetInt32("fk_offered_item"),
+                        Id = reader.GetInt32("fk_offered_device"),
                         Message = reader.GetString("offer_message"),
                         Name = reader.GetString("name"),
                         Description = reader.GetString("description"),
                         Location = reader.GetString("location"),
                         EndDateTime = reader.GetDateTime("end_datetime"),
-                        Images = await _imageRepo.GetByItem(Convert.ToInt32(reader["fk_offered_item"])),
+                        Images = await _imageRepo.GetByDevice(Convert.ToInt32(reader["fk_offered_device"])),
                         User = reader.GetString("user"),
                     };
                     results.Add(result);
@@ -606,50 +606,50 @@ namespace mainykdovanok.Repositories.Item
 
         }
 
-        public async Task<bool> SubmitExchangeOffer(int itemId, ExchangeOfferModel offer)
+        public async Task<bool> SubmitExchangeOffer(int deviceId, ExchangeOfferModel offer)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                    "INSERT INTO item_exchange_offers (fk_main_item, fk_offered_item, offer_message) VALUES (@fk_main_item, @fk_offered_item, @offer_message)", connection);
+                    "INSERT INTO device_exchange_offer (fk_main_device, fk_offered_device, offer_message) VALUES (@fk_main_device, @fk_offered_device, @offer_message)", connection);
 
             // Add parameters
-            command.Parameters.AddWithValue("@fk_main_item", itemId);
-            command.Parameters.AddWithValue("@fk_offered_item", offer.SelectedItem);
+            command.Parameters.AddWithValue("@fk_main_device", deviceId);
+            command.Parameters.AddWithValue("@fk_offered_device", offer.SelectedDevice);
             command.Parameters.AddWithValue("@offer_message", offer.Message);
 
             await command.ExecuteNonQueryAsync();
             return true;
         }
 
-        public async Task<bool> InsertLetter(int itemId, MotivationalLetterModel letter, int userId)
+        public async Task<bool> InsertLetter(int deviceId, MotivationalLetterModel letter, int userId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "INSERT INTO motivational_letter (letter, fk_user, fk_item) VALUES (@letter, @fk_user, @fk_item)", connection);
+                "INSERT INTO motivational_letter (letter, fk_user, fk_device) VALUES (@letter, @fk_user, @fk_device)", connection);
 
             // Add parameters
             command.Parameters.AddWithValue("@letter", letter.Letter);
             command.Parameters.AddWithValue("@fk_user", userId);
-            command.Parameters.AddWithValue("@fk_item", itemId);
+            command.Parameters.AddWithValue("@fk_device", deviceId);
 
             await command.ExecuteNonQueryAsync();
 
             return true;
         }
 
-        public async Task<bool> HasSubmittedLetter(int itemId, int userId)
+        public async Task<bool> HasSubmittedLetter(int deviceId, int userId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT COUNT(*) FROM motivational_letter WHERE fk_item = @itemId AND fk_user = @userId", connection);
+                "SELECT COUNT(*) FROM motivational_letter WHERE fk_device = @deviceId AND fk_user = @userId", connection);
 
-            command.Parameters.AddWithValue("@itemId", itemId);
+            command.Parameters.AddWithValue("@deviceId", deviceId);
             command.Parameters.AddWithValue("@userId", userId);
 
             int count = Convert.ToInt32(await command.ExecuteScalarAsync());
@@ -657,15 +657,15 @@ namespace mainykdovanok.Repositories.Item
             return count > 0;
         }
 
-        public async Task<bool> HasSubmittedAnswers(int itemId, int userId)
+        public async Task<bool> HasSubmittedAnswers(int deviceId, int userId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT COUNT(*) FROM answers WHERE fk_item = @itemId AND fk_user = @userId", connection);
+                "SELECT COUNT(*) FROM answer WHERE fk_device = @deviceId AND fk_user = @userId", connection);
 
-            command.Parameters.AddWithValue("@itemId", itemId);
+            command.Parameters.AddWithValue("@deviceId", deviceId);
             command.Parameters.AddWithValue("@userId", userId);
 
             int count = Convert.ToInt32(await command.ExecuteScalarAsync());
@@ -673,7 +673,7 @@ namespace mainykdovanok.Repositories.Item
             return count > 0;
         }
 
-        public async Task<Dictionary<string, List<MotivationalLetterViewModel>>> GetLetters(int itemId)
+        public async Task<Dictionary<string, List<MotivationalLetterViewModel>>> GetLetters(int deviceId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
@@ -681,9 +681,9 @@ namespace mainykdovanok.Repositories.Item
             using MySqlCommand command = new MySqlCommand(
                 "SELECT l.id AS id, l.letter, CONCAT(u.name, ' ', u.surname) AS user " +
                 "FROM motivational_letter AS l " +
-                "INNER JOIN users AS u ON l.fk_user = u.user_id " +
-                "WHERE l.fk_item=@itemId", connection);
-            command.Parameters.AddWithValue("@itemId", itemId);
+                "INNER JOIN user AS u ON l.fk_user = u.user_id " +
+                "WHERE l.fk_device=@deviceId", connection);
+            command.Parameters.AddWithValue("@deviceId", deviceId);
 
             using DbDataReader reader = await command.ExecuteReaderAsync();
 
@@ -704,21 +704,21 @@ namespace mainykdovanok.Repositories.Item
             return groupedResults;
         }
 
-        public async Task<bool> InsertQuestions(ItemModel item)
+        public async Task<bool> InsertQuestions(DeviceModel device)
         {
             try
             {
                 using MySqlConnection connection = GetConnection();
                 await connection.OpenAsync();
 
-                foreach (string question in item.Questions)
+                foreach (string question in device.Questions)
                 {
                     using MySqlCommand command = new MySqlCommand(
-                        "INSERT INTO questions (question, fk_item) VALUES (@question, @fk_item)", connection);
+                        "INSERT INTO question (question, fk_device) VALUES (@question, @fk_device)", connection);
 
                     // Add parameters
                     command.Parameters.AddWithValue("@question", question);
-                    command.Parameters.AddWithValue("@fk_item", item.Id);
+                    command.Parameters.AddWithValue("@fk_device", device.Id);
 
                     await command.ExecuteNonQueryAsync();
                 }
@@ -727,42 +727,42 @@ namespace mainykdovanok.Repositories.Item
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Error saving questions to database!");
+                _logger.Error(ex, "Error saving question to database!");
                 return false;
             }
         }
 
-        public async Task<List<ItemQuestionViewModel>> GetQuestions(int itemId)
+        public async Task<List<DeviceQuestionViewModel>> GetQuestions(int deviceId)
         {
-            List<ItemQuestionViewModel> questions = new List<ItemQuestionViewModel>();
+            List<DeviceQuestionViewModel> questions = new List<DeviceQuestionViewModel>();
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT question, id FROM questions where fk_item=@itemId", connection);
-            command.Parameters.AddWithValue("@itemId", itemId);
+                "SELECT question, id FROM question where fk_device=@deviceId", connection);
+            command.Parameters.AddWithValue("@deviceId", deviceId);
 
             using DbDataReader reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
                 int id = reader.GetInt32("id");
                 string text = reader.GetString("question");
-                ItemQuestionViewModel question = new ItemQuestionViewModel { Id = id, Question = text };
+                DeviceQuestionViewModel question = new DeviceQuestionViewModel { Id = id, Question = text };
                 questions.Add(question);
             }
 
             return questions;
         }
 
-        public async Task<List<AnswerModel>> GetAnswers(int itemId)
+        public async Task<List<AnswerModel>> GetAnswers(int deviceId)
         {
             List<AnswerModel> answers = new List<AnswerModel>();
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT id, answer FROM answers WHERE fk_item = @itemId", connection);
-            command.Parameters.AddWithValue("@itemId", itemId);
+                "SELECT id, answer FROM answer WHERE fk_device = @deviceId", connection);
+            command.Parameters.AddWithValue("@deviceId", deviceId);
 
             using DbDataReader reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
@@ -776,18 +776,18 @@ namespace mainykdovanok.Repositories.Item
         }
 
 
-        public async Task<Dictionary<string, List<QuestionnaireViewModel>>> GetQuestionsAndAnswers(int itemId)
+        public async Task<Dictionary<string, List<QuestionnaireViewModel>>> GetQuestionsAndAnswers(int deviceId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
                 "SELECT a.id AS id, a.answer, q.question, CONCAT(u.name, ' ', u.surname) AS user " +
-                "FROM answers AS a " +
-                "INNER JOIN questions AS q ON a.fk_question = q.id " +
-                "INNER JOIN users AS u ON a.fk_user = u.user_id " +
-                "WHERE a.fk_item=@itemId", connection);
-            command.Parameters.AddWithValue("@itemId", itemId);
+                "FROM answer AS a " +
+                "INNER JOIN question AS q ON a.fk_question = q.id " +
+                "INNER JOIN user AS u ON a.fk_user = u.user_id " +
+                "WHERE a.fk_device=@deviceId", connection);
+            command.Parameters.AddWithValue("@deviceId", deviceId);
 
             using DbDataReader reader = await command.ExecuteReaderAsync();
 
@@ -809,7 +809,7 @@ namespace mainykdovanok.Repositories.Item
         }
 
 
-        public async Task<bool> InsertAnswers(int itemId, List<AnswerModel> answers, int userId)
+        public async Task<bool> InsertAnswers(int deviceId, List<AnswerModel> answers, int userId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
@@ -817,13 +817,13 @@ namespace mainykdovanok.Repositories.Item
             foreach (AnswerModel answer in answers)
             {
                 using MySqlCommand command = new MySqlCommand(
-                    "INSERT INTO answers (answer, fk_question, fk_user, fk_item) VALUES (@answer, @fk_question, @fk_user, @fk_item)", connection);
+                    "INSERT INTO answer (answer, fk_question, fk_user, fk_device) VALUES (@answer, @fk_question, @fk_user, @fk_device)", connection);
 
                 // Add parameters
                 command.Parameters.AddWithValue("@answer", answer.Text);
                 command.Parameters.AddWithValue("@fk_question", answer.Question);
                 command.Parameters.AddWithValue("@fk_user", userId);
-                command.Parameters.AddWithValue("@fk_item", itemId);
+                command.Parameters.AddWithValue("@fk_device", deviceId);
 
                 await command.ExecuteNonQueryAsync();
             }
@@ -831,17 +831,17 @@ namespace mainykdovanok.Repositories.Item
             return true;
         }
 
-        public async Task<bool> Update(ItemModel item)
+        public async Task<bool> Update(DeviceModel device)
         {
             using MySqlConnection connection = GetConnection();
             using MySqlCommand command = new MySqlCommand(
-                "UPDATE items SET name=@Name, description=@Description, fk_category=@Category, fk_type=@Type WHERE id=@Id", connection);
+                "UPDATE device_ad SET name=@Name, description=@Description, fk_category=@Category, fk_type=@Type WHERE id=@Id", connection);
 
-            command.Parameters.AddWithValue("@Id", item.Id);
-            command.Parameters.AddWithValue("@Name", item.Name);
-            command.Parameters.AddWithValue("@Description", item.Description);
-            command.Parameters.AddWithValue("@Category", item.Category);
-            command.Parameters.AddWithValue("@Type", item.Type);
+            command.Parameters.AddWithValue("@Id", device.Id);
+            command.Parameters.AddWithValue("@Name", device.Name);
+            command.Parameters.AddWithValue("@Description", device.Description);
+            command.Parameters.AddWithValue("@Category", device.Category);
+            command.Parameters.AddWithValue("@Type", device.Type);
 
             await connection.OpenAsync();
             await command.ExecuteNonQueryAsync();
@@ -849,7 +849,7 @@ namespace mainykdovanok.Repositories.Item
             return true;
         }
 
-        public async Task<bool> DeleteQuestions(int itemId)
+        public async Task<bool> DeleteQuestions(int deviceId)
         {
             try
             {
@@ -857,10 +857,10 @@ namespace mainykdovanok.Repositories.Item
                 await connection.OpenAsync();
 
                 using MySqlCommand command = new MySqlCommand(
-                    "DELETE FROM questions WHERE fk_item = @itemId", connection);
+                    "DELETE FROM question WHERE fk_device = @deviceId", connection);
 
                 // Add parameter
-                command.Parameters.AddWithValue("@itemId", itemId);
+                command.Parameters.AddWithValue("@deviceId", deviceId);
 
                 await command.ExecuteNonQueryAsync();
 
@@ -868,13 +868,13 @@ namespace mainykdovanok.Repositories.Item
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Error deleting questions from database!");
+                _logger.Error(ex, "Error deleting question from database!");
                 return false;
             }
         }
 
 
-        private async Task InsertQuestions(int itemId, List<ItemQuestionViewModel> updatedQuestions)
+        private async Task InsertQuestions(int deviceId, List<DeviceQuestionViewModel> updatedQuestions)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
@@ -882,8 +882,8 @@ namespace mainykdovanok.Repositories.Item
             foreach (var question in updatedQuestions)
             {
                 using MySqlCommand command = new MySqlCommand(
-                    "INSERT INTO questions (fk_item, question) VALUES (@itemId, @questionText)", connection);
-                command.Parameters.AddWithValue("@itemId", itemId);
+                    "INSERT INTO question (fk_device, question) VALUES (@deviceId, @questionText)", connection);
+                command.Parameters.AddWithValue("@deviceId", deviceId);
                 command.Parameters.AddWithValue("@questionText", question.Question);
 
                 await command.ExecuteNonQueryAsync();

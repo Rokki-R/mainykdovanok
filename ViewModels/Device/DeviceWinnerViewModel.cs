@@ -2,16 +2,16 @@
 
 namespace mainykdovanok.ViewModels.Item
 {
-    public class ItemWinnerViewModel
+    public class DeviceWinnerViewModel
     {
         [JsonProperty("winnerId")]
         public int WinnerId { get; set; }
 
-        [JsonProperty("itemId")]
-        public int ItemId { get; set; }
+        [JsonProperty("deviceId")]
+        public int DeviceId { get; set; }
 
-        [JsonProperty("itemName")]
-        public string ItemName { get; set; }
+        [JsonProperty("deviceName")]
+        public string DeviceName { get; set; }
 
         [JsonProperty("phone")]
         public string Phone { get; set; }

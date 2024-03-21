@@ -11,12 +11,12 @@ namespace mainykdovanok.Services
 {
     public class QuestionnaireService
     {
-        private ItemRepo _itemRepo;
+        private DeviceRepo _deviceRepo;
         private UserRepo _userRepo;
 
         public QuestionnaireService()
         {
-            _itemRepo = new ItemRepo();
+            _deviceRepo = new DeviceRepo();
             _userRepo = new UserRepo();
         }
 
@@ -24,14 +24,14 @@ namespace mainykdovanok.Services
         {
             SendEmail emailer = new SendEmail();
 
-            string itemName = await _itemRepo.GetItemName(winner.ItemId);
+            string deviceName = await _deviceRepo.GetDeviceName(winner.DeviceId);
             UserModel user = await _userRepo.GetUser(winner.User);
 
-            await _itemRepo.SetItemWinner(winner.ItemId, user.Id);
+            await _deviceRepo.SetDeviceWinner(winner.DeviceId, user.Id);
 
-            await emailer.notifyQuestionnaireWinner(user.Email, itemName, winner.ItemId);
+            await emailer.notifyQuestionnaireWinner(user.Email, deviceName, winner.DeviceId);
 
-            await _itemRepo.UpdateItemStatus(winner.ItemId, 2);
+            await _deviceRepo.UpdateDeviceStatus(winner.DeviceId, 2);
         }
     }
 }

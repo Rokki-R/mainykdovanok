@@ -31,13 +31,13 @@ namespace mainykdovanok.Repositories.Type
                 .CreateLogger();
         }
 
-        public async Task<List<ItemTypeViewModel>> GetAll()
+        public async Task<List<DeviceTypeViewModel>> GetAll()
         {
-            List<ItemTypeViewModel> types = new List<ItemTypeViewModel>();
+            List<DeviceTypeViewModel> types = new List<DeviceTypeViewModel>();
 
             using (var connection = new MySqlConnection(_connectionString))
             {
-                using (var command = new MySqlCommand("SELECT * FROM item_type", connection))
+                using (var command = new MySqlCommand("SELECT * FROM device_type", connection))
                 {
                     await connection.OpenAsync();
                     var dataTable = new DataTable();
@@ -47,7 +47,7 @@ namespace mainykdovanok.Repositories.Type
                     }
 
                     types = (from DataRow dt in dataTable.Rows
-                             select new ItemTypeViewModel()
+                             select new DeviceTypeViewModel()
                              {
                                  Id = Convert.ToInt32(dt["id"]),
                                  Name = dt["type"].ToString()
@@ -58,13 +58,13 @@ namespace mainykdovanok.Repositories.Type
             }
         }
 
-        public async Task<ItemTypeViewModel> GetType(int id)
+        public async Task<DeviceTypeViewModel> GetType(int id)
         {
-            ItemTypeViewModel type = null;
+            DeviceTypeViewModel type = null;
 
             using (var connection = new MySqlConnection(_connectionString))
             {
-                using (var command = new MySqlCommand("SELECT * FROM item_type WHERE id = @Id", connection))
+                using (var command = new MySqlCommand("SELECT * FROM device_type WHERE id = @Id", connection))
                 {
                     command.Parameters.AddWithValue("@Id", id);
                     await connection.OpenAsync();
@@ -72,7 +72,7 @@ namespace mainykdovanok.Repositories.Type
 
                     if (await reader.ReadAsync())
                     {
-                        type = new ItemTypeViewModel
+                        type = new DeviceTypeViewModel
                         {
                             Id = Convert.ToInt32(reader["id"]),
                             Name = reader["type"].ToString()

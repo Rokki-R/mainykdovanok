@@ -30,7 +30,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
         [HttpPost("login")]
         public async Task<IActionResult> login (LoginViewModel loginData)
         {
-            string sql = "SELECT user_id, name, surname, password_hash, password_salt, verification_token, user_role FROM users WHERE email = @email";
+            string sql = "SELECT user_id, name, surname, password_hash, password_salt, verification_token, user_role FROM user WHERE email = @email";
             var parameters = new { email = loginData.Email };
             var result = await _userRepo.LoadData(sql, parameters);
 
@@ -116,32 +116,19 @@ namespace mainykdovanok.Controllers.UserAuthentication
             string password_hash = PasswordHash.hashPassword(registration.Password, out salt);
             string password_salt = Convert.ToBase64String(salt);
 
-            byte[] tokenData = new byte[32]; // 256-bit token
+            byte[] tokenData = new byte[32];
             using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
             {
                 rng.GetBytes(tokenData);
             }
 
-            string token = BitConverter.ToString(tokenData).Replace("-", ""); // Convert byte array to hex string
+            string token = BitConverter.ToString(tokenData).Replace("-", "");
 
-            bool success = await _userRepo.SaveData("INSERT INTO users (name, surname, email, password_hash, password_salt, verification_token) VALUES (@name, @surname, @email, @password_hash, @password_salt, @token)",
+            bool success = await _userRepo.SaveData("INSERT INTO user (name, surname, email, password_hash, password_salt, verification_token) VALUES (@name, @surname, @email, @password_hash, @password_salt, @token)",
                     new { registration.Name, registration.Surname, registration.Email, password_hash, password_salt, token });
 
             if (success)
-            {
-                //string verifyUrl;
-                //verifyUrl = $"https://localhost:44456/verifyemail?email={HttpUtility.UrlEncode(registration.Email)}&token={HttpUtility.UrlEncode(token)}";
-
-                //SendEmail emailer = new SendEmail();
-                //if (await emailer.verifyEmail(registration.Email, verifyUrl))
-                // {
-                //  return Ok();
-                //}
-                //else
-                //{
-                //    _logger.LogError("Failed to send email");
-                //   return StatusCode(401);
-                // }
+            {               
                 return Ok();
 
             }
@@ -151,31 +138,6 @@ namespace mainykdovanok.Controllers.UserAuthentication
             }
         }
 
-        [HttpPost("verifyEmail")]
-        public async Task<IActionResult> VerifyEmail(EmailVerificationViewModel emailVerify)
-        {
-            string sql = "SELECT verification_token FROM users WHERE email = @email AND verification_token = @token";
-            var parameters = new { email = emailVerify.Email, token = emailVerify.Token };
-            var result = await _userRepo.LoadData(sql, parameters);
-
-            if (result.Rows.Count == 0)
-            {
-                return StatusCode(404);
-            }
-            else
-            {
-                bool success = await _userRepo.SaveData("UPDATE users SET verification_token = NULL WHERE email = @email AND  verification_token = @token",
-                    new { email = emailVerify.Email, token = emailVerify.Token });
-                if (success)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest();
-                }
-            }
-        }
 
         [HttpGet("isLoggedIn")]
         public IActionResult IsLoggedIn()
@@ -218,7 +180,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
-            string sql = "SELECT name, surname, email, items_gifted, items_won FROM users WHERE user_id = @user_id";
+            string sql = "SELECT name, surname, email, devices_gifted, devices_won FROM user WHERE user_id = @user_id";
             var parameters = new { user_id = userId };
             var result = await _userRepo.LoadData(sql, parameters);
 
@@ -230,10 +192,10 @@ namespace mainykdovanok.Controllers.UserAuthentication
             string name = result.Rows[0]["name"].ToString();
             string surname = result.Rows[0]["surname"].ToString();
             string email = result.Rows[0]["email"].ToString();
-            int itemsGifted = Convert.ToInt32(result.Rows[0]["items_gifted"]);
-            int itemsWon = Convert.ToInt32(result.Rows[0]["items_won"]);
+            int devicesGifted = Convert.ToInt32(result.Rows[0]["devices_gifted"]);
+            int devicesWon = Convert.ToInt32(result.Rows[0]["devices_won"]);
 
-            sql = "SELECT image FROM user_profile_images WHERE fk_user = @user_id";
+            sql = "SELECT image FROM user_profile_image WHERE fk_user = @user_id";
             parameters = new { user_id = userId };
             result = await _userRepo.LoadData(sql, parameters);
             byte[] user_profile_image = null;
@@ -243,7 +205,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
                 user_profile_image = (byte[])result.Rows[0]["image"];
             }
 
-            return Ok(new { name, surname, email, itemsGifted, itemsWon, user_profile_image });
+            return Ok(new { name, surname, email, devicesGifted, devicesWon, user_profile_image });
         }
 
         [HttpPost("updateProfileDetails")]
@@ -274,7 +236,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
             int user_id = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
             // Check if there already is a user with the same email.
-            string sql = "SELECT user_id FROM users WHERE email = @email";
+            string sql = "SELECT user_id FROM user WHERE email = @email";
             var parameters_email = new { email };
             var result_email = await _userRepo.LoadData(sql, parameters_email);
 
@@ -287,8 +249,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
                 }
             }
 
-            // Retrieve the user's hashed password and salt, then compare it to the new hashed plain text version.
-            sql = "SELECT password_hash, password_salt FROM users WHERE user_id = @user_id";
+            sql = "SELECT password_hash, password_salt FROM user WHERE user_id = @user_id";
             var parameters_password = new { user_id };
             var result_password = await _userRepo.LoadData(sql, parameters_password);
 
@@ -312,13 +273,13 @@ namespace mainykdovanok.Controllers.UserAuthentication
                 string password_hash = PasswordHash.hashPassword(new_password, out salt);
                 password_salt = Convert.ToBase64String(salt);
 
-                sql = "UPDATE users SET name = @name, surname = @surname, email = @email, password_hash = @password_hash, password_salt = @password_salt WHERE user_id = @user_id";
+                sql = "UPDATE user SET name = @name, surname = @surname, email = @email, password_hash = @password_hash, password_salt = @password_salt WHERE user_id = @user_id";
                 var parameters_update = new { name, surname, email, password_hash, password_salt, user_id };
                 await _userRepo.SaveData(sql, parameters_update);
             }
             else if (old_password == "" && new_password == "")
             {
-                sql = "UPDATE users SET name = @name, surname = @surname, email = @email WHERE user_id = @user_id";
+                sql = "UPDATE user SET name = @name, surname = @surname, email = @email WHERE user_id = @user_id";
                 var parameters_update = new { name, surname, email, user_id };
                 await _userRepo.SaveData(sql, parameters_update);
             }
@@ -329,18 +290,18 @@ namespace mainykdovanok.Controllers.UserAuthentication
 
             if (image != null)
             {
-                sql = "SELECT id FROM user_profile_images WHERE fk_user = @user_id";
+                sql = "SELECT id FROM user_profile_image WHERE fk_user = @user_id";
                 var parameters_user_profile_image = new { user_id };
                 var result_profile_image = await _userRepo.LoadData(sql, parameters_user_profile_image);
                 if (result_profile_image.Rows.Count > 0)
                 {
-                    sql = "UPDATE user_profile_images SET image = @user_profile_image WHERE fk_user = @user_id";
+                    sql = "UPDATE user_profile_image SET image = @user_profile_image WHERE fk_user = @user_id";
                     var parameters_update_user_profile_image = new { user_profile_image = imageBytes, user_id };
                     await _userRepo.SaveData(sql, parameters_update_user_profile_image);
                 }
                 else
                 {
-                    sql = "INSERT INTO user_profile_images (image, fk_user) VALUES (@user_profile_image, @user_id)";
+                    sql = "INSERT INTO user_profile_image (image, fk_user) VALUES (@user_profile_image, @user_id)";
                     var parameters_insert_user_profile_image = new { user_profile_image = imageBytes, user_id };
                     await _userRepo.SaveData(sql, parameters_insert_user_profile_image);
                 }
@@ -358,7 +319,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
             }
             int user_id = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
-            string sql = "SELECT image FROM user_profile_images WHERE fk_user = @user_id";
+            string sql = "SELECT image FROM user_profile_image WHERE fk_user = @user_id";
             var parameters = new { user_id };
             var result = await _userRepo.LoadData(sql, parameters);
 
@@ -397,7 +358,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
         [HttpGet("getUserProfileImage/{userId}")]
         public async Task<IActionResult> GetUserProfileImage(int userId)
         {
-            string sql = "SELECT image FROM user_profile_images WHERE fk_user = @userId";
+            string sql = "SELECT image FROM user_profile_image WHERE fk_user = @userId";
             var parameters = new { userId };
             var result = await _userRepo.LoadData(sql, parameters);
 
@@ -427,7 +388,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
         [HttpPost("forgotPassword")]
         public async Task<IActionResult> ForgotPassword(PasswordResetViewModel resetRequest)
         {
-            string sql = "SELECT email FROM users WHERE email = @email";
+            string sql = "SELECT email FROM user WHERE email = @email";
             var parameters = new { email = resetRequest.Email };
             var result = await _userRepo.LoadData(sql, parameters);
 
@@ -448,7 +409,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
                 changeTimer = changeTimer.AddHours(1);
                 string time = changeTimer.ToString("yyyy-MM-dd HH:mm:ss.fff");
 
-                bool success = await _userRepo.SaveData("UPDATE users SET password_change_token = @token, password_change_time = @time WHERE email = @email",
+                bool success = await _userRepo.SaveData("UPDATE user SET password_change_token = @token, password_change_time = @time WHERE email = @email",
                                 new { token, time, resetRequest.Email });
 
                 if (!success) { return BadRequest(); }
@@ -472,7 +433,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
         [HttpPost("changePassword")]
         public async Task<IActionResult> ChangePassword(PasswordChangeViewModel passwordChange)
         {
-            string sql = "SELECT password_change_token, password_change_time FROM users WHERE email = @email AND password_change_token = @token";
+            string sql = "SELECT password_change_token, password_change_time FROM user WHERE email = @email AND password_change_token = @token";
             var parameters = new { email = passwordChange.Email, token = passwordChange.Token };
             var result = await _userRepo.LoadData(sql, parameters);
 
@@ -490,7 +451,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
                     string password_hash = PasswordHash.hashPassword(passwordChange.Password, out salt);
                     string password_salt = Convert.ToBase64String(salt);
 
-                    bool success = await _userRepo.SaveData("UPDATE users SET password_hash = @password_hash, password_salt = @password_salt, password_change_token = NULL, password_change_time = NULL WHERE password_change_token = @token",
+                    bool success = await _userRepo.SaveData("UPDATE user SET password_hash = @password_hash, password_salt = @password_salt, password_change_token = NULL, password_change_time = NULL WHERE password_change_token = @token",
                     new { password_hash, password_salt, token = passwordChange.Token });
 
                     if (success)

@@ -31,13 +31,13 @@ namespace mainykdovanok.Repositories.Category
                 .CreateLogger();
         }
 
-        public async Task<List<ItemCategoryViewModel>> GetAll()
+        public async Task<List<DeviceCategoryViewModel>> GetAll()
         {
-            List<ItemCategoryViewModel> categories = new List<ItemCategoryViewModel>();
+            List<DeviceCategoryViewModel> categories = new List<DeviceCategoryViewModel>();
 
             using (var connection = new MySqlConnection(_connectionString))
             {
-                using (var command = new MySqlCommand("SELECT * FROM item_categories", connection))
+                using (var command = new MySqlCommand("SELECT * FROM device_category", connection))
                 {
                     await connection.OpenAsync();
                     var dataTable = new DataTable();
@@ -47,7 +47,7 @@ namespace mainykdovanok.Repositories.Category
                     }
 
                     categories = (from DataRow dt in dataTable.Rows
-                                  select new ItemCategoryViewModel()
+                                  select new DeviceCategoryViewModel()
                                   {
                                       Id = Convert.ToInt32(dt["id"]),
                                       Name = dt["name"].ToString()

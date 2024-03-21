@@ -38,31 +38,7 @@ namespace mainykdovanok.Tools
                 .WriteTo.Console()
                 .CreateLogger();
         }
-
-        public async Task<bool> verifyEmail(string email, string verifyURL)
-        {
-            message.To.Clear();
-            message.To.Add(new MailAddress(email));
-
-            message.Subject = "Patvirtinkite savo el. pašto adresą";
-            message.Body = $"<html><body><p>Sveiki,</p>" +
-                $"<p>Norint naudotis mainykdovanok.lt svetainę, turite patvirtinti savo el. paštą. Tai galite padaryti paspaudę šią nuorodą: {verifyURL}</p>" +
-                $"<p>Linkėjimai,</p>" +
-                $"<p>mainykdovanok.lt</p>" +
-                $"</body></html>";
-
-            try
-            {
-                smtpClient.Send(message);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error("Error sending email for verification: {0}", ex.Message);
-                return false;
-            }
-        }
-        public async Task notifyLotteryPosterWin(string email, string itemName, string winnerEmail)
+        public async Task notifyLotteryPosterWin(string email, string deviceName, string winnerEmail)
         {
             message.To.Clear();
             message.To.Add(new MailAddress(email));
@@ -70,7 +46,7 @@ namespace mainykdovanok.Tools
             message.Subject = "Išrinktas laimėtojas Jūsų skelbimui";
             message.Body = $"<html><body>" +
                            $"<p>Sveiki,</p>" +
-                           $"<p>Jūsų skelbimo loterijos <b>„{itemName}“</b> laimėtojas yra <b>{winnerEmail}</b>.</p>" +
+                           $"<p>Jūsų skelbimo loterijos <b>„{deviceName}“</b> laimėtojas yra <b>{winnerEmail}</b>.</p>" +
                            $"<p>Laimėtojui išsiųstas laiškas su nuoroda į formą, kurioje paprašoma pateikti telefono numerį, kad galėtumėte susisiekti su jais.</p>" +
                            $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
                            $"<p>Linkėjimai,</p>" +
@@ -87,18 +63,18 @@ namespace mainykdovanok.Tools
             }
         }
 
-        public async Task notifyLotteryWinner(string email, string itemName, int itemId)
+        public async Task notifyLotteryWinner(string email, string deviceName, int deviceId)
         {
             message.To.Clear();
             message.To.Add(new MailAddress(email));
 
             message.Subject = "Laimėjote mainykdovanok.lt skelbimo loteriją!";
 
-            string url = $"https://localhost:44492/laimejimas/{itemId}";
+            string url = $"https://localhost:44492/laimejimas/{deviceId}";
 
             message.Body = $"<html><body>" +
                            $"<p>Sveiki,</p>" +
-                           $"<p>Jūs tapote laimėtoju skelbimo „<b>{itemName}</b>“ loterijoje!</p>" +
+                           $"<p>Jūs tapote laimėtoju skelbimo „<b>{deviceName}</b>“ loterijoje!</p>" +
                            $"<p>Kad suderinti pristatymą ar atsiėmimą, prašome eiti į šią nuorodą:</p>" +
                            $"<p><a href='{url}'>{url}</a></p>" +
                            $"<p>Šiame puslapyje turėsite galimybę pateikti savo telefono numerį, kad skelbėjas galėtų su Jumis susisiekti.</p>" +
@@ -117,7 +93,7 @@ namespace mainykdovanok.Tools
                 _logger.Error("Error sending email to lottery winner: {0}", ex.Message);
             }
         }
-        public async Task notifyUserItemExpiration(string email, string itemName, bool isLottery = false)
+        public async Task notifyUserDeviceExpiration(string email, string deviceName, bool isLottery = false)
         {
             message.To.Clear();
             message.To.Add(new MailAddress(email));
@@ -125,7 +101,7 @@ namespace mainykdovanok.Tools
             message.Subject = "Jūsų skelbimo galiojimo laikas pasibaigė";
             message.Body = $"<html><body>" +
                            $"<p>Sveiki,</p>" +
-                           $"<p>Pasibaigė Jūsų skelbimo <b>„{itemName}“</b> galiojimo laikas.</p>";
+                           $"<p>Pasibaigė Jūsų skelbimo <b>„{deviceName}“</b> galiojimo laikas.</p>";
 
             if (isLottery)
                 message.Body += $"<p>Dėl nepakankamo dalyvių skaičiaus skelbimas buvo atšauktas.</p>";
@@ -144,18 +120,18 @@ namespace mainykdovanok.Tools
             }
         }
 
-        public async Task notifyLetterWinner(string email, string itemName, int itemId)
+        public async Task notifyLetterWinner(string email, string deviceName, int deviceId)
         {
             message.To.Clear();
             message.To.Add(new MailAddress(email));
 
             message.Subject = "Laimėjote mainykdovanok.lt skelbimą!";
 
-            string url = $"https://localhost:44492/laimejimas/{itemId}";
+            string url = $"https://localhost:44492/laimejimas/{deviceId}";
 
             message.Body = $"<html><body>" +
                            $"<p>Sveiki,</p>" +
-                           $"<p>Jūs tapote „<b>{itemName}</b>“ skelbimo laimėtoju!</p>" +
+                           $"<p>Jūs tapote „<b>{deviceName}</b>“ skelbimo laimėtoju!</p>" +
                            $"<p>Iš visų motyvacinių laiškų, savininkui labiausiai patiko Jūsų!</p>" +
                            $"<p>Kad suderinti pristatymą ar atsiėmimą, prašome eiti į šią nuorodą:</p>" +
                            $"<p>{url}</p>" +
@@ -172,10 +148,10 @@ namespace mainykdovanok.Tools
             }
             catch (Exception ex)
             {
-                _logger.Error("Error sending email to item winner: {0}", ex.Message);
+                _logger.Error("Error sending email to device winner: {0}", ex.Message);
             }
         }
-        public async Task<bool> sendWinnerDetails(string email, string itemName, string phoneNumber, string additionalMessage)
+        public async Task<bool> sendWinnerDetails(string email, string deviceName, string phoneNumber, string additionalMessage)
         {
             message.To.Clear();
             message.To.Add(new MailAddress(email));
@@ -185,7 +161,7 @@ namespace mainykdovanok.Tools
             string extraMessageBody = additionalMessage.Trim().Length > 0 ? $"<p>Papildoma žinutė iš laimėtojo: <b>{additionalMessage}</b></p>" : "";
             message.Body = $"<html><body>" +
                            $"<p>Sveiki,</p>" +
-                           $"<p>Jūsų skelbimo „<b>{itemName}</b>“ laimėtojas pateikė savo susisiekimo duomenis:</p>" +
+                           $"<p>Jūsų skelbimo „<b>{deviceName}</b>“ laimėtojas pateikė savo susisiekimo duomenis:</p>" +
                            $"<p>Telefono numeris: <b>{phoneNumber}</b></p>" +
                            $"<p>{extraMessageBody}</p>" +
                            $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
@@ -205,19 +181,19 @@ namespace mainykdovanok.Tools
                 return false;
             }
         }
-        public async Task notifyOfferWinner(string email, string itemName, int itemId, string offerItemName)
+        public async Task notifyOfferWinner(string email, string deviceName, int deviceId, string offerDeviceName)
         {
             message.To.Clear();
             message.To.Add(new MailAddress(email));
 
             message.Subject = "Sėkmingi mainai skelbimais mainykdovanok.lt svetainėje!";
 
-            string url = $"https://localhost:44492/laimejimas/{itemId}";
+            string url = $"https://localhost:44492/laimejimas/{deviceId}";
 
             message.Body = $"<html><body>" +
                            $"<p>Sveiki,</p>" +
-                           $"<p>Su jumis sutiko mainyti „<b>{itemName}</b>“ prietaisą!</p>" +
-                           $"<p>Iš visų pasiūlymų, savininkui labiausiai patiko jūsų „<b>{offerItemName}</b>“!" +
+                           $"<p>Su jumis sutiko mainyti „<b>{deviceName}</b>“ prietaisą!</p>" +
+                           $"<p>Iš visų pasiūlymų, savininkui labiausiai patiko jūsų „<b>{offerDeviceName}</b>“!" +
                            $"<p>Kad suderinti pristatymą ar atsiėmimą, prašome eiti į šią nuorodą:</p>" +
                            $"<p>{url}</p>" +
                            $"<p>Šiame puslapyje turėsite galimybę pateikti savo telefono numerį, kad skelbėjas galėtų su Jumis susisiekti.</p>" +
@@ -260,18 +236,18 @@ namespace mainykdovanok.Tools
             }
         }
 
-        public async Task notifyQuestionnaireWinner(string email, string itemName, int itemId)
+        public async Task notifyQuestionnaireWinner(string email, string deviceName, int deviceId)
         {
             message.To.Clear();
             message.To.Add(new MailAddress(email));
 
             message.Subject = "Laimėjote mainykdovanok.lt skelbimo klausimyną!";
 
-            string url = $"https://localhost:44492/laimejimas/{itemId}";
+            string url = $"https://localhost:44492/laimejimas/{deviceId}";
 
             message.Body = $"<html><body>" +
                            $"<p>Sveiki,</p>" +
-                           $"<p>Jūs tapote laimėtoju skelbimo „<b>{itemName}</b>“ klausimyne!</p>" +
+                           $"<p>Jūs tapote laimėtoju skelbimo „<b>{deviceName}</b>“ klausimyne!</p>" +
                            $"<p>Iš visų atsakymų, savininkui labiausiai patiko Jūsų!</p>" +
                            $"<p>Kad suderinti pristatymą ar atsiėmimą, prašome eiti į šią nuorodą:</p>" +
                            $"<p><a href='{url}'>{url}</a></p>" +

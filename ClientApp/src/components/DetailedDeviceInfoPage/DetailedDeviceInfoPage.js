@@ -4,32 +4,32 @@ import { useNavigate } from 'react-router';
 import { Container, Row, Col, Card, ListGroup, ListGroupItem, Button, Spinner, Carousel } from "react-bootstrap";
 import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
-import './DetailedItemInfoPage.css';
+import './DetailedDeviceInfoPage.css';
 
-export const DetailedItemInfoPage = () => {
-    const { itemId } = useParams();
-    const [item, setItem] = useState(null);
+export const DetailedDeviceInfoPage = () => {
+    const { deviceId } = useParams();
+    const [device, setDevice] = useState(null);
     const [viewerId, setViewerId] = useState(null);
-    const [itemLetters, setItemLetters] = useState(null);
-    const [itemOffers, setItemOffers] = useState(null);
-    const [itemLotteryParticipants, setItemLotteryParticipants] = useState(null);
+    const [deviceLetters, setDeviceLetters] = useState(null);
+    const [deviceOffers, setDeviceOffers] = useState(null);
+    const [deviceLotteryParticipants, setDeviceLotteryParticipants] = useState(null);
     const [isSubmitting, setSubmitting] = useState(false);
-    const [itemQuestions_Answers, setItemQuestions_Answers] = useState(null);
+    const [deviceQuestions_Answers, setDeviceQuestions_Answers] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchItem = async () => {
+        const fetchDevice = async () => {
             try {
-                const response = await axios.get(`api/item/getItem/${itemId}`);
-                setItem(response.data);
+                const response = await axios.get(`api/device/getDevice/${deviceId}`);
+                setDevice(response.data);
 
             } catch (error) {
                 toast.error('Įvyko klaida, susisiekite su administratoriumi!');
             }
         };
 
-        fetchItem();
-    }, [itemId]);
+        fetchDevice();
+    }, [deviceId]);
 
     useEffect(() => {
         const fetchViewerId = async () => {
@@ -50,11 +50,11 @@ export const DetailedItemInfoPage = () => {
     }, []);
     
     useEffect(() => {
-        if (item && viewerId && item.userId !== viewerId) {
+        if (device && viewerId && device.userId !== viewerId) {
             navigate('/');
             toast.error('Negalite peržiūrėti šio skelbimo informacijos');
         }
-    }, [item, viewerId, navigate]);
+    }, [device, viewerId, navigate]);
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -64,18 +64,18 @@ export const DetailedItemInfoPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                if (item && item.type === 'Motyvacinis laiškas') {
-                    const response = await axios.get(`api/item/getLetters/${itemId}`);
-                    setItemLetters(response.data);
-                } else if (item && item.type === 'Mainai į kita prietaisą') {
-                    const response = await axios.get(`api/item/getOffers/${itemId}`);
-                    setItemOffers(response.data);
-                } else if (item && item.type === 'Loterija') {
-                    const response = await axios.get(`api/item/getLotteryParticipants/${itemId}`);
-                    setItemLotteryParticipants(response.data);
-                } else if (item && item.type === 'Klausimynas') {
-                    const response = await axios.get(`api/item/getQuestionsAndAnswers/${itemId}`);
-                    setItemQuestions_Answers(response.data);
+                if (device && device.type === 'Motyvacinis laiškas') {
+                    const response = await axios.get(`api/device/getLetters/${deviceId}`);
+                    setDeviceLetters(response.data);
+                } else if (device && device.type === 'Mainai į kita prietaisą') {
+                    const response = await axios.get(`api/device/getOffers/${deviceId}`);
+                    setDeviceOffers(response.data);
+                } else if (device && device.type === 'Loterija') {
+                    const response = await axios.get(`api/device/getLotteryParticipants/${deviceId}`);
+                    setDeviceLotteryParticipants(response.data);
+                } else if (device && device.type === 'Klausimynas') {
+                    const response = await axios.get(`api/device/getQuestionsAndAnswers/${deviceId}`);
+                    setDeviceQuestions_Answers(response.data);
                 }
             } catch (error) {
                 if(error.status.code === 403)
@@ -89,17 +89,17 @@ export const DetailedItemInfoPage = () => {
         };
     
         fetchData();
-    }, [item, itemId]);
+    }, [device, deviceId]);
     
 
         const handleChosenLetterWinner = async (user) => {
             const requestBody = {
-                itemId,
+                deviceId,
                 user
             };
             setSubmitting(true);
             
-            await axios.post(`/api/item/chooseLetterWinner`, requestBody)
+            await axios.post(`/api/device/chooseLetterWinner`, requestBody)
             .then(response => {
                 if (response) {
                     toast.success('Išsirinkote, kam padovanoti! Laimėtojui išsiųstas el. laiškas dėl susisiekimo.');
@@ -126,12 +126,12 @@ export const DetailedItemInfoPage = () => {
 
     const handleChosenQuestionnaireWinner = async (user) => {
         const requestBody = {
-            itemId,
+            deviceId,
             user
         };
         setSubmitting(true);
         
-        await axios.post(`/api/item/chooseQuestionnaireWinner`, requestBody)
+        await axios.post(`/api/device/chooseQuestionnaireWinner`, requestBody)
         .then(response => {
             if (response) {
                 toast.success('Išsirinkote, kam padovanoti! Laimėtojui išsiųstas el. laiškas dėl susisiekimo.');
@@ -155,16 +155,16 @@ export const DetailedItemInfoPage = () => {
         setSubmitting(false);
 };
 
-    const handleOfferWinner = async (user, itemName, userItemId) => {
+    const handleOfferWinner = async (user, deviceName, userDeviceId) => {
         const requestBody = {
-            itemId,
+            deviceId,
             user,
-            itemName,
-            userItemId
+            deviceName,
+            userDeviceId
         };
         setSubmitting(true);
 
-        await axios.post(`/api/item/chooseExchangeOfferWinner`, requestBody)
+        await axios.post(`/api/device/chooseExchangeOfferWinner`, requestBody)
             .then(response => {
                 if (response) {
                     toast.success('Išsirinkote, su kuo mainyti! Laimėtojui išsiųstas el. laiškas dėl susisiekimo.');
@@ -185,43 +185,43 @@ export const DetailedItemInfoPage = () => {
         setSubmitting(false);
     };
 
-    return item && ((item.type === 'Motyvacinis laiškas' && itemLetters) || (item.type === 'Loterija' && itemLotteryParticipants) || (item.type === 'Mainai į kita prietaisą' && itemOffers) || (item.type === 'Klausimynas' && itemQuestions_Answers)) ? (
+    return device && ((device.type === 'Motyvacinis laiškas' && deviceLetters) || (device.type === 'Loterija' && deviceLotteryParticipants) || (device.type === 'Mainai į kita prietaisą' && deviceOffers) || (device.type === 'Klausimynas' && deviceQuestions_Answers)) ? (
         <div className="my-div" style={{ marginTop: "120px" }}>
-            {item.type === 'Mainai į kita prietaisą' && (
+            {device.type === 'Mainai į kita prietaisą' && (
                 <Container className="home">
                     <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Pasiūlymai mainams</h3>
                     <Row className="justify-content-center">
-                        {itemOffers.map((item) => (
-                            <Col sm={4} key={item.id} style={{ width: '300px' }}>
+                        {deviceOffers.map((device) => (
+                            <Col sm={4} key={device.id} style={{ width: '300px' }}>
                                 <Card className="mb-4">
                                     <Carousel style={{ height: "250px" }} >
-                                        {item.images && item.images.map((image, index) => (
+                                        {device.images && device.images.map((image, index) => (
                                             <Carousel.Item key={index}>
                                                 <img
                                                     className="d-block w-100"
                                                     style={{ objectFit: "cover" }}
                                                     src={`data:image/png;base64,${image.data}`}
-                                                    alt={item.name}
+                                                    alt={device.name}
                                                 />
                                             </Carousel.Item>
                                         ))}
                                     </Carousel>
                                     <Card.Body>
-                                        <Card.Title>{item.name}</Card.Title>
-                                        <Card.Text>{item.description}</Card.Text>
-                                        <Card.Text>{item.message}</Card.Text>
-                                        <Card.Text>-{item.user}</Card.Text>
+                                        <Card.Title>{device.name}</Card.Title>
+                                        <Card.Text>{device.description}</Card.Text>
+                                        <Card.Text>{device.message}</Card.Text>
+                                        <Card.Text>-{device.user}</Card.Text>
                                         <ul className="list-group list-group-flush mb-3">
                                             <li className="list-group-item d-flex justify-content-between align-items-center">
-                                                <span>{item.location}</span>
+                                                <span>{device.location}</span>
                                             </li>
                                             <li className="list-group-item d-flex justify-content-between align-items-center">
                                                 <span>Baigiasi:</span>
-                                                <span>{new Date(item.endDateTime).toLocaleString('lt-LT').slice(5, -3)}</span>
+                                                <span>{new Date(device.endDateTime).toLocaleString('lt-LT').slice(5, -3)}</span>
                                             </li>
                                         </ul>
                                         <div className="d-flex justify-content-end">
-                                            <Button variant="primary" disabled={isSubmitting} onClick={() => handleOfferWinner(item.user, item.name, item.id)}>Mainyti!</Button>
+                                            <Button variant="primary" disabled={isSubmitting} onClick={() => handleOfferWinner(device.user, device.name, device.id)}>Mainyti!</Button>
                                         </div>
                                     </Card.Body>
                                 </Card>
@@ -231,14 +231,14 @@ export const DetailedItemInfoPage = () => {
                 </Container>
             )}
 
-            {item.type === 'Motyvacinis laiškas' && (
+            {device.type === 'Motyvacinis laiškas' && (
                 <ListGroup>
-                    {Object.keys(itemLetters).length > 0 ? (
-                        Object.keys(itemLetters.letters).map((user) => (
+                    {Object.keys(deviceLetters).length > 0 ? (
+                        Object.keys(deviceLetters.letters).map((user) => (
                             <Container key={user}>
                                 <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenLetterWinner(user)}>Atiduoti</Button>
                                 <ListGroupItem variant="primary"><b>Motyvacinis laiškas:</b> {user} </ListGroupItem>
-                                {itemLetters.letters[user].map((letter, index) => (
+                                {deviceLetters.letters[user].map((letter, index) => (
                                     <ListGroup key={letter.id}>
                                         <ListGroupItem variant="light"> {letter.letter} </ListGroupItem>
                                     </ListGroup>
@@ -252,11 +252,11 @@ export const DetailedItemInfoPage = () => {
                     )}
                 </ListGroup>
             )}
-            {item.type === 'Loterija' && (
+            {device.type === 'Loterija' && (
                 <ListGroup>
                     <ListGroupItem variant="primary"><b>Loterijos dalyviai</b></ListGroupItem>
-                    {itemLotteryParticipants.length > 0 ? (
-                        itemLotteryParticipants.map((user) => (
+                    {deviceLotteryParticipants.length > 0 ? (
+                        deviceLotteryParticipants.map((user) => (
                             <ListGroupItem key={user.id} className="d-flex justify-content-between align-items-center">
                                 <div className="d-flex align-items-center">
                                     {user.name} {user.surname}
@@ -271,14 +271,14 @@ export const DetailedItemInfoPage = () => {
                     )}
                 </ListGroup>
             )}
-            {item.type === 'Klausimynas' && (
+            {device.type === 'Klausimynas' && (
                 <ListGroup>
-                    {Object.keys(itemQuestions_Answers.questionnaires).length > 0 ? (
-                        Object.keys(itemQuestions_Answers.questionnaires).map((user) => (
+                    {Object.keys(deviceQuestions_Answers.questionnaires).length > 0 ? (
+                        Object.keys(deviceQuestions_Answers.questionnaires).map((user) => (
                             <Container key={user}>
                                 <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenQuestionnaireWinner(user)}>Atiduoti</Button>
                                 <ListGroupItem variant="primary"><b>Klausimyno atsakymai:</b> {user} </ListGroupItem>
-                                {itemQuestions_Answers.questionnaires[user].map((questionnaire, index) => (
+                                {deviceQuestions_Answers.questionnaires[user].map((questionnaire, index) => (
                                     <ListGroup key={questionnaire.id}>
                                         <ListGroupItem variant="info"><b>Klausimas nr. {index + 1}</b> {questionnaire.question} </ListGroupItem>
                                         <ListGroupItem variant="light"><b>Atsakymas:</b> {questionnaire.answer} </ListGroupItem>

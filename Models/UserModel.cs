@@ -6,7 +6,7 @@
         public string Name { get; set; }
         public string Surname { get; set; }
         public string Email { get; set; }
-        public int itemsWon { get; set; }
-        public int itemsGifted { get; set; }
+        public int devicesWon { get; set; }
+        public int devicesGifted { get; set; }
     }
 }

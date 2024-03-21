@@ -6,15 +6,15 @@ using mainykdovanok.Tools;
 namespace mainykdovanok.Services
 {
 
-    public class ItemStatusService : IHostedService, IDisposable
+    public class DeviceStatusService : IHostedService, IDisposable
         {
         private Timer _timer;
-        private ItemRepo _itemRepo;
+        private DeviceRepo _deviceRepo;
         private UserRepo _userRepo;
 
-        public ItemStatusService()
+        public DeviceStatusService()
         {
-            _itemRepo = new ItemRepo();
+            _deviceRepo = new DeviceRepo();
             _userRepo = new UserRepo();
         }
 
@@ -33,22 +33,22 @@ namespace mainykdovanok.Services
 
         private async void DoTask(object? state)
         {
-            List<ItemViewModel> pastEndDateItems = await _itemRepo.GetPastEndDateItems();
+            List<DeviceViewModel> pastEndDateDevices = await _deviceRepo.GetPastEndDateDevices();
 
-            foreach (var item in pastEndDateItems)
+            foreach (var device in pastEndDateDevices)
             {
-                if (item.Type != "Loterija") // Lottery ads are closed by LotteryService
+                if (device.Type != "Loterija") // Lottery ads are closed by LotteryService
                 {
                     SendEmail emailer = new SendEmail();
 
-                    int posterUserId = item.UserId;
+                    int posterUserId = device.UserId;
                     string posterUserEmail = await _userRepo.GetUserEmail(posterUserId);
 
                     // Send email to poster that the ad has expired.
-                    await emailer.notifyUserItemExpiration(posterUserEmail, item.Name, false);
+                    await emailer.notifyUserDeviceExpiration(posterUserEmail, device.Name, false);
 
-                    // Update item status to 'Atšauktas'
-                    await _itemRepo.UpdateItemStatus(item.Id, 4);
+                    // Update device status to 'Atšauktas'
+                    await _deviceRepo.UpdateDeviceStatus(device.Id, 4);
                 }
             }
         }

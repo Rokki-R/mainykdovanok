@@ -19,11 +19,11 @@ namespace mainykdovanok.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ItemController : ControllerBase
+    public class DeviceController : ControllerBase
     {
         private readonly TypeRepo _typeRepo;
         private readonly CategoryRepo _categoryRepo;
-        private readonly ItemRepo _itemRepo;
+        private readonly DeviceRepo _deviceRepo;
         private readonly ImageRepo _imageRepo;
         private readonly UserRepo _userRepo;
         private readonly CommentRepo _commentRepo;
@@ -31,11 +31,11 @@ namespace mainykdovanok.Controllers
         private readonly ExchangeService _exchangeService;
         private readonly QuestionnaireService _questionnaireService;
 
-        public ItemController()
+        public DeviceController()
         {
             _typeRepo = new TypeRepo();
             _categoryRepo = new CategoryRepo();
-            _itemRepo = new ItemRepo();
+            _deviceRepo = new DeviceRepo();
             _imageRepo = new ImageRepo();
             _userRepo = new UserRepo();
             _commentRepo = new CommentRepo();
@@ -44,13 +44,13 @@ namespace mainykdovanok.Controllers
             _questionnaireService = new QuestionnaireService();
         }
 
-        [HttpGet("getItems")]
+        [HttpGet("getDevices")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetItems()
+        public async Task<IActionResult> GetDevices()
         {
             try
             {
-                var result = await _itemRepo.GetAll();
+                var result = await _deviceRepo.GetAll();
 
                 if (result == null)
                 {
@@ -65,13 +65,13 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpGet("getItem/{itemId}")]
+        [HttpGet("getDevice/{deviceId}")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetItem(int itemId)
+        public async Task<IActionResult> GetDevice(int deviceId)
         {
             try
             {
-                var result = await _itemRepo.GetFullById(itemId);
+                var result = await _deviceRepo.GetFullById(deviceId);
 
                 if (result == null)
                 {
@@ -85,13 +85,13 @@ namespace mainykdovanok.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpGet("getItemOwnerInfo/{itemId}")]
+        [HttpGet("getDeviceOwnerInfo/{deviceId}")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetItemOwnerInfo(int itemId)
+        public async Task<IActionResult> GetDeviceOwnerInfo(int deviceId)
         {
             try
             {
-                var result = await _itemRepo.GetItemOwnerByItemId(itemId);
+                var result = await _deviceRepo.GetDeviceOwnerByDeviceId(deviceId);
 
                 if (result == null)
                 {
@@ -106,8 +106,8 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpGet("getUserItems")]
-        public async Task<IActionResult> GetUserItems()
+        [HttpGet("getUserDevices")]
+        public async Task<IActionResult> GetUserDevices()
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -123,7 +123,7 @@ namespace mainykdovanok.Controllers
             try
             {
                 int viewerId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-                var result = await _itemRepo.GetAllByUser(viewerId);
+                var result = await _deviceRepo.GetAllByUser(viewerId);
 
                 if (result == null)
                 {
@@ -139,7 +139,7 @@ namespace mainykdovanok.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateItem()
+        public async Task<IActionResult> CreateDevice()
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -155,7 +155,7 @@ namespace mainykdovanok.Controllers
             try
             {
                 var form = await Request.ReadFormAsync();
-                ItemModel item = new ItemModel()
+                DeviceModel device = new DeviceModel()
                 {
                     Name = form["name"].ToString(),
                     Description = form["description"].ToString(),
@@ -169,14 +169,14 @@ namespace mainykdovanok.Controllers
                     EndDate = Convert.ToDateTime(form["endDate"]),
                 };
 
-                item.Id = await _itemRepo.Create(item);
+                device.Id = await _deviceRepo.Create(device);
 
-                bool success = await _imageRepo.InsertImages(item);
-                if (item.Type == 4)
+                bool success = await _imageRepo.InsertImages(device);
+                if (device.Type == 4)
                 {
-                    success = await _itemRepo.InsertQuestions(item);
+                    success = await _deviceRepo.InsertQuestions(device);
                 }
-                return success == true ? Ok(item.Id) : BadRequest();
+                return success == true ? Ok(device.Id) : BadRequest();
             }
             catch (Exception)
             {
@@ -203,8 +203,8 @@ namespace mainykdovanok.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpGet("getItemTypes")]
-        public async Task<IActionResult> GetItemTypes()
+        [HttpGet("getDeviceTypes")]
+        public async Task<IActionResult> GetDeviceTypes()
         {
             try
             {
@@ -223,8 +223,8 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpDelete("delete/{itemId}")]
-        public async Task<IActionResult> Delete(int itemId)
+        [HttpDelete("delete/{deviceId}")]
+        public async Task<IActionResult> Delete(int deviceId)
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -232,7 +232,7 @@ namespace mainykdovanok.Controllers
             }
             try
             {
-                await _itemRepo.DeleteItem(itemId);
+                await _deviceRepo.DeleteDevice(deviceId);
 
                 return Ok();
             }
@@ -242,13 +242,13 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpGet("getLotteryParticipants/{itemId}")]
+        [HttpGet("getLotteryParticipants/{deviceId}")]
         [Authorize]
-        public async Task<IActionResult> GetLotteryParticipants(int itemId)
+        public async Task<IActionResult> GetLotteryParticipants(int deviceId)
         {
             try
             {
-                var result = await _itemRepo.GetLotteryParticipants(itemId);
+                var result = await _deviceRepo.GetLotteryParticipants(deviceId);
 
                 return Ok(result);
             }
@@ -270,7 +270,7 @@ namespace mainykdovanok.Controllers
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
             try
             {
-                var result = await _itemRepo.LeaveLottery(id, userId);
+                var result = await _deviceRepo.LeaveLottery(id, userId);
 
                 if (result == null)
                 {
@@ -303,21 +303,20 @@ namespace mainykdovanok.Controllers
 
             try
             {
-                var item = await _itemRepo.GetFullById(id);
+                var device = await _deviceRepo.GetFullById(id);
 
-                if (item == null)
+                if (device == null)
                 {
                     return NotFound();
                 }
 
-                // Check if item type is a lottery
-                if (item.Type != "Loterija")
+                if (device.Type != "Loterija")
                 {
                     return BadRequest("Šis skelbimas yra ne loterijos tipo.");
                 }
 
                 // Proceed with entering the lottery
-                var result = await _itemRepo.EnterLottery(id, userId);
+                var result = await _deviceRepo.EnterLottery(id, userId);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -338,7 +337,7 @@ namespace mainykdovanok.Controllers
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
             try
             {
-                var result = await _itemRepo.IsUserParticipatingInLottery(id, userId);
+                var result = await _deviceRepo.IsUserParticipatingInLottery(id, userId);
 
                 return Ok(result);
             }
@@ -351,7 +350,7 @@ namespace mainykdovanok.Controllers
 
         [HttpPost("submitWinnerDetails")]
         [Authorize]
-        public async Task<IActionResult> SubmitWinnerDetails(ItemWinnerViewModel itemWinnerDetails)
+        public async Task<IActionResult> SubmitWinnerDetails(DeviceWinnerViewModel deviceWinnerDetails)
         {
 
             //Patikrinti ar prisijungęs naudotojas nėra admin
@@ -362,12 +361,12 @@ namespace mainykdovanok.Controllers
 
             try
             {
-                // Send an email to the item poster with winner details.
+                // Send an email to the device poster with winner details.
                 SendEmail emailer = new SendEmail();
-                bool result = await emailer.sendWinnerDetails(itemWinnerDetails.PosterEmail, itemWinnerDetails.ItemName, itemWinnerDetails.Phone, itemWinnerDetails.Message);
+                bool result = await emailer.sendWinnerDetails(deviceWinnerDetails.PosterEmail, deviceWinnerDetails.DeviceName, deviceWinnerDetails.Phone, deviceWinnerDetails.Message);
 
-                // Set item status to 'Užbaigtas'
-                await _itemRepo.UpdateItemStatus(itemWinnerDetails.ItemId, 3);
+                // Set device status to 'Užbaigtas'
+                await _deviceRepo.UpdateDeviceStatus(deviceWinnerDetails.DeviceId, 3);
 
                 return Ok(result);
             }
@@ -382,7 +381,7 @@ namespace mainykdovanok.Controllers
         {
             try
             {
-                var searchResults = await _itemRepo.Search(searchWord);
+                var searchResults = await _deviceRepo.Search(searchWord);
 
                 return Ok(searchResults);
             }
@@ -393,11 +392,11 @@ namespace mainykdovanok.Controllers
         }
 
         [HttpGet("search/category/{categoryId}")]
-        public async Task<IActionResult> GetItemsByCategory(int categoryId)
+        public async Task<IActionResult> GetDevicesByCategory(int categoryId)
         {
             try
             {
-                var result = await _itemRepo.GetAllByCategory(categoryId);
+                var result = await _deviceRepo.GetAllByCategory(categoryId);
 
                 if (result == null)
                 {
@@ -411,9 +410,9 @@ namespace mainykdovanok.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpGet("getOffers/{itemId}")]
+        [HttpGet("getOffers/{deviceId}")]
         [Authorize]
-        public async Task<IActionResult> GetOffers(int itemId)
+        public async Task<IActionResult> GetOffers(int deviceId)
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -421,8 +420,8 @@ namespace mainykdovanok.Controllers
             }
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-            var item = await _itemRepo.GetFullById(itemId);
-            if (item == null || item.UserId != userId)
+            var device = await _deviceRepo.GetFullById(deviceId);
+            if (device == null || device.UserId != userId)
             {
                 return StatusCode(403);
             }
@@ -434,7 +433,7 @@ namespace mainykdovanok.Controllers
             }
             try
             {
-                var result = await _itemRepo.GetOffers(itemId);
+                var result = await _deviceRepo.GetOffers(deviceId);
 
                 return Ok(result);
             }
@@ -444,13 +443,13 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpPost("submitOffer/{itemId}")]
-        public async Task<IActionResult> SubmitOffer(int itemId)
+        [HttpPost("submitOffer/{deviceId}")]
+        public async Task<IActionResult> SubmitOffer(int deviceId)
         {
             var form = await Request.ReadFormAsync();
             ExchangeOfferModel offer = new ExchangeOfferModel()
             {
-                SelectedItem = Convert.ToInt32(form["selectedItem"]),
+                SelectedDevice = Convert.ToInt32(form["selectedDevice"]),
                 Message = form["message"].ToString(),
             };
 
@@ -467,20 +466,20 @@ namespace mainykdovanok.Controllers
 
             try
             {
-                var item = await _itemRepo.GetFullById(itemId);
+                var device = await _deviceRepo.GetFullById(deviceId);
 
-                if (item == null)
+                if (device == null)
                 {
                     return NotFound();
                 }
 
-                // Check if item type is a lottery
-                if (item.Type != "Mainai į kita prietaisą")
+                // Check if device type is a lottery
+                if (device.Type != "Mainai į kita prietaisą")
                 {
                     return BadRequest("Šis skelbimas yra ne mainų tipo.");
                 }
 
-                var result = await _itemRepo.SubmitExchangeOffer(itemId, offer);
+                var result = await _deviceRepo.SubmitExchangeOffer(deviceId, offer);
 
                 return Ok(result);
             }
@@ -499,8 +498,8 @@ namespace mainykdovanok.Controllers
             }
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-            var item = await _itemRepo.GetFullById(winner.ItemId);
-            if (item == null || item.UserId != userId)
+            var device = await _deviceRepo.GetFullById(winner.DeviceId);
+            if (device == null || device.UserId != userId)
             {
                 return StatusCode(403);
             }
@@ -522,8 +521,8 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpPost("submitLetter/{itemId}")]
-        public async Task<IActionResult> SubmitLetter(int itemId)
+        [HttpPost("submitLetter/{deviceId}")]
+        public async Task<IActionResult> SubmitLetter(int deviceId)
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -538,22 +537,21 @@ namespace mainykdovanok.Controllers
 
             try
             {
-                var item = await _itemRepo.GetFullById(itemId);
+                var device = await _deviceRepo.GetFullById(deviceId);
 
-                if (item == null)
+                if (device == null)
                 {
                     return NotFound();
                 }
 
-                // Check if item type is a motivational letter
-                if (item.Type != "Motyvacinis laiškas")
+                if (device.Type != "Motyvacinis laiškas")
                 {
                     return BadRequest("Šis skelbimas yra ne motyvacinio laiško tipo.");
                 }
 
                 int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
-                bool hasSubmittedLetter = await _itemRepo.HasSubmittedLetter(itemId, userId);
+                bool hasSubmittedLetter = await _deviceRepo.HasSubmittedLetter(deviceId, userId);
                 if (hasSubmittedLetter)
                 {
                     return Conflict();
@@ -565,7 +563,7 @@ namespace mainykdovanok.Controllers
                     Letter = form["letter"].ToString()
                 };
 
-                var result = await _itemRepo.InsertLetter(itemId, letter, userId);
+                var result = await _deviceRepo.InsertLetter(deviceId, letter, userId);
 
                 return Ok(result);
             }
@@ -575,9 +573,9 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpGet("getLetters/{itemId}")]
+        [HttpGet("getLetters/{deviceId}")]
         [Authorize]
-        public async Task<IActionResult> GetLetters(int itemId)
+        public async Task<IActionResult> GetLetters(int deviceId)
         {
 
             if (!User.Identity.IsAuthenticated)
@@ -586,8 +584,8 @@ namespace mainykdovanok.Controllers
             }
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-            var item = await _itemRepo.GetFullById(itemId);
-            if (item == null || item.UserId != userId)
+            var device = await _deviceRepo.GetFullById(deviceId);
+            if (device == null || device.UserId != userId)
             {
                 return StatusCode(403);
             }
@@ -600,7 +598,7 @@ namespace mainykdovanok.Controllers
 
             try
             {
-                var result = await _itemRepo.GetLetters(itemId);
+                var result = await _deviceRepo.GetLetters(deviceId);
 
                 return Ok(new { letters = result });
             }
@@ -619,8 +617,8 @@ namespace mainykdovanok.Controllers
             }
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-            var item = await _itemRepo.GetFullById(winner.ItemId);
-            if (item == null || item.UserId != userId)
+            var device = await _deviceRepo.GetFullById(winner.DeviceId);
+            if (device == null || device.UserId != userId)
             {
                 return StatusCode(403);
             }
@@ -643,12 +641,12 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpGet("getComments/{itemId}")]
-        public async Task<IActionResult> GetComments(int itemId)
+        [HttpGet("getComments/{deviceId}")]
+        public async Task<IActionResult> GetComments(int deviceId)
         {
             try
             {
-                var result = await _commentRepo.GetAllItemComments(itemId);
+                var result = await _commentRepo.GetAllDeviceComments(deviceId);
 
                 return Ok(new { comments = result });
             }
@@ -658,8 +656,8 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpPost("postComment/{itemId}")]
-        public async Task<IActionResult> PostComment(int itemId, [FromBody] CommentModel comment)
+        [HttpPost("postComment/{deviceId}")]
+        public async Task<IActionResult> PostComment(int deviceId, [FromBody] CommentModel comment)
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -677,7 +675,7 @@ namespace mainykdovanok.Controllers
                 int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
                 comment.UserId = userId;
-                comment.ItemId = itemId;
+                comment.DeviceId = deviceId;
                 comment.PostedDateTime = DateTime.Now;
 
                 var result = await _commentRepo.InsertComment(comment);
@@ -690,9 +688,9 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpGet("getQuestionsAndAnswers/{itemId}")]
+        [HttpGet("getQuestionsAndAnswers/{deviceId}")]
         [Authorize]
-        public async Task<IActionResult> GetQuestionsAndAnswers(int itemId)
+        public async Task<IActionResult> GetQuestionsAndAnswers(int deviceId)
         {
 
             if (!User.Identity.IsAuthenticated)
@@ -701,8 +699,8 @@ namespace mainykdovanok.Controllers
             }
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-            var item = await _itemRepo.GetFullById(itemId);
-            if (item == null || item.UserId != userId)
+            var device = await _deviceRepo.GetFullById(deviceId);
+            if (device == null || device.UserId != userId)
             {
                 return StatusCode(403);
             }
@@ -715,7 +713,7 @@ namespace mainykdovanok.Controllers
 
             try
             {
-                var result = await _itemRepo.GetQuestionsAndAnswers(itemId);
+                var result = await _deviceRepo.GetQuestionsAndAnswers(deviceId);
 
                 return Ok(new { questionnaires = result });
             }
@@ -725,9 +723,9 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpGet("getQuestions/{itemId}")]
+        [HttpGet("getQuestions/{deviceId}")]
         [Authorize]
-        public async Task<IActionResult> GetQuestions(int itemId)
+        public async Task<IActionResult> GetQuestions(int deviceId)
         {
 
             if (!User.Identity.IsAuthenticated)
@@ -737,7 +735,7 @@ namespace mainykdovanok.Controllers
 
             try
             {
-                var result = await _itemRepo.GetQuestions(itemId);
+                var result = await _deviceRepo.GetQuestions(deviceId);
 
                 return Ok(new { questionnaires = result });
             }
@@ -747,8 +745,8 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpPost("submitAnswers/{itemId}")]
-        public async Task<IActionResult> SubmitAnswers(int itemId, [FromBody] List<AnswerModel> answers)
+        [HttpPost("submitAnswers/{deviceId}")]
+        public async Task<IActionResult> SubmitAnswers(int deviceId, [FromBody] List<AnswerModel> answers)
         {
 
             if (!User.Identity.IsAuthenticated)
@@ -762,22 +760,21 @@ namespace mainykdovanok.Controllers
                 return StatusCode(403);
             }
 
-            var item = await _itemRepo.GetFullById(itemId);
+            var device = await _deviceRepo.GetFullById(deviceId);
 
-            if (item == null)
+            if (device == null)
             {
                 return NotFound();
             }
 
-            // Check if item type is a questionnaire
-            if (item.Type != "Klausimynas")
+            if (device.Type != "Klausimynas")
             {
                 return BadRequest("Šis skelbimas yra ne klausimyno tipo.");
             }
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
-            bool hasSubmittedLetter = await _itemRepo.HasSubmittedAnswers(itemId, userId);
+            bool hasSubmittedLetter = await _deviceRepo.HasSubmittedAnswers(deviceId, userId);
             if (hasSubmittedLetter)
             {
                 return Conflict();
@@ -785,7 +782,7 @@ namespace mainykdovanok.Controllers
 
             try
             {
-                var result = await _itemRepo.InsertAnswers(itemId, answers, userId);
+                var result = await _deviceRepo.InsertAnswers(deviceId, answers, userId);
 
                 return Ok(result);
             }
@@ -804,8 +801,8 @@ namespace mainykdovanok.Controllers
             }
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-            var item = await _itemRepo.GetFullById(winner.ItemId);
-            if (item == null || item.UserId != userId)
+            var device = await _deviceRepo.GetFullById(winner.DeviceId);
+            if (device == null || device.UserId != userId)
             {
                 return StatusCode(403);
             }
@@ -827,7 +824,7 @@ namespace mainykdovanok.Controllers
         }
 
         [HttpPut("update/{id}")]
-        public async Task<IActionResult> UpdateItem(int id, IFormCollection form)
+        public async Task<IActionResult> UpdateDevice(int id, IFormCollection form)
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -835,8 +832,8 @@ namespace mainykdovanok.Controllers
             }
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-            var item = await _itemRepo.GetFullById(id);
-            if (item == null || item.UserId != userId)
+            var device = await _deviceRepo.GetFullById(id);
+            if (device == null || device.UserId != userId)
             {
                 return StatusCode(403);
             }
@@ -848,7 +845,7 @@ namespace mainykdovanok.Controllers
 
             try
             {   
-                ItemModel updateItem = new ItemModel()
+                DeviceModel updateDevice = new DeviceModel()
                 {
                     Id = id,
                     Name = form["name"],
@@ -858,29 +855,29 @@ namespace mainykdovanok.Controllers
                     Type = Convert.ToInt32(form["type"]),
                     Questions = form["questions"].ToList()
                 };
-                var updateItemType = await _typeRepo.GetType(updateItem.Type);
+                var updateDeviceType = await _typeRepo.GetType(updateDevice.Type);
 
-                var answers = await _itemRepo.GetAnswers(id);
-                if (item.Type != updateItemType.Name)
+                var answers = await _deviceRepo.GetAnswers(id);
+                if (device.Type != updateDeviceType.Name)
                 {
-                    switch (item.Type)
+                    switch (device.Type)
                     {
                         case "Motyvacinis laiškas":
-                            var letters = await _itemRepo.GetLetters(id);
+                            var letters = await _deviceRepo.GetLetters(id);
                             if (letters.Any())
                             {
                                 return BadRequest("Negalite pakeisti skelbimo tipo, nes jūsų skelbimas jau sulaukė susidomėjimo!");
                             }
                             break;
                         case "Mainai į kita prietaisą":
-                            var offers = await _itemRepo.GetOffers(id);
+                            var offers = await _deviceRepo.GetOffers(id);
                             if (offers.Any())
                             {
                                 return BadRequest("Negalite pakeisti skelbimo tipo, nes jūsų skelbimas jau sulaukė susidomėjimo!");
                             }
                             break;
                         case "Loterija":
-                            var participants = await _itemRepo.GetLotteryParticipants(id);
+                            var participants = await _deviceRepo.GetLotteryParticipants(id);
                             if (participants.Any())
                             {
                                 return BadRequest("Negalite pakeisti skelbimo tipo, nes jūsų skelbimas jau sulaukė susidomėjimo!");
@@ -897,20 +894,19 @@ namespace mainykdovanok.Controllers
                     }
                 }
 
-                //If updated item type is 'Klausimynas'
-                if (updateItem.Type == 4)
+                if (updateDevice.Type == 4)
                 {
-                    var itemQuestions = await _itemRepo.GetQuestions(id);
-                    List<string> itemQuestionStrings = itemQuestions.Select(question => question.Question).ToList();
+                    var deviceQuestions = await _deviceRepo.GetQuestions(id);
+                    List<string> deviceQuestionStrings = deviceQuestions.Select(question => question.Question).ToList();
 
-                    bool questionsEdited = !Enumerable.SequenceEqual<string>(updateItem.Questions, itemQuestionStrings);
+                    bool questionsEdited = !Enumerable.SequenceEqual<string>(updateDevice.Questions, deviceQuestionStrings);
 
                     if (questionsEdited)
                     {
                         if (!answers.Any())
                         {
-                            await _itemRepo.DeleteQuestions(id);
-                            await _itemRepo.InsertQuestions(updateItem);
+                            await _deviceRepo.DeleteQuestions(id);
+                            await _deviceRepo.InsertQuestions(updateDevice);
                         }
                         else
                         {
@@ -919,10 +915,9 @@ namespace mainykdovanok.Controllers
                     }
                 }
 
-                //If item type before update was klausimynas and updated item type is different
-                if (item.Type == "Klausimynas" && updateItemType.Name != "Klausimynas")
+                if (device.Type == "Klausimynas" && updateDeviceType.Name != "Klausimynas")
                 {
-                    await _itemRepo.DeleteQuestions(id);
+                    await _deviceRepo.DeleteQuestions(id);
                 }
                 var imagesToDelete = form["imagesToDelete"].Select(idStr => Convert.ToInt32(idStr)).ToList();
 
@@ -931,9 +926,9 @@ namespace mainykdovanok.Controllers
                     await _imageRepo.Delete(imagesToDelete);
                 }
 
-                await _itemRepo.Update(updateItem);
+                await _deviceRepo.Update(updateDevice);
 
-                await _imageRepo.InsertImages(updateItem);
+                await _imageRepo.InsertImages(updateDevice);
 
                 return Ok();
             }

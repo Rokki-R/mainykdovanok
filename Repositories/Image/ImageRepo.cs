@@ -38,23 +38,23 @@ namespace mainykdovanok.Repositories.Image
         {
             return new MySqlConnection(_connectionString);
         }
-        public async Task<bool> InsertImages(ItemModel item)
+        public async Task<bool> InsertImages(DeviceModel device)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
-            foreach (IFormFile image in item.Images)
+            foreach (IFormFile image in device.Images)
             {
                 byte[] data = await ImageCompressor.ResizeCompressImage(image, 640, 480);
 
                 data = await ImageCompressor.AddWatermark(data, "ClientApp\\public\\images\\watermark.png"); // Provide path to watermark image
 
                 using MySqlCommand command = new MySqlCommand(
-                    "INSERT INTO item_images (image, fk_item) VALUES (@image, @fk_item)", connection);
+                    "INSERT INTO device_image (image, fk_device) VALUES (@image, @fk_device)", connection);
 
                 // Add parameters
                 command.Parameters.AddWithValue("@image", data);
-                command.Parameters.AddWithValue("@fk_item", item.Id);
+                command.Parameters.AddWithValue("@fk_device", device.Id);
 
                 await command.ExecuteNonQueryAsync();
             }
@@ -62,15 +62,15 @@ namespace mainykdovanok.Repositories.Image
             return true;
         }
 
-        public async Task<List<ItemImageViewModel>> GetByItem(int id)
+        public async Task<List<DeviceImageViewModel>> GetByDevice(int id)
         {
-            List<ItemImageViewModel> images = new List<ItemImageViewModel>();
+            List<DeviceImageViewModel> images = new List<DeviceImageViewModel>();
 
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT id, image FROM item_images WHERE fk_item=@id", connection);
+                "SELECT id, image FROM device_image WHERE fk_device=@id", connection);
             command.Parameters.AddWithValue("@id", id);
 
             using DbDataReader reader = await command.ExecuteReaderAsync();
@@ -81,7 +81,7 @@ namespace mainykdovanok.Repositories.Image
                 byte[] imageData = new byte[dataLength];
                 reader.GetBytes(1, 0, imageData, 0, dataLength);
 
-                ItemImageViewModel image = new()
+                DeviceImageViewModel image = new()
                 {
                     Id = reader.GetInt32("id"),
                     Data = imageData,
@@ -91,15 +91,15 @@ namespace mainykdovanok.Repositories.Image
             return images;
         }
 
-        public async Task<List<ItemImageViewModel>> GetByItemFirst(int id)
+        public async Task<List<DeviceImageViewModel>> GetByDeviceFirst(int id)
         {
-            List<ItemImageViewModel> image = new List<ItemImageViewModel>();
+            List<DeviceImageViewModel> image = new List<DeviceImageViewModel>();
 
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT id, image FROM item_images WHERE fk_item=@id", connection);
+                "SELECT id, image FROM device_image WHERE fk_device=@id", connection);
             command.Parameters.AddWithValue("@id", id);
 
             using DbDataReader reader = await command.ExecuteReaderAsync();
@@ -109,7 +109,7 @@ namespace mainykdovanok.Repositories.Image
             byte[] imageData = new byte[dataLength];
             reader.GetBytes(1, 0, imageData, 0, dataLength);
 
-            var firstImage = new ItemImageViewModel()
+            var firstImage = new DeviceImageViewModel()
             {
                 Id = reader.GetInt32("id"),
                 Data = imageData
@@ -126,7 +126,7 @@ namespace mainykdovanok.Repositories.Image
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "DELETE FROM item_images WHERE id = @id", connection);
+                "DELETE FROM device_image WHERE id = @id", connection);
 
             foreach (int id in ids)
             {

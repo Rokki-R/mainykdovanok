@@ -8,12 +8,12 @@ namespace mainykdovanok.Services
 {
     public class ExchangeService
     {
-        private ItemRepo _itemRepo;
+        private DeviceRepo _deviceRepo;
         private UserRepo _userRepo;
 
         public ExchangeService()
         {
-            _itemRepo = new ItemRepo();
+            _deviceRepo = new DeviceRepo();
             _userRepo = new UserRepo();
         }
 
@@ -21,15 +21,15 @@ namespace mainykdovanok.Services
         {
             SendEmail emailer = new SendEmail();
 
-            string itemName = await _itemRepo.GetItemName(winner.ItemId);
+            string deviceName = await _deviceRepo.GetDeviceName(winner.DeviceId);
             UserModel user = await _userRepo.GetUser(winner.User);
 
-            await _itemRepo.SetItemWinner(winner.ItemId, user.Id);
+            await _deviceRepo.SetDeviceWinner(winner.DeviceId, user.Id);
 
-            await emailer.notifyOfferWinner(user.Email, itemName, winner.ItemId, winner.ItemName);
+            await emailer.notifyOfferWinner(user.Email, deviceName, winner.DeviceId, winner.DeviceName);
 
-            await _itemRepo.UpdateItemStatus(winner.ItemId, 2);
-            await _itemRepo.UpdateItemStatus(winner.UserItemId, 3);
+            await _deviceRepo.UpdateDeviceStatus(winner.DeviceId, 2);
+            await _deviceRepo.UpdateDeviceStatus(winner.UserDeviceId, 3);
         }
     }
 }

@@ -12,22 +12,22 @@ import {
   Accordion,
 } from "react-bootstrap";
 import toast, { Toaster } from "react-hot-toast";
-import "./ItemViewPage.css";
+import "./DeviceViewPage.css";
 import axios from "axios";
 
-export const ItemViewPage = () => {
-  const { itemId } = useParams();
-  const [items, setItems] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null);
+export const DeviceViewPage = () => {
+  const { deviceId } = useParams();
+  const [devices, setDevices] = useState([]);
+  const [selectedDevice, setSelectedDevice] = useState(null);
   const [message, setMessage] = useState("");
   const [letter, setLetter] = useState("");
-  const [item, setItem] = useState(null);
-  const [userItems, setUserItems] = useState(null);
+  const [device, setDevice] = useState(null);
+  const [userDevices, setUserDevices] = useState(null);
   const [viewerId, setViewerId] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isPastEndTime, setIsPastEndTime] = useState(true);
   const [isUserParticipating, setIsUserParticipating] = useState(false);
-  const [itemOwner, setItemOwner] = useState(null);
+  const [deviceOwner, setDeviceOwner] = useState(null);
   const [userImage, setUserImage] = useState("./images/profile.png");
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
@@ -36,14 +36,14 @@ export const ItemViewPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchItemOwnerInfo = async () => {
+    const fetchDeviceOwnerInfo = async () => {
       try {
-        const response = await axios.get(`api/item/getItemOwnerInfo/${itemId}`);
-        const itemOwnerData = response.data;
-        setItemOwner(itemOwnerData);
+        const response = await axios.get(`api/device/getDeviceOwnerInfo/${deviceId}`);
+        const deviceOwnerData = response.data;
+        setDeviceOwner(deviceOwnerData);
 
         const userProfileImageResponse = await axios.get(
-          `api/user/getUserProfileImage/${itemOwnerData.id}`
+          `api/user/getUserProfileImage/${deviceOwnerData.id}`
         );
         if (userProfileImageResponse.data !== undefined) {
           setUserImage(userProfileImageResponse.data);
@@ -53,14 +53,14 @@ export const ItemViewPage = () => {
       }
     };
 
-    fetchItemOwnerInfo();
-  }, [itemId]);
+    fetchDeviceOwnerInfo();
+  }, [deviceId]);
 
   useEffect(() => {
-    const fetchItem = async () => {
+    const fetchDevice = async () => {
       try {
-        const response = await axios.get(`api/item/getItem/${itemId}`);
-        setItem(response.data);
+        const response = await axios.get(`api/device/getDevice/${deviceId}`);
+        setDevice(response.data);
         setInterval(() => {
           setCurrentTime(new Date());
         }, 1000);
@@ -69,33 +69,33 @@ export const ItemViewPage = () => {
       }
     };
 
-    fetchItem();
-  }, [itemId]);
+    fetchDevice();
+  }, [deviceId]);
 
   useEffect(() => {
-    if (item) {
+    if (device) {
       setIsPastEndTime(
-        currentTime.getTime() > new Date(item.endDateTime).getTime()
+        currentTime.getTime() > new Date(device.endDateTime).getTime()
       );
     }
-  }, [item, currentTime]);
+  }, [device, currentTime]);
 
   useEffect(() => {
-    if (item && item.type === "Mainai į kita prietaisą") {
-      const fetchUserItems = async () => {
+    if (device && device.type === "Mainai į kita prietaisą") {
+      const fetchUserDevices = async () => {
         try {
-          const response = await axios.get("api/item/getUserItems");
-          setUserItems(response.data);
+          const response = await axios.get("api/device/getUserDevices");
+          setUserDevices(response.data);
         } catch (error) {
           //toast.error('Įvyko klaida, susisiekite su administratoriumi!');
         }
       };
-      fetchUserItems();
-    } else if (item && item.type === "Loterija") {
+      fetchUserDevices();
+    } else if (device && device.type === "Loterija") {
       const fetchIsUserParticipating = async () => {
         try {
           const response = await axios.get(
-            `api/item/isUserParticipatingInLottery/${itemId}`
+            `api/device/isUserParticipatingInLottery/${deviceId}`
           );
           setIsUserParticipating(response.data);
         } catch (error) {
@@ -104,7 +104,7 @@ export const ItemViewPage = () => {
       };
       fetchIsUserParticipating();
     }
-  }, [item]);
+  }, [device]);
 
   useEffect(() => {
     const fetchViewerId = async () => {
@@ -121,7 +121,7 @@ export const ItemViewPage = () => {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const response = await axios.get(`api/item/getComments/${itemId}`);
+        const response = await axios.get(`api/device/getComments/${deviceId}`);
         setComments(response.data.comments);
       } catch (error) {
         toast.error("Įvyko klaida, nepavyko gauti komentarų!");
@@ -129,10 +129,10 @@ export const ItemViewPage = () => {
     };
 
     fetchComments();
-  }, [itemId]);
+  }, [deviceId]);
 
-  const handleItemSelect = (event) => {
-    setSelectedItem(event.target.value);
+  const handleDeviceSelect = (event) => {
+    setSelectedDevice(event.target.value);
   };
 
   const handleMessageChange = (event) => {
@@ -163,14 +163,14 @@ export const ItemViewPage = () => {
     }
 
     try {
-      const response = await axios.post(`api/item/postComment/${itemId}`, {
+      const response = await axios.post(`api/device/postComment/${deviceId}`, {
         comment: newComment,
       });
       const newCommentData = response.data;
       setNewComment("");
       toast.success("Komentaras sėkmingai pridėtas!");
       const commentsResponse = await axios.get(
-        `api/item/getComments/${itemId}`
+        `api/device/getComments/${deviceId}`
       );
       setComments(commentsResponse.data.comments);
     } catch (error) {
@@ -193,18 +193,18 @@ export const ItemViewPage = () => {
       return;
     }
 
-    if (item.type === "Mainai į kita prietaisą" && !selectedItem) {
+    if (device.type === "Mainai į kita prietaisą" && !selectedDevice) {
       toast.error("Pasirinkite skelbimą, kurį norite pasiūlyti keitimui.");
       return;
     } 
     
-    else if (item.type === "Motyvacinis laiškas" && letter.length === 0) {
+    else if (device.type === "Motyvacinis laiškas" && letter.length === 0) {
       toast.error("Negalite pateikti tuščio motyvacinio laiško!");
       return;
     }
 
-    else if (item.type === 'Klausimynas') {
-      const unansweredQuestions = item.questions.filter(q => !answers[q.id]);
+    else if (device.type === 'Klausimynas') {
+      const unansweredQuestions = device.questions.filter(q => !answers[q.id]);
 
       if (unansweredQuestions.length > 0) {
           toast.error('Atsakykite į visus klausimus.');
@@ -213,22 +213,22 @@ export const ItemViewPage = () => {
   }
 
     const data = {
-      selectedItem,
+      selectedDevice,
       message,
-      ...(item.type === 'Klausimynas' && { answers })
+      ...(device.type === 'Klausimynas' && { answers })
     };
 
-    if (item.type === "Loterija") {
+    if (device.type === "Loterija") {
       if (!isParticipating) {
         axios
-  .post(`api/item/enterLottery/${itemId}`, data)
+  .post(`api/device/enterLottery/${deviceId}`, data)
   .then((response) => {
     if (response.data) {
       toast.success("Sėkmingai prisijungėte prie loterijos!");
       setIsUserParticipating(true);
-      setItem({
-        ...item,
-        participants: item.participants + 1,
+      setDevice({
+        ...device,
+        participants: device.participants + 1,
       });
     } else {
       toast.error("Įvyko klaida, susisiekite su administratoriumi!");
@@ -250,15 +250,15 @@ export const ItemViewPage = () => {
 
       } else {
         axios
-          .post(`api/item/leaveLottery/${itemId}`, data)
+          .post(`api/device/leaveLottery/${deviceId}`, data)
           .then((response) => {
             if (response.data) {
               toast.success("Sėkmingai nebedalyvaujate loterijoje!");
 
               setIsUserParticipating(false);
-              setItem({
-                ...item,
-                participants: item.participants - 1,
+              setDevice({
+                ...device,
+                participants: device.participants - 1,
               });
             } else {
               toast.error("Įvyko klaida, susisiekite su administratoriumi!");
@@ -272,11 +272,11 @@ export const ItemViewPage = () => {
             }
           });
       }
-    } else if (item.type === "Motyvacinis laiškas") {
+    } else if (device.type === "Motyvacinis laiškas") {
       const formData = new FormData();
       formData.append("letter", letter);
       axios
-        .post(`api/item/submitLetter/${itemId}`, formData)
+        .post(`api/device/submitLetter/${deviceId}`, formData)
         .then((response) => {
           if (response.data) {
             toast.success("Sėkmingai išsiuntėte motyvacinį laišką");
@@ -302,19 +302,19 @@ export const ItemViewPage = () => {
             toast.error("Įvyko klaida, susisiekite su administratoriumi!");
           }
         });
-    } else if (item.type === "Mainai į kita prietaisą") {
+    } else if (device.type === "Mainai į kita prietaisą") {
       const formData = new FormData();
-      formData.append("selectedItem", data.selectedItem);
+      formData.append("selectedDevice", data.selectedDevice);
       formData.append("message", data.message);
       axios
-        .post(`api/item/submitOffer/${itemId}`, formData)
+        .post(`api/device/submitOffer/${deviceId}`, formData)
         .then((response) => {
           if (response.data) {
             toast.success("Jūsų pasiūlymas sėkmingai išsiųstas!");
 
-            setItem({
-              ...item,
-              participants: item.participants + 1,
+            setDevice({
+              ...device,
+              participants: device.participants + 1,
             });
           } else {
             toast.error("Įvyko klaida, susisiekite su administratoriumi!");
@@ -335,17 +335,17 @@ export const ItemViewPage = () => {
           }
         });
     }
-    else if (item.type === 'Klausimynas') {
+    else if (device.type === 'Klausimynas') {
       const answersList = Object.entries(data.answers).map(([key, value]) => ({ question: parseInt(key), text: value }));
-      axios.post(`api/item/submitAnswers/${itemId}`, answersList)
+      axios.post(`api/device/submitAnswers/${deviceId}`, answersList)
           .then(response => {
               if (response.data) {
                   toast.success('Sėkmingai atsakėte į klausimus!');
 
                   setIsUserParticipating(true);
-                  setItem({
-                      ...item,
-                      participants: item.participants + 1,
+                  setDevice({
+                      ...device,
+                      participants: device.participants + 1,
                   });
               }
               else {
@@ -372,9 +372,9 @@ export const ItemViewPage = () => {
   }
   };
 
-  const handleDelete = async (itemId) => {
-    await axios.delete(`/api/item/delete/${itemId}`);
-    setItems(items.filter((item) => item.id !== itemId));
+  const handleDelete = async (deviceId) => {
+    await axios.delete(`/api/device/delete/${deviceId}`);
+    setDevices(devices.filter((device) => device.id !== deviceId));
     navigate(`/`);
   };
 
@@ -383,15 +383,15 @@ export const ItemViewPage = () => {
       ? userImage
       : `data:image/jpeg;base64,${userImage.user_profile_image}`;
 
-  return item && itemOwner ? (
+  return device && deviceOwner ? (
     <div className="outerBoxWrapper">
       <Toaster />
       <Container className="my-5">
         <Row>
           <Col md={4}>
-            {item.images && item.images.length > 0 && (
+            {device.images && device.images.length > 0 && (
               <Carousel>
-                {item.images.map((image, index) => (
+                {device.images.map((image, index) => (
                   <Carousel.Item key={index}>
                     <img
                       className="d-block w-100"
@@ -407,7 +407,7 @@ export const ItemViewPage = () => {
           </Col>
           <Col md={8}>
             <Card>
-              <Card.Header>{item.category}</Card.Header>
+              <Card.Header>{device.category}</Card.Header>
               <Card.Body>
                 <Accordion
                   defaultActiveKey="1"
@@ -432,21 +432,21 @@ export const ItemViewPage = () => {
                         </div>
                         <div className="owner-info-1">
                           <p>
-                            <strong>Vardas:</strong> {itemOwner.name}{" "}
-                            {itemOwner.surname}
+                            <strong>Vardas:</strong> {deviceOwner.name}{" "}
+                            {deviceOwner.surname}
                           </p>
                           <p>
-                            <strong>El. paštas:</strong> {itemOwner.email}
+                            <strong>El. paštas:</strong> {deviceOwner.email}
                           </p>
                         </div>
                         <div className="owner-info-2">
                           <p>
                             <strong>Padovanotų prietaisų kiekis:</strong>{" "}
-                            {itemOwner.itemsGifted}{" "}
+                            {deviceOwner.devicesGifted}{" "}
                           </p>
                           <p>
                             <strong>Laimėtų prietaisų kiekis:</strong>{" "}
-                            {itemOwner.itemsWon}{" "}
+                            {deviceOwner.devicesWon}{" "}
                           </p>
                         </div>
                       </div>
@@ -455,16 +455,16 @@ export const ItemViewPage = () => {
                   </Accordion.Item>
                 </Accordion>
 
-                <Card.Title>{item.name}</Card.Title>
-                <Card.Text>{item.description}</Card.Text>
-                {item.status !== "Aktyvus" || isPastEndTime ? (
+                <Card.Title>{device.name}</Card.Title>
+                <Card.Text>{device.description}</Card.Text>
+                {device.status !== "Aktyvus" || isPastEndTime ? (
                   <div>
                     <hr></hr>
                     <Card.Text>Šis skelbimas nebegalioja.</Card.Text>
                   </div>
                 ) : null}
                 <hr></hr>
-                {item.type === "Mainai į kita prietaisą" && (
+                {device.type === "Mainai į kita prietaisą" && (
                   <Form onSubmit={handleSubmit}>
                     <Form.Group>
                       <Form.Label>
@@ -472,19 +472,19 @@ export const ItemViewPage = () => {
                       </Form.Label>
                       <Form.Control
                         as="select"
-                        id="selectedItem"
-                        value={selectedItem}
-                        onChange={(e) => setSelectedItem(e.target.value)}
+                        id="selectedDevice"
+                        value={selectedDevice}
+                        onChange={(e) => setSelectedDevice(e.target.value)}
                       >
                         <option value="">Pasirinkti skelbimą</option>
-                        {userItems &&
-                          userItems
+                        {userDevices &&
+                          userDevices
                             .filter(
-                              (item) => item.type === `Mainai į kita prietaisą`
+                              (device) => device.type === `Mainai į kita prietaisą`
                             )
-                            .map((item) => (
-                              <option key={item.id} value={item.id}>
-                                {item.name}
+                            .map((device) => (
+                              <option key={device.id} value={device.id}>
+                                {device.name}
                               </option>
                             ))}
                       </Form.Control>
@@ -504,30 +504,30 @@ export const ItemViewPage = () => {
                         <Button
                           variant="primary"
                           type="submit"
-                          disabled={isPastEndTime || item.userId === viewerId}
+                          disabled={isPastEndTime || device.userId === viewerId}
                         >
                           Siūlyti
                         </Button>
                       </Col>
                       <Col className="d-flex justify-content-end">
-                        {item.userId === viewerId ? (
+                        {device.userId === viewerId ? (
                           <>
                             <Button
                               style={{ marginRight: "10px" }}
                               variant="primary"
-                              onClick={() => handleDelete(item.id)}
+                              onClick={() => handleDelete(device.id)}
                             >
                               Ištrinti
                             </Button>
                             <Link
                               style={{ marginRight: "10px", marginTop: "9px" }}
-                              to={`/skelbimas/redaguoti/${item.id}`}
+                              to={`/skelbimas/redaguoti/${device.id}`}
                             >
                               <Button variant="primary">Redaguoti</Button>
                             </Link>
                             <Link
                               style={{ marginRight: "10px", marginTop: "9px" }}
-                              to={`/skelbimas/info/${item.id}`}
+                              to={`/skelbimas/info/${device.id}`}
                             >
                               <Button variant="primary">Siūlymai</Button>
                             </Link>
@@ -537,7 +537,7 @@ export const ItemViewPage = () => {
                     </Row>
                   </Form>
                 )}
-                {item.type === "Motyvacinis laiškas" && (
+                {device.type === "Motyvacinis laiškas" && (
                   <Form onSubmit={handleSubmit}>
                     <Row>
                       <Form.Control
@@ -552,30 +552,30 @@ export const ItemViewPage = () => {
                         <Button
                           variant="primary"
                           type="submit"
-                          disabled={isPastEndTime || item.userId === viewerId}
+                          disabled={isPastEndTime || device.userId === viewerId}
                         >
                           Atsakyti
                         </Button>
                       </Col>
                       <Col className="d-flex justify-content-end">
-                        {item.userId === viewerId ? (
+                        {device.userId === viewerId ? (
                           <>
                             <Button
                               style={{ marginRight: "10px" }}
                               variant="primary"
-                              onClick={() => handleDelete(item.id)}
+                              onClick={() => handleDelete(device.id)}
                             >
                               Ištrinti
                             </Button>
                             <Link
                               style={{ marginRight: "10px", marginTop: "9px" }}
-                              to={`/skelbimas/redaguoti/${item.id}`}
+                              to={`/skelbimas/redaguoti/${device.id}`}
                             >
                               <Button variant="primary">Redaguoti</Button>
                             </Link>
                             <Link
                               style={{ marginRight: "10px", marginTop: "9px" }}
-                              to={`/skelbimas/info/${item.id}`}
+                              to={`/skelbimas/info/${device.id}`}
                             >
                               <Button variant="primary">Atsakymai</Button>
                             </Link>
@@ -585,12 +585,12 @@ export const ItemViewPage = () => {
                     </Row>
                   </Form>
                 )}
-                {item.type === "Loterija" && (
+                {device.type === "Loterija" && (
                   <Form onSubmit={handleSubmit}>
-                    <p>Dalyvių skaičius: {item.participants}</p>
+                    <p>Dalyvių skaičius: {device.participants}</p>
                     <p>
                       Laimėtojas bus išrinktas{" "}
-                      {new Date(item.endDateTime).toLocaleString("lt-LT")}
+                      {new Date(device.endDateTime).toLocaleString("lt-LT")}
                     </p>
                     <Row>
                       <Col>
@@ -598,7 +598,7 @@ export const ItemViewPage = () => {
                           <Button
                             variant="primary"
                             type="submit"
-                            disabled={isPastEndTime || item.userId === viewerId}
+                            disabled={isPastEndTime || device.userId === viewerId}
                             onClick={(event) => handleSubmit(event, true)}
                           >
                             Nebedalyvauti
@@ -607,7 +607,7 @@ export const ItemViewPage = () => {
                           <Button
                             variant="primary"
                             type="submit"
-                            disabled={isPastEndTime || item.userId === viewerId}
+                            disabled={isPastEndTime || device.userId === viewerId}
                             onClick={(event) => handleSubmit(event, false)}
                           >
                             Dalyvauti
@@ -615,24 +615,24 @@ export const ItemViewPage = () => {
                         )}
                       </Col>
                       <Col className="d-flex justify-content-end">
-                        {item.userId === viewerId ? (
+                        {device.userId === viewerId ? (
                           <>
                             <Button
                               style={{ marginRight: "10px" }}
                               variant="primary"
-                              onClick={() => handleDelete(item.id)}
+                              onClick={() => handleDelete(device.id)}
                             >
                               Ištrinti
                             </Button>
                             <Link
                               style={{ marginRight: "10px", marginTop: "9px" }}
-                              to={`/skelbimas/redaguoti/${item.id}`}
+                              to={`/skelbimas/redaguoti/${device.id}`}
                             >
                               <Button variant="primary">Redaguoti</Button>
                             </Link>
                             <Link
                               style={{ marginRight: "10px", marginTop: "9px" }}
-                              to={`/skelbimas/info/${item.id}`}
+                              to={`/skelbimas/info/${device.id}`}
                             >
                               <Button variant="primary">Dalyviai</Button>
                             </Link>
@@ -642,9 +642,9 @@ export const ItemViewPage = () => {
                     </Row>
                   </Form>
                 )}
-                {item.type === 'Klausimynas' && (
+                {device.type === 'Klausimynas' && (
                                     <Form onSubmit={handleSubmit}>
-                                        {item.questions.map((question) => (
+                                        {device.questions.map((question) => (
                                             <Form.Group key={question.id}>
                                                 <Form.Label>{question.question}</Form.Label>
                                                 <Form.Control type="text" onChange={(event) => handleAnswerChange(event, question.id)} />
@@ -652,16 +652,16 @@ export const ItemViewPage = () => {
                                         ))}
                                         <Row>
                                             <Col>
-                                                <Button variant="primary" type="submit" disabled={isPastEndTime || item.userId === viewerId}>Atsakyti</Button>
+                                                <Button variant="primary" type="submit" disabled={isPastEndTime || device.userId === viewerId}>Atsakyti</Button>
                                             </Col>
                                             <Col className="d-flex justify-content-end">
-                                                {item.userId === viewerId ? (
+                                                {device.userId === viewerId ? (
                                                     <>
-                                                        <Button style={{ marginRight: '10px' }} variant="primary" onClick={() => handleDelete(item.id)}>Ištrinti</Button>
-                                                        <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/redaguoti/${item.id}`}>
+                                                        <Button style={{ marginRight: '10px' }} variant="primary" onClick={() => handleDelete(device.id)}>Ištrinti</Button>
+                                                        <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/redaguoti/${device.id}`}>
                                                             <Button variant="primary">Redaguoti</Button>
                                                         </Link>
-                                                        <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/info/${item.id}`}>
+                                                        <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/info/${device.id}`}>
                                                             <Button variant="primary">Atsakymai</Button>
                                                         </Link>
                                                     </>
@@ -672,8 +672,8 @@ export const ItemViewPage = () => {
                                 )}
               </Card.Body>
               <Card.Footer>
-                {item.location} |{" "}
-                {new Date(item.creationDateTime).toLocaleString("lt-LT")}
+                {device.location} |{" "}
+                {new Date(device.creationDateTime).toLocaleString("lt-LT")}
               </Card.Footer>
             </Card>
 
