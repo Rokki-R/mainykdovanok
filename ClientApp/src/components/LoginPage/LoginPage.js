@@ -14,7 +14,7 @@ export const LoginPage = () => {
     useEffect(() => {
         const fetchUserLogin = async () => {
             try {
-                const response = await axios.get('api/user/isloggedin');
+                const response = await axios.get('api/login/isloggedin');
                 if (response.status == 200)
                 {
                   toast.error("Jūs jau esate prisijungęs!")
@@ -55,7 +55,7 @@ export const LoginPage = () => {
                 email: email
             }),
         };
-        fetch("api/user/login", requestOptions)
+        fetch("api/login/login", requestOptions)
             .then(response => {
                 if (response.status === 200) {
                     window.location.reload();

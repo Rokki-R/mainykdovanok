@@ -1,7 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
 using mainykdovanok.Models;
 using mainykdovanok.Repositories.Image;
-using mainykdovanok.ViewModels.Item;
+using mainykdovanok.ViewModels.Device;
 using mainykdovanok.ViewModels.User;
 using Org.BouncyCastle.Cms;
 using Serilog;
@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 
-namespace mainykdovanok.Repositories.Item
+namespace mainykdovanok.Repositories.Device
 {
     public class DeviceRepo
     {
@@ -142,6 +142,55 @@ namespace mainykdovanok.Repositories.Item
                     "JOIN device_status ON device_ad.fk_status = device_status.id " +
                     "LEFT JOIN device_lottery_participant ON device_ad.id = device_lottery_participant.fk_device " +
                     "WHERE device_ad.fk_user = @userId AND device_ad.fk_status = 1 " +
+                    "GROUP BY device_ad.id, device_type.type, device_category.name ", connection))
+                {
+                    await connection.OpenAsync();
+                    command.Parameters.AddWithValue("@userId", userId);
+
+                    using (DbDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var device = new DeviceViewModel()
+                            {
+                                Id = Convert.ToInt32(reader["id"]),
+                                UserId = Convert.ToInt32(reader["fk_user"]),
+                                Name = reader["name"].ToString(),
+                                Description = reader["description"].ToString(),
+                                Status = reader["status_name"].ToString(),
+                                Type = reader["device_type"].ToString(),
+                                Participants = Convert.ToInt32(reader["participants_count"]),
+                                Location = reader["location"].ToString(),
+                                Category = reader["category_name"].ToString(),
+                                CreationDateTime = Convert.ToDateTime(reader["creation_datetime"]),
+                                EndDateTime = Convert.ToDateTime(reader["end_datetime"]),
+                                WinnerId = reader["fk_winner"] == DBNull.Value ? null : (int?)Convert.ToInt32(reader["fk_winner"]),
+                                Images = await _imageRepo.GetByDevice(Convert.ToInt32(reader["id"])),
+                            };
+
+                            devices.Add(device);
+                        }
+                    }
+
+                    return devices;
+                }
+            }
+        }
+
+        public async Task<List<DeviceViewModel>> GetUserWonDevices(int userId)
+        {
+            List<DeviceViewModel> devices = new List<DeviceViewModel>();
+
+            using (var connection = new MySqlConnection(_connectionString))
+            {
+                using (MySqlCommand command = new MySqlCommand("SELECT device_ad.*, device_type.type AS device_type, device_category.name AS category_name, device_status.name AS status_name, " +
+                    "COUNT(device_lottery_participant.id) AS participants_count " +
+                    "FROM device_ad " +
+                    "JOIN device_type ON device_ad.fk_type = device_type.id " +
+                    "JOIN device_category ON device_ad.fk_category = device_category.id " +
+                    "JOIN device_status ON device_ad.fk_status = device_status.id " +
+                    "LEFT JOIN device_lottery_participant ON device_ad.id = device_lottery_participant.fk_device " +
+                    "WHERE device_ad.fk_winner = @userId AND (device_ad.fk_status = 2 OR device_ad.fk_status = 3 OR device_ad.fk_status = 5) " +
                     "GROUP BY device_ad.id, device_type.type, device_category.name ", connection))
                 {
                     await connection.OpenAsync();
@@ -509,6 +558,30 @@ namespace mainykdovanok.Repositories.Item
             command.Parameters.AddWithValue("@id", deviceId);
 
             await command.ExecuteNonQueryAsync();
+            return true;
+        }
+
+        public async Task<bool> SetExchangeWinners(int deviceId, int winnerId, int posterUserId, int userDeviceId)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command1 = new MySqlCommand(
+                "UPDATE device_ad " +
+                "SET fk_winner = @fk_winner " +
+                "WHERE id = @id", connection);
+            command1.Parameters.AddWithValue("@fk_winner", winnerId);
+            command1.Parameters.AddWithValue("@id", deviceId);
+
+            using MySqlCommand command2 = new MySqlCommand(
+                "UPDATE device_ad " +
+                "SET fk_winner = @fk_winner " +
+                "WHERE id = @id", connection);
+            command2.Parameters.AddWithValue("@fk_winner", posterUserId);
+            command2.Parameters.AddWithValue("@id", userDeviceId);
+
+            await command1.ExecuteNonQueryAsync();
+            await command2.ExecuteNonQueryAsync();
             return true;
         }
 

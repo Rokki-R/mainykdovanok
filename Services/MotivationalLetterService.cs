@@ -1,4 +1,4 @@
-﻿using mainykdovanok.Repositories.Item;
+﻿using mainykdovanok.Repositories.Device;
 using mainykdovanok.Repositories.User;
 using mainykdovanok.Models;
 using mainykdovanok.Tools;
@@ -30,8 +30,8 @@ namespace mainykdovanok.Services
 
             await _deviceRepo.UpdateDeviceStatus(winner.DeviceId, 2);
 
-            await _userRepo.IncrementUserQuantityOfDevicesGifted(posterUserId);
-            await _userRepo.IncrementUserQuantityOfDevicesWon(user.Id);
+            //await _userRepo.IncrementUserQuantityOfDevicesGifted(posterUserId);
+            //await _userRepo.IncrementUserQuantityOfDevicesWon(user.Id);
         }
     }
 }

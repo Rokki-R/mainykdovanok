@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Carousel, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
-import './MyDevicesPage.css';
+import './MyWonDevicesPage.css';
 
 
 function MyDevicesPage() {
@@ -33,7 +33,7 @@ function MyDevicesPage() {
     useEffect(() => {
         async function fetchDevices() {
             try {
-                const response = await axios.get('/api/device/getUserDevices');
+                const response = await axios.get('/api/device/getUserWonDevices');
                 setDevices(response.data);
             } catch (error) {
                 console.error('Error fetching user devices:', error);
@@ -43,7 +43,7 @@ function MyDevicesPage() {
     }, []);
 
     const handleOpen = (deviceId) => {
-        navigate(`/skelbimas/${deviceId}`);
+        navigate(`/laimejimas/${deviceId}`);
     }
 
     return devices ? (

@@ -121,7 +121,7 @@ export const DeviceViewPage = () => {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const response = await axios.get(`api/device/getComments/${deviceId}`);
+        const response = await axios.get(`api/comment/getComments/${deviceId}`);
         setComments(response.data.comments);
       } catch (error) {
         toast.error("Įvyko klaida, nepavyko gauti komentarų!");
@@ -163,14 +163,14 @@ export const DeviceViewPage = () => {
     }
 
     try {
-      const response = await axios.post(`api/device/postComment/${deviceId}`, {
+      const response = await axios.post(`api/comment/postComment/${deviceId}`, {
         comment: newComment,
       });
       const newCommentData = response.data;
       setNewComment("");
       toast.success("Komentaras sėkmingai pridėtas!");
       const commentsResponse = await axios.get(
-        `api/device/getComments/${deviceId}`
+        `api/comment/getComments/${deviceId}`
       );
       setComments(commentsResponse.data.comments);
     } catch (error) {
@@ -504,7 +504,7 @@ export const DeviceViewPage = () => {
                         <Button
                           variant="primary"
                           type="submit"
-                          disabled={isPastEndTime || device.userId === viewerId}
+                          disabled={device.status !== "Aktyvus" || isPastEndTime || device.userId === viewerId}
                         >
                           Siūlyti
                         </Button>
@@ -552,7 +552,7 @@ export const DeviceViewPage = () => {
                         <Button
                           variant="primary"
                           type="submit"
-                          disabled={isPastEndTime || device.userId === viewerId}
+                          disabled={device.status !== "Aktyvus" || isPastEndTime || device.userId === viewerId}
                         >
                           Atsakyti
                         </Button>
@@ -652,7 +652,7 @@ export const DeviceViewPage = () => {
                                         ))}
                                         <Row>
                                             <Col>
-                                                <Button variant="primary" type="submit" disabled={isPastEndTime || device.userId === viewerId}>Atsakyti</Button>
+                                                <Button variant="primary" type="submit" disabled={device.status !== "Aktyvus" || isPastEndTime || device.userId === viewerId}>Atsakyti</Button>
                                             </Col>
                                             <Col className="d-flex justify-content-end">
                                                 {device.userId === viewerId ? (

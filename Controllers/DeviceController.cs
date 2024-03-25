@@ -3,10 +3,10 @@ using mainykdovanok.Models;
 using System.Data;
 using mainykdovanok.Repositories.Category;
 using mainykdovanok.Repositories.Type;
-using mainykdovanok.Repositories.Item;
+using mainykdovanok.Repositories.Device;
 using mainykdovanok.Repositories.Image;
 using Microsoft.AspNetCore.Authorization;
-using mainykdovanok.ViewModels.Item;
+using mainykdovanok.ViewModels.Device;
 using mainykdovanok.Tools;
 using mainykdovanok.Repositories.User;
 using Newtonsoft.Json.Linq;
@@ -124,6 +124,38 @@ namespace mainykdovanok.Controllers
             {
                 int viewerId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
                 var result = await _deviceRepo.GetAllByUser(viewerId);
+
+                if (result == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("getUserWonDevices")]
+        public async Task<IActionResult> GetMyWonDevices()
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
+
+            try
+            {
+                int viewerId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+                var result = await _deviceRepo.GetUserWonDevices(viewerId);
 
                 if (result == null)
                 {
@@ -338,35 +370,6 @@ namespace mainykdovanok.Controllers
             try
             {
                 var result = await _deviceRepo.IsUserParticipatingInLottery(id, userId);
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-
-        [HttpPost("submitWinnerDetails")]
-        [Authorize]
-        public async Task<IActionResult> SubmitWinnerDetails(DeviceWinnerViewModel deviceWinnerDetails)
-        {
-
-            //Patikrinti ar prisijungęs naudotojas nėra admin
-            if (!User.IsInRole("0"))
-            {
-                return StatusCode(403);
-            }
-
-            try
-            {
-                // Send an email to the device poster with winner details.
-                SendEmail emailer = new SendEmail();
-                bool result = await emailer.sendWinnerDetails(deviceWinnerDetails.PosterEmail, deviceWinnerDetails.DeviceName, deviceWinnerDetails.Phone, deviceWinnerDetails.Message);
-
-                // Set device status to 'Užbaigtas'
-                await _deviceRepo.UpdateDeviceStatus(deviceWinnerDetails.DeviceId, 3);
 
                 return Ok(result);
             }
@@ -634,53 +637,6 @@ namespace mainykdovanok.Controllers
                 _motivationalLetterService.NotifyWinner(winner, userId);
 
                 return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet("getComments/{deviceId}")]
-        public async Task<IActionResult> GetComments(int deviceId)
-        {
-            try
-            {
-                var result = await _commentRepo.GetAllDeviceComments(deviceId);
-
-                return Ok(new { comments = result });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost("postComment/{deviceId}")]
-        public async Task<IActionResult> PostComment(int deviceId, [FromBody] CommentModel comment)
-        {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return Unauthorized();
-            }
-
-            //Patikrinti ar prisijungęs naudotojas nėra admin
-            if (!User.IsInRole("0"))
-            {
-                return StatusCode(403);
-            }
-
-            try
-            {
-                int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-
-                comment.UserId = userId;
-                comment.DeviceId = deviceId;
-                comment.PostedDateTime = DateTime.Now;
-
-                var result = await _commentRepo.InsertComment(comment);
-
-                return Ok(result);
             }
             catch (Exception ex)
             {

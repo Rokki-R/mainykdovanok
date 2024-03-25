@@ -1,7 +1,7 @@
-﻿using mainykdovanok.Repositories.Item;
+﻿using mainykdovanok.Repositories.Device;
 using mainykdovanok.Repositories.User;
 using mainykdovanok.Tools;
-using mainykdovanok.ViewModels.Item;
+using mainykdovanok.ViewModels.Device;
 
 namespace mainykdovanok.Services
 {
@@ -56,8 +56,8 @@ namespace mainykdovanok.Services
                     // Update device status to 'Ištrinktas laimėtojas'
                     await _deviceRepo.UpdateDeviceStatus(lottery.Id, 2);
 
-                    await _userRepo.IncrementUserQuantityOfDevicesGifted(posterUserId);
-                    await _userRepo.IncrementUserQuantityOfDevicesWon(winnerUserId);
+                    //await _userRepo.IncrementUserQuantityOfDevicesGifted(posterUserId);
+                    //await _userRepo.IncrementUserQuantityOfDevicesWon(winnerUserId);
                 }
                 else
                 {

@@ -1,6 +1,6 @@
-﻿using mainykdovanok.Repositories.Item;
+﻿using mainykdovanok.Repositories.Device;
 using mainykdovanok.Repositories.User;
-using mainykdovanok.ViewModels.Item;
+using mainykdovanok.ViewModels.Device;
 using mainykdovanok.Tools;
 
 namespace mainykdovanok.Services

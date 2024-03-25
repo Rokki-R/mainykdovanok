@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace mainykdovanok.ViewModels.Item
+namespace mainykdovanok.ViewModels.Device
 {
     public class DeviceQuestionViewModel
     {

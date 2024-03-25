@@ -1,8 +1,7 @@
-﻿using mainykdovanok.Repositories.Item;
-using mainykdovanok.Repositories.User;
+﻿using mainykdovanok.Repositories.User;
 using mainykdovanok.ViewModels.User;
 using mainykdovanok.Models;
-using mainykdovanok.Repositories.Item;
+using mainykdovanok.Repositories.Device;
 using mainykdovanok.Repositories.User;
 using mainykdovanok.Tools;
 using mainykdovanok.ViewModels.User;
