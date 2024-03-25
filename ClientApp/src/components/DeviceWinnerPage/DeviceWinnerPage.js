@@ -22,7 +22,7 @@ export const DeviceWinnerPage = () => {
                 const response = await axios.get('api/user/getCurrentUserId');
                 setViewerId(response.data);
 
-                if (response.data === device?.winnerId && device?.status === 'Išrinktas laimėtojas') {
+                if (response.data === device?.winnerId && (device?.status === 'Išrinktas laimėtojas' || device?.status === 'Laukiama patvirtinimo' || device?.status === 'Atiduotas')) {
                     setCanAccess(true);
                 } else if (device && response.data !== device?.winnerId) {
                     navigate('/');
@@ -94,7 +94,7 @@ export const DeviceWinnerPage = () => {
         }
 
         setSending(true);
-        axios.post('api/device/submitWinnerDetails', data)
+        axios.post('api/devicewinner/submitWinnerDetails', data)
             .then(response => {
                 if (response.data) {
                     toast.success('Sėkmingai išsiųstas pranešimas skelbėjui!');
@@ -109,6 +109,22 @@ export const DeviceWinnerPage = () => {
                 setSending(false);
             });
     };
+    
+    const handleConfirm = async () => {
+        try {
+            const data = {
+                id: deviceId,
+                winnerId: device.winnerId,
+                userId: device.userId
+            };
+    
+            const response = await axios.post('api/devicewinner/confirm', data);
+            toast.success('Sėkmingai patvirtinta!');
+        } catch (error) {
+            toast.error('Įvyko klaida patvirtinant!');
+        }
+    };
+    
 
     return device && viewerId && canAccess && posterEmail ? (
         <div className='outerBoxWrapper'>
@@ -138,17 +154,27 @@ export const DeviceWinnerPage = () => {
                                 <Card.Title>Laimėjote: {device.name}</Card.Title>
                                 <Card.Text>{device.description}</Card.Text>
                                 <hr></hr>
-                                <Card.Text>Norint suderinti atsiėmimą ar pristatymą, pateikite savo kontaktinius duomenis, su kuriais skelbėjas galės su Jumis susisiekti:</Card.Text>
-                                <Form onSubmit={handleSubmit}>
-                                    <Form.Group>
-                                        <Form.Label>Telefono numeris:</Form.Label>
-                                        <Form.Control as="textarea" rows={1} onChange={handlePhoneChange} type="phone" placeholder="Telefono numeris" />
-                                        <br></br>
-                                        <Form.Label>Žinutė:</Form.Label>
-                                        <Form.Control as="textarea" rows={3} onChange={handleMessageChange} placeholder="Papildoma informacija (nebūtina)" />
-                                    </Form.Group>
-                                    <Button variant="primary" disabled={sending} type="submit">Siųsti</Button>
-                                </Form>
+                                {device.status === 'Išrinktas laimėtojas' && (
+        <>
+            <Card.Text>Norint suderinti atsiėmimą ar pristatymą, pateikite savo kontaktinius duomenis, su kuriais skelbėjas galės su Jumis susisiekti:</Card.Text>
+            <Form onSubmit={handleSubmit}>
+                <Form.Group>
+                    <Form.Label>Telefono numeris:</Form.Label>
+                    <Form.Control as="textarea" rows={1} onChange={handlePhoneChange} type="phone" placeholder="Telefono numeris" />
+                    <br />
+                    <Form.Label>Žinutė:</Form.Label>
+                    <Form.Control as="textarea" rows={3} onChange={handleMessageChange} placeholder="Papildoma informacija (nebūtina)" />
+                </Form.Group>
+                <Button variant="primary" disabled={sending} type="submit">Siųsti</Button>
+            </Form>
+            <br />
+        </>
+    )}
+
+{device.status === 'Laukiama patvirtinimo' && (
+    <Button variant="primary" onClick={handleConfirm}>Patvirtinti</Button>
+)}
+
                                 <br></br>
                             </Card.Body>
                             <Card.Footer>{device.location} | Skelbėjo el. paštas: {posterEmail}</Card.Footer>

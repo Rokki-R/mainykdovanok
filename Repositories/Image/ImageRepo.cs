@@ -1,5 +1,5 @@
 ﻿using mainykdovanok.Models;
-using mainykdovanok.ViewModels.Item;
+using mainykdovanok.ViewModels.Device;
 using mainykdovanok.Tools;
 using MySql.Data.MySqlClient;
 using Serilog;

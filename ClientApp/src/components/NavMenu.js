@@ -116,7 +116,7 @@ handleLoginClick = () => {
     isClicked: !this.state.isClicked,
   });
   
-  fetch("api/user/isloggedin/", { method: "GET" })
+  fetch("api/login/isloggedin/", { method: "GET" })
     .then((response) => {
       if (response.ok) {
         return response.json();
@@ -135,7 +135,7 @@ handleLoginClick = () => {
 };
 
   handleLogoutClick = () => {
-    fetch("api/user/logout", { method: "GET" }).then((response) => {
+    fetch("api/login/logout", { method: "GET" }).then((response) => {
       if (response.status === 200) {
         // 200 - Ok
         this.setState({ isLogged: false });
@@ -255,6 +255,14 @@ handleLoginClick = () => {
                     onClick={this.handleClick}
                   >
                     Mano skelbimai
+                  </NavDropdown.Item>
+                  )}
+                  {userRole === 0 && (
+                  <NavDropdown.Item
+                    href="/laimejimai"
+                    onClick={this.handleClick}
+                  >
+                    Laimėti skelbimai
                   </NavDropdown.Item>
                   )}
                   <NavDropdown.Item

@@ -23,7 +23,7 @@ function SearchResultsByCategoryPage() {
     }
     else
     {
-        const response = await axios.get('/api/device/getDevices');
+        const response = await axios.get('/api/home/getDevices');
         setDevices(response.data); 
         setLoading(false);
     }

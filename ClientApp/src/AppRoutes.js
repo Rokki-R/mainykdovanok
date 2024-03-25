@@ -14,6 +14,7 @@ import { DetailedDeviceInfoPage } from "./components/DetailedDeviceInfoPage/Deta
 import SearchResultsByQueryPage from "./components/SearchResultsByQueryPage/SearchResultsByQueryPage";
 import SearchResultsByCategoryPage from "./components/SearchResultsByCategoryPage/SearchResultsByCategoryPage";
 
+import MyWonDevicesPage from "./components/MyWonDevicesPage/MyWonDevicesPage"
 import MyProfilePage from "./components/MyProfilePage/MyProfilePage";
 import { UserProfilePage } from "./components/UserProfilePage/UserProfilePage";
 import  MyDevicesPage from "./components/MyDevicesPage/MyDevicesPage"
@@ -94,6 +95,10 @@ const AppRoutes = [
     path: '/skelbimas/redaguoti/:deviceId',
     element: <DeviceUpdatePage />
   },
+  {
+    path: '/laimejimai',
+    element: <MyWonDevicesPage />
+  }
 ];
 
 export default AppRoutes;

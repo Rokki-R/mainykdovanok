@@ -188,7 +188,7 @@ namespace mainykdovanok.Repositories.User
             }
         }
 
-        public async Task<bool> IncrementUserQuantityOfDevicesWon(int userId)
+        public async Task<bool> IncrementUserQuantityOfDevicesWon(int? userId)
         {
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();

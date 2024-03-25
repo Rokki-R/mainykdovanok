@@ -1,6 +1,6 @@
 ﻿using mainykdovanok.Models;
 using mainykdovanok.ViewModels;
-using mainykdovanok.ViewModels.Item;
+using mainykdovanok.ViewModels.Device;
 using MySql.Data.MySqlClient;
 using Serilog;
 using System.Data;
