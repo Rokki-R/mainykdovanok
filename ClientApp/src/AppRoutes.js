@@ -7,6 +7,7 @@ import RegistrationPage from "./components/RegistrationPage/RegistrationPage";
 import VerifyEmailPage from "./components/VerifyEmailPage/VerifyEmailPage";
 import ForgotPasswordPage from "./components/ForgotPasswordPage/ForgotPasswordPage";
 import PasswordChangePage from "./components/PasswordChangePage/PasswordChangePage";
+import AdministratorPage from "./components/AdministratorPage/AdministratorPage"
 
 import DeviceCreationPage from "./components/DeviceCreationPage/DeviceCreationPage";
 import { DeviceViewPage } from "./components/DeviceViewPage/DeviceViewPage";
@@ -98,6 +99,10 @@ const AppRoutes = [
   {
     path: '/laimejimai',
     element: <MyWonDevicesPage />
+  },
+  {
+    path: '/admin',
+    element: <AdministratorPage/>
   }
 ];
 

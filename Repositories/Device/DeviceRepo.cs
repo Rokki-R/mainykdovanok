@@ -449,7 +449,7 @@ namespace mainykdovanok.Repositories.Device
             await connection.OpenAsync();
 
             using (MySqlCommand command = new MySqlCommand("SELECT device_ad.id, device_ad.fk_user AS UserId, device_ad.name AS Name, device_ad.description AS Description, COUNT(device_lottery_participant.id) " +
-                "AS participant, device_ad.location AS Location, device_category.name AS Category " +
+                "AS Participants, device_ad.location AS Location, device_category.name AS Category " +
                 "FROM device_ad " +
                 "JOIN device_category ON device_ad.fk_category = device_category.id " +
                 "LEFT JOIN device_lottery_participant ON device_ad.id = device_lottery_participant.fk_device " +

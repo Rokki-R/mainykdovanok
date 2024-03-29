@@ -25,8 +25,6 @@ namespace mainykdovanok.Controllers
         private readonly CategoryRepo _categoryRepo;
         private readonly DeviceRepo _deviceRepo;
         private readonly ImageRepo _imageRepo;
-        private readonly UserRepo _userRepo;
-        private readonly CommentRepo _commentRepo;
         private readonly MotivationalLetterService _motivationalLetterService;
         private readonly ExchangeService _exchangeService;
         private readonly QuestionnaireService _questionnaireService;
@@ -37,8 +35,6 @@ namespace mainykdovanok.Controllers
             _categoryRepo = new CategoryRepo();
             _deviceRepo = new DeviceRepo();
             _imageRepo = new ImageRepo();
-            _userRepo = new UserRepo();
-            _commentRepo = new CommentRepo();
             _motivationalLetterService = new MotivationalLetterService();
             _exchangeService = new ExchangeService();
             _questionnaireService = new QuestionnaireService();

@@ -30,13 +30,19 @@ namespace mainykdovanok.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> login(LoginViewModel loginData)
         {
-            string sql = "SELECT user_id, name, surname, password_hash, password_salt, verification_token, user_role FROM user WHERE email = @email";
+            string sql = "SELECT user_id, name, surname, password_hash, password_salt, verification_token, user_role, fk_user_status FROM user WHERE email = @email";
             var parameters = new { email = loginData.Email };
             var result = await _userRepo.LoadData(sql, parameters);
 
             if (result.Rows.Count == 0)
             {
                 return NotFound(new { message = "Šis naudotojas nėra registruotas sistemoje" });
+            }
+
+            int userStatus = Convert.ToInt32(result.Rows[0]["fk_user_status"]);
+            if (userStatus == 2)
+            {
+                return Unauthorized(new { message = "Jūsų paskyra yra užblokuota. Susisiekite su administratoriumi." });
             }
 
             string hashed_password = result.Rows[0]["password_hash"].ToString();
