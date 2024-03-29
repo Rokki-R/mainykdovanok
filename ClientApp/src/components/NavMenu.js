@@ -249,6 +249,14 @@ handleLoginClick = () => {
                   >
                     Profilis
                   </NavDropdown.Item>
+                  {userRole === 1 && (
+                  <NavDropdown.Item
+                    href="/admin"
+                    onClick={this.handleClick}
+                  >
+                    Naudotojai
+                  </NavDropdown.Item>
+                  )}
                   {userRole === 0 && (
                   <NavDropdown.Item
                     href="/manoskelbimai"

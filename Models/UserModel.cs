@@ -8,5 +8,7 @@
         public string Email { get; set; }
         public int devicesWon { get; set; }
         public int devicesGifted { get; set; }
+        public int Status { get; set; }
+        public int Role { get; set; }
     }
 }

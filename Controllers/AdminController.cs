@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using mainykdovanok.Repositories.User;
+using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -8,36 +9,77 @@ namespace mainykdovanok.Controllers
     [ApiController]
     public class AdminController : ControllerBase
     {
-        // GET: api/<AdminController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        private readonly UserRepo _userRepo;
+
+        public AdminController()
         {
-            return new string[] { "value1", "value2" };
+            _userRepo = new UserRepo();
+        }
+        [HttpGet("getUsers")]
+        public async Task<IActionResult> GetUsers()
+        {
+            if (!HttpContext.User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            if (!User.IsInRole("1"))
+            {
+                return StatusCode(403);
+            }
+
+            try
+            {
+                var result = await _userRepo.GetUsers();
+                if (result == null)
+                {
+                    return BadRequest();
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
-        // GET api/<AdminController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpPost("updateUserStatus/{userId}")]
+        public async Task<IActionResult> updateUserStatus(int userId, string action)
         {
-            return "value";
-        }
+            if (!HttpContext.User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
 
-        // POST api/<AdminController>
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
+            if (!User.IsInRole("1"))
+            {
+                return StatusCode(403);
+            }
 
-        // PUT api/<AdminController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
+            try
+            {
+                int status = 0;
+                if (action == "Blokuoti")
+                {
+                    status = 2;
+                }
+                else
+                {
+                    status = 1;
+                }
+                var result = await _userRepo.UpdateUserStatus(userId, status);
+                if (result == null)
+                {
+                    return BadRequest();
+                }
 
-        // DELETE api/<AdminController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

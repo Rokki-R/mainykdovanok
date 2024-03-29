@@ -63,12 +63,12 @@ export const LoginPage = () => {
                 }
                 else if (response.status === 401) {
                   response.json().then(data => {
-                      toast.error(data.message); // Display the unauthorized message from the backend
+                      toast.error(data.message);
                   });
               }
               else if (response.status === 404) {
                   response.json().then(data => {
-                      toast.error(data.message); // Display the not found message from the backend
+                      toast.error(data.message);
                   });
               }
               else {

@@ -37,7 +37,6 @@ namespace mainykdovanok.Repositories.User
 
         private MySqlConnection GetConnection()
         {
-            string aa = _connectionString;
             return new MySqlConnection(_connectionString);
         }
 
@@ -292,6 +291,62 @@ namespace mainykdovanok.Repositories.User
                 _logger.Error(ex, "Error checking email existence in database!");
                 return false;
             }
+        }
+
+        public async Task<List<UserViewModel>> GetUsers()
+        {
+            var users = new List<UserViewModel>();
+
+            using (MySqlConnection connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (MySqlCommand command = new MySqlCommand("SELECT user.user_id, user.name, user.surname, " +
+                     "user.email, user.user_role, user.devices_won, user.devices_gifted, user_status.status as status " +
+                     "FROM user " +
+                     "LEFT JOIN user_status ON user.fk_user_status = user_status.id "
+                     , connection))
+                {
+                    using (DbDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+
+                            UserViewModel user = new UserViewModel()
+                            {
+                                Id = Convert.ToInt32(reader["user_id"]),
+                                Name = reader["name"].ToString(),
+                                Surname = reader["surname"].ToString(),
+                                Email = reader["email"].ToString(),
+                                Role = Convert.ToInt32(reader["user_role"]),
+                                devicesGifted = Convert.ToInt32(reader["devices_gifted"]),
+                                devicesWon = Convert.ToInt32(reader["devices_won"]),
+                                Status = reader["status"].ToString()
+
+                            };
+
+                            users.Add(user);
+
+                        }
+                    }
+                }
+            }
+            return users;
+        }
+
+        public async Task<bool> UpdateUserStatus(int userId, int newStatusId)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "UPDATE user " +
+                "SET fk_user_status = @fk_user_status " +
+                "WHERE user_id = @id", connection);
+            command.Parameters.AddWithValue("@fk_user_status", newStatusId);
+            command.Parameters.AddWithValue("@id", userId);
+
+            await command.ExecuteNonQueryAsync();
+            return true;
         }
     }
 }
