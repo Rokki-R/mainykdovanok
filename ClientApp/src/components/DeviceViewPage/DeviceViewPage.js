@@ -28,7 +28,6 @@ export const DeviceViewPage = () => {
   const [isPastEndTime, setIsPastEndTime] = useState(true);
   const [isUserParticipating, setIsUserParticipating] = useState(false);
   const [deviceOwner, setDeviceOwner] = useState(null);
-  const [userImage, setUserImage] = useState("./images/profile.png");
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [answers, setAnswers] = useState({});
@@ -42,12 +41,6 @@ export const DeviceViewPage = () => {
         const deviceOwnerData = response.data;
         setDeviceOwner(deviceOwnerData);
 
-        const userProfileImageResponse = await axios.get(
-          `api/user/getUserProfileImage/${deviceOwnerData.id}`
-        );
-        if (userProfileImageResponse.data !== undefined) {
-          setUserImage(userProfileImageResponse.data);
-        }
       } catch (error) {
         toast.error("Įvyko klaida, susisiekite su administratoriumi!");
       }
@@ -378,11 +371,6 @@ export const DeviceViewPage = () => {
     navigate(`/`);
   };
 
-  const ProfileImage =
-    userImage.length < 100
-      ? userImage
-      : `data:image/jpeg;base64,${userImage.user_profile_image}`;
-
   return device && deviceOwner ? (
     <div className="outerBoxWrapper">
       <Toaster />
@@ -422,14 +410,6 @@ export const DeviceViewPage = () => {
                     </Accordion.Header>
                     <Accordion.Body>
                       <div className="d-flex justify-content-between align-items-start">
-                        <div>
-                          <img
-                            src={[ProfileImage]}
-                            alt="Profile"
-                            className="rounded-circle mb-3"
-                            style={{ width: "100px", height: "100px" }}
-                          />
-                        </div>
                         <div className="owner-info-1">
                           <p>
                             <strong>Vardas:</strong> {deviceOwner.name}{" "}

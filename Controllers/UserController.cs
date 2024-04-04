@@ -66,17 +66,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
             int devicesGifted = Convert.ToInt32(result.Rows[0]["devices_gifted"]);
             int devicesWon = Convert.ToInt32(result.Rows[0]["devices_won"]);
 
-            sql = "SELECT image FROM user_profile_image WHERE fk_user = @user_id";
-            parameters = new { user_id = userId };
-            result = await _userRepo.LoadData(sql, parameters);
-            byte[] user_profile_image = null;
-
-            if (result.Rows.Count > 0)
-            {
-                user_profile_image = (byte[])result.Rows[0]["image"];
-            }
-
-            return Ok(new { name, surname, email, devicesGifted, devicesWon, user_profile_image });
+            return Ok(new { name, surname, email, devicesGifted, devicesWon });
         }
 
         [HttpPost("updateProfileDetails")]
@@ -90,116 +80,14 @@ namespace mainykdovanok.Controllers.UserAuthentication
             var form = await Request.ReadFormAsync();
             string name = form["name"].ToString();
             string surname = form["surname"].ToString();
-            string email = form["email"].ToString();
-            string old_password = form["old_password"].ToString();
-            string new_password = form["new_password"].ToString();
-            IFormFile image = Request.Form.Files.GetFile("user_profile_image");
-            byte[] imageBytes = null;
-
-            if (image != null)
-            {
-                using (var memoryStream = new MemoryStream())
-                {
-                    imageBytes = await ImageCompressor.ResizeCompressImage(image, 128, 128);
-                }
-            }
 
             int user_id = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
-            // Check if there already is a user with the same email.
-            string sql = "SELECT user_id FROM user WHERE email = @email";
-            var parameters_email = new { email };
-            var result_email = await _userRepo.LoadData(sql, parameters_email);
-
-            if (result_email.Rows.Count > 0)
-            {
-                int existingUserId = Convert.ToInt32(result_email.Rows[0]["user_id"]);
-                if (existingUserId != user_id)
-                {
-                    return BadRequest("Šis el. paštas užimtas!");
-                }
-            }
-
-            sql = "SELECT password_hash, password_salt FROM user WHERE user_id = @user_id";
-            var parameters_password = new { user_id };
-            var result_password = await _userRepo.LoadData(sql, parameters_password);
-
-            string hashed_password = result_password.Rows[0]["password_hash"].ToString();
-            string password_salt = result_password.Rows[0]["password_salt"].ToString();
-
-            bool match = false;
-            try
-            {
-                match = PasswordHash.doesPasswordMatch(old_password, hashed_password, password_salt);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error while comparing passwords during profile update: {ex}", ex);
-                return StatusCode(500);
-            }
-
-            if (match)
-            {
-                byte[] salt;
-                string password_hash = PasswordHash.hashPassword(new_password, out salt);
-                password_salt = Convert.ToBase64String(salt);
-
-                sql = "UPDATE user SET name = @name, surname = @surname, email = @email, password_hash = @password_hash, password_salt = @password_salt WHERE user_id = @user_id";
-                var parameters_update = new { name, surname, email, password_hash, password_salt, user_id };
+            string sql = "UPDATE user SET name = @name, surname = @surname WHERE user_id = @user_id";
+            var parameters_update = new { name, surname, user_id };
                 await _userRepo.SaveData(sql, parameters_update);
-            }
-            else if (old_password == "" && new_password == "")
-            {
-                sql = "UPDATE user SET name = @name, surname = @surname, email = @email WHERE user_id = @user_id";
-                var parameters_update = new { name, surname, email, user_id };
-                await _userRepo.SaveData(sql, parameters_update);
-            }
-            else
-            {
-                return BadRequest("Neteisingas slaptažodis!");
-            }
 
-            if (image != null)
-            {
-                sql = "SELECT id FROM user_profile_image WHERE fk_user = @user_id";
-                var parameters_user_profile_image = new { user_id };
-                var result_profile_image = await _userRepo.LoadData(sql, parameters_user_profile_image);
-                if (result_profile_image.Rows.Count > 0)
-                {
-                    sql = "UPDATE user_profile_image SET image = @user_profile_image WHERE fk_user = @user_id";
-                    var parameters_update_user_profile_image = new { user_profile_image = imageBytes, user_id };
-                    await _userRepo.SaveData(sql, parameters_update_user_profile_image);
-                }
-                else
-                {
-                    sql = "INSERT INTO user_profile_image (image, fk_user) VALUES (@user_profile_image, @user_id)";
-                    var parameters_insert_user_profile_image = new { user_profile_image = imageBytes, user_id };
-                    await _userRepo.SaveData(sql, parameters_insert_user_profile_image);
-                }
-            }
             return Ok();
-        }
-        [HttpGet("getMyProfileImage")]
-        public async Task<IActionResult> GetMyProfileImage()
-        {
-            if (!HttpContext.User.Identity.IsAuthenticated)
-            {
-                // Return Ok because we don't want an error to show up in the console.
-                // This method for now is only used in the NavMenu, which can be called when the user is not logged in.
-                return Ok("./images/profile.png");
-            }
-            int user_id = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-
-            string sql = "SELECT image FROM user_profile_image WHERE fk_user = @user_id";
-            var parameters = new { user_id };
-            var result = await _userRepo.LoadData(sql, parameters);
-
-            if (result.Rows.Count == 0)
-            {
-                return Ok("./images/profile.png");
-            }
-            byte[] user_profile_image = (byte[])result.Rows[0]["image"];
-            return Ok(new { user_id, user_profile_image });
         }
 
         [HttpGet("getUserDetails/{userId}")]
@@ -224,21 +112,6 @@ namespace mainykdovanok.Controllers.UserAuthentication
             {
                 return BadRequest(ex.Message);
             }
-        }
-
-        [HttpGet("getUserProfileImage/{userId}")]
-        public async Task<IActionResult> GetUserProfileImage(int userId)
-        {
-            string sql = "SELECT image FROM user_profile_image WHERE fk_user = @userId";
-            var parameters = new { userId };
-            var result = await _userRepo.LoadData(sql, parameters);
-
-            if (result.Rows.Count == 0)
-            {
-                return Ok("./images/profile.png");
-            }
-            byte[] user_profile_image = (byte[])result.Rows[0]["image"];
-            return Ok(new { userId, user_profile_image });
         }
 
         [HttpGet("getUserEmail/{userId?}")]

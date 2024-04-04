@@ -27,7 +27,6 @@ export class NavMenu extends Component {
       isLoggedIn: false,
       dropdownOpen: false,
       selectedCategory: "Filtras",
-      userProfileImage: "./images/profile.png",
       categories: [],
       devices: [],
       allDevices: false,
@@ -37,45 +36,33 @@ export class NavMenu extends Component {
 
   componentDidMount() {
     this.handleLoginClick();
-    this.getMyProfileImage();
     this.getCategories();
   }
 
-  getMyProfileImage() {
+  getCategories() {
     axios
-      .get("api/user/getMyProfileImage")
+      .get("api/device/getCategories")
       .then((response) => {
-        if (response.data.user_profile_image !== undefined) {
-          this.setState({
-            userProfileImage: response.data.user_profile_image,
-          });
-        }
+        this.setState({
+          categories: response.data,
+        });
       })
-      .catch((error) => console.error(error));
-  }
-
-  getCategories()
-  {
-      axios.get("api/device/getCategories")
-      .then(response => { this.setState({
-          categories : response.data
-      })
-      })
-      .catch(error => {
-          console.log(error);
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
-      })
+      .catch((error) => {
+        console.log(error);
+        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+      });
   }
 
   handleClick() {
     this.setState({
       isClicked: !this.state.isClicked,
     });
-  };
+  }
 
   handleSearchInputChange = (event) => {
     this.setState({ searchQuery: event.target.value });
   };
+  
   handleSearch = () => {
     if (!this.state.searchQuery) {
       toast.error("Negalite ieškoti skelbimų nieko neįvedę paieškos lange");
@@ -86,7 +73,7 @@ export class NavMenu extends Component {
       .get("/api/device/search", {
         params: {
           searchWord: this.state.searchQuery,
-        }
+        },
       })
       .then((response) => {
         this.props.navigate(`/search/${this.state.searchQuery}`, {
@@ -103,36 +90,37 @@ export class NavMenu extends Component {
 
   getDevicesByCategory(categoryId) {
     this.props.navigate(`/search/category/${categoryId}`);
-}
-getAllDevices = () => {
-this.setState({
-    allDevices: true
-});
-this.props.navigate(`/search/category/0`);
-};
+  }
 
-handleLoginClick = () => {
-  this.setState({
-    isClicked: !this.state.isClicked,
-  });
-  
-  fetch("api/login/isloggedin/", { method: "GET" })
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      } else {
-        throw new Error("User is not logged in");
-      }
-    })
-    .then((data) => {
-      const userRole = data.userRole;
-      console.log(userRole)
-      this.setState({ isLogged: true, userRole: userRole });
-    })
-    .catch((error) => {
-      console.error("Error checking login status:", error);
+  getAllDevices = () => {
+    this.setState({
+      allDevices: true,
     });
-};
+    this.props.navigate(`/search/category/0`);
+  };
+
+  handleLoginClick = () => {
+    this.setState({
+      isClicked: !this.state.isClicked,
+    });
+
+    fetch("api/login/isloggedin/", { method: "GET" })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error("User is not logged in");
+        }
+      })
+      .then((data) => {
+        const userRole = data.userRole;
+        console.log(userRole);
+        this.setState({ isLogged: true, userRole: userRole });
+      })
+      .catch((error) => {
+        console.error("Error checking login status:", error);
+      });
+  };
 
   handleLogoutClick = () => {
     fetch("api/login/logout", { method: "GET" }).then((response) => {
@@ -151,9 +139,9 @@ handleLoginClick = () => {
     });
   };
 
-  selectCategory = category => {
+  selectCategory = (category) => {
     this.setState({
-        selectedCategory: category,
+      selectedCategory: category,
     });
   };
 
@@ -164,21 +152,17 @@ handleLoginClick = () => {
   };
 
   render() {
-    const { userProfileImage, userRole } = this.state;
-    const ProfileImage =
-      userProfileImage.length < 100
-        ? userProfileImage
-        : `data:image/jpeg;base64,${userProfileImage}`;
-    const maxCategoryLength = 20; // Maximum number of characters to display in dropdown toggle
-
+    const { userRole } = this.state;
+    const maxCategoryLength = 20;
     let displayCategory = this.state.selectedCategory;
     if (displayCategory.length > maxCategoryLength) {
-      displayCategory = displayCategory.substring(0, maxCategoryLength) + "...";
+      displayCategory =
+        displayCategory.substring(0, maxCategoryLength) + "...";
     }
 
     return (
       <>
-        <Toaster></Toaster>
+        <Toaster />
         <Navbar
           style={{ backgroundColor: "#3183ab", height: "95px" }}
           expand="lg"
@@ -210,107 +194,85 @@ handleLoginClick = () => {
               </Button>
             </Form>
             <Nav className="ms-auto">
-            <NavDropdown title={displayCategory} className="categories">
-                                {this.state.categories.map(category => (
-                                    <NavDropdown.Item key={category.id} onClick={() => this.getDevicesByCategory(category.id)}>{category.name}</NavDropdown.Item>
-                                ))}
-                                <NavDropdown.Divider />
-                                <NavDropdown.Item onClick={() => this.getAllDevices()}>Visi</NavDropdown.Item>
-                            </NavDropdown>
-                            {userRole === 0 && ( // Check if user role is 0 (assuming 0 means the user has the required role)
-              <div className="d-inline-block align-middle">
-                <Button
-                  className="buttoncreate"
-                  variant="primary"
-                  size="sm"
-                  href="/naujasskelbimas"
+              <NavDropdown
+                title={displayCategory}
+                className="categories"
+              >
+                {this.state.categories.map((category) => (
+                  <NavDropdown.Item
+                    key={category.id}
+                    onClick={() => this.getDevicesByCategory(category.id)}
+                  >
+                    {category.name}
+                  </NavDropdown.Item>
+                ))}
+                <NavDropdown.Divider />
+                <NavDropdown.Item onClick={() => this.getAllDevices()}>
+                  Visi
+                </NavDropdown.Item>
+              </NavDropdown>
+              {userRole === 0 && (
+                <div className="d-inline-block align-middle">
+                  <Button
+                    className="buttoncreate"
+                    variant="primary"
+                    size="sm"
+                    href="/naujasskelbimas"
+                  >
+                    Dovanoti!
+                  </Button>
+                </div>
+              )}
+              {this.state.isLogged && (
+                <Link
+                  className="nav-link"
+                  to="/"
+                  onClick={this.handleLogoutClick}
                 >
-                  Dovanoti!
-                </Button>
-              </div>
-            )}
-
-              {this.state.isLogged ? (
-                <NavDropdown
-                  className="custom-dropdown"
-                  title={
-                    <Image
-                      alt="Profilio nuotrauka"
-                      src={[ProfileImage]}
-                      roundedCircle
-                      style={{ height: "75px", width: "75px" }}
-                    />
-                  }
-                  onClick={this.handleLoginClick}
-                >
-                  <NavDropdown.Item
-                    href="/manoprofilis"
-                    onClick={this.handleClick}
-                  >
-                    Profilis
-                  </NavDropdown.Item>
-                  {userRole === 1 && (
-                  <NavDropdown.Item
-                    href="/admin"
-                    onClick={this.handleClick}
-                  >
-                    Naudotojai
-                  </NavDropdown.Item>
-                  )}
-                  {userRole === 0 && (
-                  <NavDropdown.Item
-                    href="/manoskelbimai"
-                    onClick={this.handleClick}
-                  >
-                    Mano skelbimai
-                  </NavDropdown.Item>
-                  )}
-                  {userRole === 0 && (
-                  <NavDropdown.Item
-                    href="/laimejimai"
-                    onClick={this.handleClick}
-                  >
-                    Laimėti skelbimai
-                  </NavDropdown.Item>
-                  )}
-                  <NavDropdown.Item
-                    onClick={() => {
-                      this.handleLogoutClick();
-                    }}
-                  >
-                    Atsijungti
-                  </NavDropdown.Item>
-                </NavDropdown>
-              ) : (
-                <NavDropdown
-                  className="custom-dropdown"
-                  title={
-                    <Image
-                      alt="Profilio nuotrauka"
-                      src={ProfileImage}
-                      roundedCircle
-                      style={{ height: "75px", width: "75px" }}
-                    />
-                  }
-                  onClick={this.handleLoginClick}
-                >
-                  <NavDropdown.Item
-                    href="/prisijungimas"
-                    onClick={this.handleClick}
-                  >
-                    Prisijungti
-                  </NavDropdown.Item>
-                  <NavDropdown.Item
-                    href="/registracija"
-                    onClick={this.handleClick}
-                  >
-                    Registruotis
-                  </NavDropdown.Item>
-                </NavDropdown>
+                  Atsijungti
+                </Link>
               )}
             </Nav>
           </Navbar.Collapse>
         </Navbar>
+        <footer>
+  <div className="links">
+    {this.state.isLogged ? (
+      <>
+        {this.state.userRole === 0 && (
+          <Link className="links" to="/manoskelbimai">
+            Mano skelbimai
+          </Link>
+        )}
+        {this.state.userRole === 0 && (
+          <Link className="links" to="/laimejimai">
+            Laimėti skelbimai
+          </Link>
+        )}
+        {this.state.userRole === 1 && (
+          <Link className="links" to="/admin">
+            Naudotojai
+          </Link>
+        )}
+        <div className="ml-auto">
+          <Link className="links" to="/manoprofilis">
+            Mano profilis
+          </Link>
+        </div>
+      </>
+    ) : (
+      <>
+        <Link className="links" to="/prisijungimas">
+          Prisijungti
+        </Link>
+        <Link className="links" to="/registracija">
+          Registruotis
+        </Link>
+      </>
+    )}
+  </div>
+</footer>
+
       </>
     );
   }
