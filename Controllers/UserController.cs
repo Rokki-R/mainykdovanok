@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Web;
 using MySqlX.XDevAPI.Common;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 
 namespace mainykdovanok.Controllers.UserAuthentication
 {
@@ -17,122 +18,151 @@ namespace mainykdovanok.Controllers.UserAuthentication
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly ILogger<UserController> _logger;
+        private readonly ILogger<LoginController> _logger;
         private readonly UserRepo _userRepo;
 
-        public UserController(ILogger<UserController> logger)
+        public UserController(ILogger<LoginController> logger)
         {
             _logger = logger;
             _userRepo = new UserRepo();
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> login (LoginViewModel loginData)
+        [HttpGet("getCurrentUserId")]
+        public IActionResult GetCurrentUserId()
         {
-            string sql = "SELECT user_id, name, surname, password_hash, password_salt, verification_token, user_role FROM users WHERE email = @email";
-            var parameters = new { email = loginData.Email };
+            if (HttpContext.User.Identity.IsAuthenticated)
+            {
+                int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+                return Ok(userId);
+            }
+            else
+            {
+                return Unauthorized();
+            }
+        }
+
+        [HttpGet("getMyProfileDetails")]
+        public async Task<IActionResult> GetMyProfileDetails()
+        {
+            if (!HttpContext.User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+
+            string sql = "SELECT name, surname, email, devices_gifted, devices_won FROM user WHERE user_id = @user_id";
+            var parameters = new { user_id = userId };
+            var result = await _userRepo.LoadData(sql, parameters);
+
+            if (result.Rows.Count == 0)
+            {
+                return BadRequest();
+            }
+
+            string name = result.Rows[0]["name"].ToString();
+            string surname = result.Rows[0]["surname"].ToString();
+            string email = result.Rows[0]["email"].ToString();
+            int devicesGifted = Convert.ToInt32(result.Rows[0]["devices_gifted"]);
+            int devicesWon = Convert.ToInt32(result.Rows[0]["devices_won"]);
+
+            return Ok(new { name, surname, email, devicesGifted, devicesWon });
+        }
+
+        [HttpPost("updateProfileDetails")]
+        public async Task<IActionResult> UpdateProfileDetails()
+        {
+            if (!HttpContext.User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            var form = await Request.ReadFormAsync();
+            string name = form["name"].ToString();
+            string surname = form["surname"].ToString();
+
+            int user_id = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+
+            string sql = "UPDATE user SET name = @name, surname = @surname WHERE user_id = @user_id";
+            var parameters_update = new { name, surname, user_id };
+                await _userRepo.SaveData(sql, parameters_update);
+
+            return Ok();
+        }
+
+        [HttpGet("getUserDetails/{userId}")]
+        public async Task<IActionResult> GetUserDetails(int userId)
+        {
+            if (!HttpContext.User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            try
+            {
+                var result = await _userRepo.GetUserById(userId);
+                if (result == null)
+                {
+                    return BadRequest();
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("getUserEmail/{userId?}")]
+        public async Task<IActionResult> GetUserEmail(int? userId)
+        {
+            if (HttpContext.User.Identity.IsAuthenticated && userId == null)
+            {
+                return Ok(HttpContext.User.FindFirst("email").Value);
+            }
+            else if (userId != null)
+            {
+                string email = await _userRepo.GetUserEmail((int)userId);
+                return Ok(email);
+            }
+            return BadRequest();
+        }
+
+        [HttpPost("forgotPassword")]
+        public async Task<IActionResult> ForgotPassword(PasswordResetViewModel resetRequest)
+        {
+            string sql = "SELECT email FROM user WHERE email = @email";
+            var parameters = new { email = resetRequest.Email };
             var result = await _userRepo.LoadData(sql, parameters);
 
             if (result.Rows.Count == 0)
             {
                 return StatusCode(404);
             }
-
-            if (!String.Equals(result.Rows[0]["verification_token"].ToString(), ""))
+            else
             {
-                return StatusCode(401);
-            }
-
-            string hashed_password = result.Rows[0]["password_hash"].ToString();
-            string password_salt = result.Rows[0]["password_salt"].ToString();
-
-            bool match = false;
-            try
-            {
-                match = PasswordHash.doesPasswordMatch(loginData.Password, hashed_password, password_salt);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error while comparing passwords: {ex}", ex);
-                return StatusCode(404);
-            }
-
-            if (match) 
-            {
-                // Authenticate the user.
-                int userId = Convert.ToInt32(result.Rows[0]["user_id"]);
-                string name = result.Rows[0]["name"].ToString();
-                string surname = result.Rows[0]["surname"].ToString();
-                int user_role = Convert.ToInt32(result.Rows[0]["user_role"]);
-
-                var claims = new List<Claim>
+                byte[] tokenData = new byte[32]; // 256-bit token
+                using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
                 {
-                    new Claim("user_id", userId.ToString()),
-                    new Claim(ClaimTypes.Name, name),
-                    new Claim(ClaimTypes.Surname, surname),
-                    new Claim(ClaimTypes.Email, loginData.Email),
-                    new Claim(ClaimTypes.Role, user_role.ToString())
+                    rng.GetBytes(tokenData);
+                }
 
-                };
-                var identity = new ClaimsIdentity(claims, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
-                ClaimsPrincipal principal = new ClaimsPrincipal(identity);
-                await HttpContext.SignInAsync(principal);
+                string token = BitConverter.ToString(tokenData).Replace("-", ""); // Convert byte array to hex string
+                DateTime changeTimer = DateTime.Now;
+                changeTimer = changeTimer.AddHours(1);
+                string time = changeTimer.ToString("yyyy-MM-dd HH:mm:ss.fff");
 
-                return Ok();
-            }
+                bool success = await _userRepo.SaveData("UPDATE user SET password_change_token = @token, password_change_time = @time WHERE email = @email",
+                                new { token, time, resetRequest.Email });
 
-            else
-            {
-                return StatusCode(404);
-            }
+                if (!success) { return BadRequest(); }
 
-        }
 
-        [HttpGet("logout")]
-        [Authorize]
-        public IActionResult Logout()
-        {
-            if (HttpContext.User.Identity.IsAuthenticated)
-            {
-                int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-
-                HttpContext.SignOutAsync();
-                _logger.LogInformation($"User #{userId} logged out.");
-                return Ok();
-            }
-            else
-            {
-                _logger.LogError($"Failed to sign out. Something went wrong - [Authorize] passed, but user might not be logged in?");
-                return Unauthorized();
-            }
-        }
-
-        [HttpPost("register")]
-        public async Task<IActionResult> Register(RegistrationViewModel registration)
-        {
-            // Retrieve a hashed version of the user's plain text password.
-            byte[] salt;
-            string password_hash = PasswordHash.hashPassword(registration.Password, out salt);
-            string password_salt = Convert.ToBase64String(salt);
-
-            byte[] tokenData = new byte[32]; // 256-bit token
-            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
-            {
-                rng.GetBytes(tokenData);
-            }
-
-            string token = BitConverter.ToString(tokenData).Replace("-", ""); // Convert byte array to hex string
-
-            bool success = await _userRepo.SaveData("INSERT INTO users (name, surname, email, password_hash, password_salt, verification_token) VALUES (@name, @surname, @email, @password_hash, @password_salt, @token)",
-                    new { registration.Name, registration.Surname, registration.Email, password_hash, password_salt, token });
-
-            if (success)
-            {
-                string verifyUrl;
-                verifyUrl = $"https://localhost:44456/verifyemail?email={HttpUtility.UrlEncode(registration.Email)}&token={HttpUtility.UrlEncode(token)}";
+                string resetUrl = $"https://localhost:44492/pakeisti-slaptazodi?email={HttpUtility.UrlEncode(resetRequest.Email)}&token={HttpUtility.UrlEncode(token)}";
 
                 SendEmail emailer = new SendEmail();
-                if (await emailer.verifyEmail(registration.Email, verifyUrl))
+                if (await emailer.changePassword(result, resetUrl))
                 {
                     return Ok();
                 }
@@ -141,64 +171,47 @@ namespace mainykdovanok.Controllers.UserAuthentication
                     _logger.LogError("Failed to send email");
                     return StatusCode(401);
                 }
-
-            }
-            else
-            {
-                return BadRequest();
             }
         }
 
-        [HttpPost("verifyEmail")]
-        public async Task<IActionResult> VerifyEmail(EmailVerificationViewModel emailVerify)
+        [HttpPost("changePassword")]
+        public async Task<IActionResult> ChangePassword(PasswordChangeViewModel passwordChange)
         {
-            string sql = "SELECT verification_token FROM users WHERE email = @email AND verification_token = @token";
-            var parameters = new { email = emailVerify.Email, token = emailVerify.Token };
+            string sql = "SELECT password_change_token, password_change_time FROM user WHERE email = @email AND password_change_token = @token";
+            var parameters = new { email = passwordChange.Email, token = passwordChange.Token };
             var result = await _userRepo.LoadData(sql, parameters);
 
             if (result.Rows.Count == 0)
             {
-                return StatusCode(404);
+                return StatusCode(401);
             }
             else
             {
-                bool success = await _userRepo.SaveData("UPDATE users SET verification_token = NULL WHERE email = @email AND  verification_token = @token",
-                    new { email = emailVerify.Email, token = emailVerify.Token });
-                if (success)
+                DateTime timer = DateTime.Parse(result.Rows[0]["password_change_time"].ToString());
+
+                if (timer > DateTime.Now)
                 {
-                    return Ok();
+                    byte[] salt;
+                    string password_hash = PasswordHash.hashPassword(passwordChange.Password, out salt);
+                    string password_salt = Convert.ToBase64String(salt);
+
+                    bool success = await _userRepo.SaveData("UPDATE user SET password_hash = @password_hash, password_salt = @password_salt, password_change_token = NULL, password_change_time = NULL WHERE password_change_token = @token",
+                    new { password_hash, password_salt, token = passwordChange.Token });
+
+                    if (success)
+                    {
+                        return Ok();
+                    }
+                    else
+                    {
+                        return BadRequest();
+                    }
                 }
                 else
                 {
-                    return BadRequest();
+                    return StatusCode(300);
                 }
-            }
-        }
 
-        [HttpGet("isLoggedIn/{requiredRole?}")]
-        public IActionResult IsLoggedIn(int requiredRole = 0)
-        {
-            if (HttpContext.User.Identity.IsAuthenticated)
-            {
-                int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-                int userRole = Convert.ToInt32(HttpContext.User.FindFirst(ClaimTypes.Role).Value);
-                string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
-
-                if (userRole >= requiredRole)
-                {
-                    _logger.LogInformation($"User #{userId} with email {userEmail} is logged in and is the required role.");
-                    return Ok();
-                }
-                else
-                {
-                    _logger.LogInformation($"User #{userId} with email {userEmail} is logged in but is not the required role.");
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                _logger.LogInformation($"User is not logged in.");
-                return Unauthorized();
             }
         }
     }

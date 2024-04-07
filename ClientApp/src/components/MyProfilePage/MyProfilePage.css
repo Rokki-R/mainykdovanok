@@ -1,0 +1,11 @@
+.profile {
+    margin-top: 120px; /* Set top margin */
+    margin-bottom: 120px; /* Set bottom margin */
+    width: fit-content; /* Adjust width to fit the content */
+    margin-left: auto; /* Center the container horizontally */
+    margin-right: auto; /* Center the container horizontally */
+}
+
+.givenAwayLabel {
+    margin-top: 20px;
+}

@@ -1,0 +1,62 @@
+.outerBoxWrapper {
+    padding-top: 80px;
+    padding-bottom: 80px;
+}
+.delete {
+    padding: 10px 20px;
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 10px;
+}
+.update {
+    padding: 10px 20px;
+    background-color: orange;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+hr {
+    margin-top: 5%;
+    margin-bottom: 5%;
+    border: grey solid 1px;
+}
+
+.borderless-accordion .accordion-item {
+    border: none;
+}
+
+.borderless-accordion .accordion-button {
+    padding: 0.5rem 1rem;
+    background-color: transparent;
+    color: #000; /* Change the color as needed */
+    border-bottom: 1px solid #dee2e6; /* Optional: Add a bottom border between items */
+}
+
+.borderless-accordion .accordion-body {
+    padding: 0;
+}
+
+/* You can adjust the margin-right value to move the accordion header text */
+.accordion-header-text {
+    justify-content: center;
+  }
+
+.owner-info-1
+{
+    margin-top: 25px;
+    text-align: left;
+}
+
+.owner-info-2
+{
+    margin-top: 25px;
+    text-align: right;
+}

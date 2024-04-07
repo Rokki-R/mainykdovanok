@@ -2,9 +2,11 @@
 using System.Data.Common;
 using System.Reflection;
 using MySql.Data.MySqlClient;
-using mainykdovanok.ViewModels.User;
 using Org.BouncyCastle.Cms;
 using Serilog;
+using mainykdovanok.Models;
+using mainykdovanok.ViewModels.User;
+using System.Xml.Linq;
 
 namespace mainykdovanok.Repositories.User
 {
@@ -35,7 +37,6 @@ namespace mainykdovanok.Repositories.User
 
         private MySqlConnection GetConnection()
         {
-            string aa = _connectionString;
             return new MySqlConnection(_connectionString);
         }
 
@@ -159,6 +160,193 @@ namespace mainykdovanok.Repositories.User
                     command.Parameters.Add(parameter);
                 }
             }
+        }
+        public async Task<string> GetUserEmail(int userId)
+        {
+            try
+            {
+                MySqlConnection connection = GetConnection();
+                await connection.OpenAsync();
+
+                using MySqlCommand command = new MySqlCommand(
+                    "SELECT email FROM user " +
+                    "WHERE user_id = @id", connection);
+                command.Parameters.AddWithValue("@id", userId);
+
+                using DbDataReader reader = await command.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    return reader.GetString("email");
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error getting user email!");
+                return null;
+            }
+        }
+
+        public async Task<bool> IncrementUserQuantityOfDevicesWon(int? userId)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "UPDATE user " +
+                "SET devices_won = devices_won + 1 " +
+                "WHERE user_id = @id", connection);
+            command.Parameters.AddWithValue("@id", userId);
+
+            await command.ExecuteNonQueryAsync();
+            return true;
+        }
+
+        public async Task<bool> IncrementUserQuantityOfDevicesGifted(int userId)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "UPDATE user " +
+                "SET devices_gifted = devices_gifted + 1 " +
+                "WHERE user_id = @id", connection);
+            command.Parameters.AddWithValue("@id", userId);
+
+            await command.ExecuteNonQueryAsync();
+            return true;
+        }
+
+        public async Task<UserModel> GetUser(string name)
+        {
+            MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "SELECT user_id, name, surname, email FROM user " +
+                "WHERE CONCAT(name, ' ', surname) = @name", connection);
+            command.Parameters.AddWithValue("@name", name);
+
+            using (DbDataReader reader = await command.ExecuteReaderAsync())
+            {
+                await reader.ReadAsync();
+
+                UserModel user = new UserModel()
+                {
+                    Id = Convert.ToInt32(reader["user_id"]),
+                    Name = reader["name"].ToString(),
+                    Surname = reader["surname"].ToString(),
+                    Email = reader["email"].ToString()
+                };
+
+                return user;
+            }
+        }
+
+        public async Task<UserViewModel> GetUserById(int userId)
+        {
+            MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "SELECT user_id, name, surname, email, devices_gifted, devices_won FROM user " +
+                "WHERE user_id = @id", connection);
+            command.Parameters.AddWithValue("@id", userId);
+
+            using (DbDataReader reader = await command.ExecuteReaderAsync())
+            {
+                await reader.ReadAsync();
+
+                UserViewModel user = new UserViewModel()
+                {
+                    Id = Convert.ToInt32(reader["user_id"]),
+                    Name = reader["name"].ToString(),
+                    Surname = reader["surname"].ToString(),
+                    Email = reader["email"].ToString(),
+                    devicesGifted = Convert.ToInt32(reader["devices_gifted"]),
+                    devicesWon = Convert.ToInt32(reader["devices_won"]),
+
+                };
+
+                return user;
+            }
+        }
+
+        public async Task<bool> CheckEmailExists(string email)
+        {
+            try
+            {
+                using MySqlConnection connection = GetConnection();
+                string sql = "SELECT COUNT(*) FROM user WHERE email = @Email";
+                using MySqlCommand command = new MySqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@Email", email);
+
+                await connection.OpenAsync();
+                int count = Convert.ToInt32(await command.ExecuteScalarAsync());
+
+                return count > 0;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error checking email existence in database!");
+                return false;
+            }
+        }
+
+        public async Task<List<UserViewModel>> GetUsers()
+        {
+            var users = new List<UserViewModel>();
+
+            using (MySqlConnection connection = new MySqlConnection(_connectionString))
+            {
+                await connection.OpenAsync();
+                using (MySqlCommand command = new MySqlCommand("SELECT user.user_id, user.name, user.surname, " +
+                     "user.email, user.user_role, user.devices_won, user.devices_gifted, user_status.status as status " +
+                     "FROM user " +
+                     "LEFT JOIN user_status ON user.fk_user_status = user_status.id "
+                     , connection))
+                {
+                    using (DbDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+
+                            UserViewModel user = new UserViewModel()
+                            {
+                                Id = Convert.ToInt32(reader["user_id"]),
+                                Name = reader["name"].ToString(),
+                                Surname = reader["surname"].ToString(),
+                                Email = reader["email"].ToString(),
+                                Role = Convert.ToInt32(reader["user_role"]),
+                                devicesGifted = Convert.ToInt32(reader["devices_gifted"]),
+                                devicesWon = Convert.ToInt32(reader["devices_won"]),
+                                Status = reader["status"].ToString()
+
+                            };
+
+                            users.Add(user);
+
+                        }
+                    }
+                }
+            }
+            return users;
+        }
+
+        public async Task<bool> UpdateUserStatus(int userId, int newStatusId)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "UPDATE user " +
+                "SET fk_user_status = @fk_user_status " +
+                "WHERE user_id = @id", connection);
+            command.Parameters.AddWithValue("@fk_user_status", newStatusId);
+            command.Parameters.AddWithValue("@id", userId);
+
+            await command.ExecuteNonQueryAsync();
+            return true;
         }
     }
 }
