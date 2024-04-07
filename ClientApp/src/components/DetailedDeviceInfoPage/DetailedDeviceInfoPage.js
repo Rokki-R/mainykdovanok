@@ -91,47 +91,16 @@ export const DetailedDeviceInfoPage = () => {
         fetchData();
     }, [device, deviceId]);
     
-
-        const handleChosenLetterWinner = async (user) => {
-            const requestBody = {
-                deviceId,
-                user
-            };
-            setSubmitting(true);
-            
-            await axios.post(`/api/device/chooseLetterWinner`, requestBody)
-            .then(response => {
-                if (response) {
-                    toast.success('Išsirinkote, kam padovanoti! Laimėtojui išsiųstas el. laiškas dėl susisiekimo.');
-                    navigate(`/`);
-                }
-                else {
-                    toast.error('Įvyko klaida, susisiekite su administratoriumi!');
-                }
-            })
-            .catch(error => {
-                if (error.response.status === 401) {
-                    toast.success('Turite būti prisijungęs!');
-                }
-                else if (error.response.status === 403) {
-                    console.log(error.response.data);
-                    toast.error(error.response.data.message);
-                }
-                else {
-                    toast.error('Įvyko klaida, susisiekite su administratoriumi!');   
-                }
-            });
-            setSubmitting(false);
-    };
-
-    const handleChosenQuestionnaireWinner = async (user) => {
+    const handleChosenWinner = async (deviceType, user) => {
         const requestBody = {
-            deviceId,
-            user
+            deviceType: deviceType,
+            user: user, 
+            deviceId: deviceId
         };
+        console.log(deviceType, user, deviceId)
         setSubmitting(true);
         
-        await axios.post(`/api/device/chooseQuestionnaireWinner`, requestBody)
+        await axios.post(`/api/device/chooseWinner`, requestBody)
         .then(response => {
             if (response) {
                 toast.success('Išsirinkote, kam padovanoti! Laimėtojui išsiųstas el. laiškas dėl susisiekimo.');
@@ -215,10 +184,6 @@ export const DetailedDeviceInfoPage = () => {
                                             <li className="list-group-item d-flex justify-content-between align-items-center">
                                                 <span>{device.location}</span>
                                             </li>
-                                            <li className="list-group-item d-flex justify-content-between align-items-center">
-                                                <span>Baigiasi:</span>
-                                                <span>{new Date(device.endDateTime).toLocaleString('lt-LT').slice(5, -3)}</span>
-                                            </li>
                                         </ul>
                                         <div className="d-flex justify-content-end">
                                             <Button variant="primary" disabled={isSubmitting} onClick={() => handleOfferWinner(device.user, device.name, device.id)}>Mainyti!</Button>
@@ -236,7 +201,7 @@ export const DetailedDeviceInfoPage = () => {
                     {Object.keys(deviceLetters).length > 0 ? (
                         Object.keys(deviceLetters.letters).map((user) => (
                             <Container key={user}>
-                                <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenLetterWinner(user)}>Atiduoti</Button>
+                                <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenWinner(device.type, user)}>Atiduoti</Button>
                                 <ListGroupItem variant="primary"><b>Motyvacinis laiškas:</b> {user} </ListGroupItem>
                                 {deviceLetters.letters[user].map((letter, index) => (
                                     <ListGroup key={letter.id}>
@@ -276,7 +241,7 @@ export const DetailedDeviceInfoPage = () => {
                     {Object.keys(deviceQuestions_Answers.questionnaires).length > 0 ? (
                         Object.keys(deviceQuestions_Answers.questionnaires).map((user) => (
                             <Container key={user}>
-                                <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenQuestionnaireWinner(user)}>Atiduoti</Button>
+                                <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenWinner(device.type, user)}>Atiduoti</Button>
                                 <ListGroupItem variant="primary"><b>Klausimyno atsakymai:</b> {user} </ListGroupItem>
                                 {deviceQuestions_Answers.questionnaires[user].map((questionnaire, index) => (
                                     <ListGroup key={questionnaire.id}>

@@ -93,18 +93,15 @@ namespace mainykdovanok.Tools
                 _logger.Error("Error sending email to lottery winner: {0}", ex.Message);
             }
         }
-        public async Task notifyUserDeviceExpiration(string email, string deviceName, bool isLottery = false)
+        public async Task notifyUserDeviceAboutNoParticipants(string email, string deviceName, bool isLottery = false)
         {
             message.To.Clear();
             message.To.Add(new MailAddress(email));
 
-            message.Subject = "Jūsų skelbimo galiojimo laikas pasibaigė";
+            message.Subject = "Jūsų loterijos tipo skelbimas";
             message.Body = $"<html><body>" +
                            $"<p>Sveiki,</p>" +
-                           $"<p>Pasibaigė Jūsų skelbimo <b>„{deviceName}“</b> galiojimo laikas.</p>";
-
-            if (isLottery)
-                message.Body += $"<p>Dėl nepakankamo dalyvių skaičiaus skelbimas buvo atšauktas.</p>";
+                           $"<p>Neatsiradus nei vienam loterijos dalyviui, jūsų skelbimas {deviceName} buvo ištrintas</p>";
 
             message.Body += $"<p>Linkėjimai,</p>" +
                             $"<p>mainykdovanok.lt</p>" +
@@ -116,7 +113,7 @@ namespace mainykdovanok.Tools
             }
             catch (Exception ex)
             {
-                _logger.Error("Error sending email to poster notifying of expiration: {0}", ex.Message);
+                _logger.Error("Error sending email to poster notifying of device deletion because of no participants: {0}", ex.Message);
             }
         }
 

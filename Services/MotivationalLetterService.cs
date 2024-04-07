@@ -3,6 +3,7 @@ using mainykdovanok.Repositories.User;
 using mainykdovanok.Models;
 using mainykdovanok.Tools;
 using Org.BouncyCastle.Bcpg.Sig;
+using mainykdovanok.Models.mainykdovanok.Models.Device;
 
 namespace mainykdovanok.Services
 {
@@ -17,7 +18,7 @@ namespace mainykdovanok.Services
             _userRepo = new UserRepo();
         }
 
-        public async void NotifyWinner(MotivationalLetterWinnerModel winner, int posterUserId)
+        public async void NotifyWinner(WinnerSelectionModel winner, int posterUserId)
         {
             SendEmail emailer = new SendEmail();
 
@@ -29,9 +30,6 @@ namespace mainykdovanok.Services
             await emailer.notifyLetterWinner(user.Email, deviceName, winner.DeviceId);
 
             await _deviceRepo.UpdateDeviceStatus(winner.DeviceId, 2);
-
-            //await _userRepo.IncrementUserQuantityOfDevicesGifted(posterUserId);
-            //await _userRepo.IncrementUserQuantityOfDevicesWon(user.Id);
         }
     }
 }

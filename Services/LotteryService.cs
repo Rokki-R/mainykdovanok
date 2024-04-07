@@ -56,15 +56,13 @@ namespace mainykdovanok.Services
                     // Update device status to 'Ištrinktas laimėtojas'
                     await _deviceRepo.UpdateDeviceStatus(lottery.Id, 2);
 
-                    //await _userRepo.IncrementUserQuantityOfDevicesGifted(posterUserId);
-                    //await _userRepo.IncrementUserQuantityOfDevicesWon(winnerUserId);
                 }
                 else
                 {
-                    await emailer.notifyUserDeviceExpiration(posterUserEmail, lottery.Name, true);
+                    await emailer.notifyUserDeviceAboutNoParticipants(posterUserEmail, lottery.Name, true);
 
                     // Update device status to 'Atšauktas'
-                    await _deviceRepo.UpdateDeviceStatus(lottery.Id, 4);
+                    await _deviceRepo.DeleteDevice(lottery.Id);
                 }
             }
         }

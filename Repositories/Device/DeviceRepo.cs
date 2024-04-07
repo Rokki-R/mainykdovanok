@@ -52,7 +52,7 @@ namespace mainykdovanok.Repositories.Device
             {
                 await connection.OpenAsync();
                 using (MySqlCommand command = new MySqlCommand("SELECT device_ad.id, device_ad.name, device_ad.description, " +
-                "device_ad.fk_user, device_ad.location, device_ad.end_datetime, device_type.type as type " +
+                "device_ad.fk_user, device_ad.location, device_ad.winner_draw_datetime, device_type.type as type " +
                 "FROM device_ad " +
                 "LEFT JOIN device_type ON device_ad.fk_type = device_type.id " +
                 "WHERE device_ad.fk_status = 1", connection))
@@ -69,7 +69,7 @@ namespace mainykdovanok.Repositories.Device
                                 Description = reader["description"].ToString(),
                                 Type = reader["type"].ToString(),
                                 Location = reader["location"].ToString(),
-                                EndDateTime = Convert.ToDateTime(reader["end_datetime"])
+                                WinnerDrawDateTime = Convert.ToDateTime(reader["winner_draw_datetime"])
                             };
 
                             device.Images = await _imageRepo.GetByDeviceFirst(device.Id);
@@ -117,7 +117,7 @@ namespace mainykdovanok.Repositories.Device
                         device.Location = reader["location"].ToString();
                         device.Category = reader["category_name"].ToString();
                         device.CreationDateTime = Convert.ToDateTime(reader["creation_datetime"]);
-                        device.EndDateTime = Convert.ToDateTime(reader["end_datetime"]);
+                        device.WinnerDrawDateTime = reader["winner_draw_datetime"] == DBNull.Value ? null : (DateTime?)Convert.ToDateTime(reader["winner_draw_datetime"]);
                         device.WinnerId = reader["fk_winner"] == DBNull.Value ? null : (int?)Convert.ToInt32(reader["fk_winner"]);
                         device.Images = images;
                         device.Questions = questions;
@@ -163,7 +163,7 @@ namespace mainykdovanok.Repositories.Device
                                 Location = reader["location"].ToString(),
                                 Category = reader["category_name"].ToString(),
                                 CreationDateTime = Convert.ToDateTime(reader["creation_datetime"]),
-                                EndDateTime = Convert.ToDateTime(reader["end_datetime"]),
+                                WinnerDrawDateTime = Convert.ToDateTime(reader["winner_draw_datetime"]),
                                 WinnerId = reader["fk_winner"] == DBNull.Value ? null : (int?)Convert.ToInt32(reader["fk_winner"]),
                                 Images = await _imageRepo.GetByDevice(Convert.ToInt32(reader["id"])),
                             };
@@ -212,7 +212,7 @@ namespace mainykdovanok.Repositories.Device
                                 Location = reader["location"].ToString(),
                                 Category = reader["category_name"].ToString(),
                                 CreationDateTime = Convert.ToDateTime(reader["creation_datetime"]),
-                                EndDateTime = Convert.ToDateTime(reader["end_datetime"]),
+                                WinnerDrawDateTime = Convert.ToDateTime(reader["winner_draw_datetime"]),
                                 WinnerId = reader["fk_winner"] == DBNull.Value ? null : (int?)Convert.ToInt32(reader["fk_winner"]),
                                 Images = await _imageRepo.GetByDevice(Convert.ToInt32(reader["id"])),
                             };
@@ -262,7 +262,7 @@ namespace mainykdovanok.Repositories.Device
                                 Location = reader["location"].ToString(),
                                 Category = reader["category_name"].ToString(),
                                 CreationDateTime = Convert.ToDateTime(reader["creation_datetime"]),
-                                EndDateTime = Convert.ToDateTime(reader["end_datetime"]),
+                                WinnerDrawDateTime = Convert.ToDateTime(reader["winner_draw_datetime"]),
                                 Images = await _imageRepo.GetByDevice(Convert.ToInt32(reader["id"])),
                             };
 
@@ -281,8 +281,8 @@ namespace mainykdovanok.Repositories.Device
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "INSERT INTO device_ad (name, description, location, fk_category, fk_user, fk_status, fk_type, end_datetime) " +
-                "VALUES (@Name, @Description, @Location, @Category, @User, @Status, @Type, @EndDate)", connection);
+                "INSERT INTO device_ad (name, description, location, fk_category, fk_user, fk_status, fk_type, winner_draw_datetime) " +
+                "VALUES (@Name, @Description, @Location, @Category, @User, @Status, @Type, @WinnerDrawDate)", connection);
 
             command.Parameters.AddWithValue("@Name", device.Name);
             command.Parameters.AddWithValue("@Description", device.Description);
@@ -291,7 +291,7 @@ namespace mainykdovanok.Repositories.Device
             command.Parameters.AddWithValue("@User", device.User);
             command.Parameters.AddWithValue("@Status", device.Status);
             command.Parameters.AddWithValue("@Type", device.Type);
-            command.Parameters.AddWithValue("@EndDate", device.EndDate);
+            command.Parameters.AddWithValue("@WinnerDrawDate", device.WinnerDrawDate);
 
             await command.ExecuteNonQueryAsync();
 
@@ -453,7 +453,7 @@ namespace mainykdovanok.Repositories.Device
                 "FROM device_ad " +
                 "JOIN device_category ON device_ad.fk_category = device_category.id " +
                 "LEFT JOIN device_lottery_participant ON device_ad.id = device_lottery_participant.fk_device " +
-                "WHERE device_ad.end_datetime <= @dateTimeNow AND device_ad.fk_status = 1 AND device_ad.fk_type = 1 " +
+                "WHERE device_ad.winner_draw_datetime <= @dateTimeNow AND device_ad.fk_status = 1 AND device_ad.fk_type = 1 " +
                 "GROUP BY device_ad.id, device_ad.fk_user, device_ad.name, device_ad.description, device_ad.location, device_category.name", connection))
             {
                 command.Parameters.AddWithValue("@dateTimeNow", dateTimeNow);
@@ -474,39 +474,6 @@ namespace mainykdovanok.Repositories.Device
                 }
             }
             return lotteriesList;
-        }
-
-        public async Task<List<DeviceViewModel>> GetPastEndDateDevices()
-        {
-            List<DeviceViewModel> devices = new List<DeviceViewModel>();
-
-            using MySqlConnection connection = GetConnection();
-            await connection.OpenAsync();
-
-            using MySqlCommand command = new MySqlCommand(
-                "SELECT device_ad.id, device_ad.name, device_ad.description, device_ad.location, device_ad.end_datetime, device_ad.fk_status, device_ad.fk_user, device_ad.fk_winner, device_status.name AS status_name " +
-                "FROM device_ad " +
-                "JOIN device_status ON device_ad.fk_status = device_status.id " +
-                "WHERE end_datetime < NOW() AND fk_status = 1", connection);
-
-            using (DbDataReader reader = await command.ExecuteReaderAsync())
-            {
-                while (await reader.ReadAsync())
-                {
-                    DeviceViewModel device = new DeviceViewModel
-                    {
-                        Id = reader.GetInt32("id"),
-                        Name = reader.GetString("name"),
-                        Description = reader.GetString("description"),
-                        Location = reader.GetString("location"),
-                        EndDateTime = reader.GetDateTime("end_datetime"),
-                        Status = reader.GetString("status_name"),
-                        UserId = reader.GetInt32("fk_user")
-                    };
-                    devices.Add(device);
-                }
-            }
-            return devices;
         }
 
         public async Task<int> DrawLotteryWinner(int deviceId)
@@ -568,14 +535,14 @@ namespace mainykdovanok.Repositories.Device
 
             using MySqlCommand command1 = new MySqlCommand(
                 "UPDATE device_ad " +
-                "SET fk_winner = @fk_winner " +
+                "SET fk_winner = @fk_winner, fk_status = 2 " +
                 "WHERE id = @id", connection);
             command1.Parameters.AddWithValue("@fk_winner", winnerId);
             command1.Parameters.AddWithValue("@id", deviceId);
 
             using MySqlCommand command2 = new MySqlCommand(
                 "UPDATE device_ad " +
-                "SET fk_winner = @fk_winner " +
+                "SET fk_winner = @fk_winner, fk_status = 2 " +
                 "WHERE id = @id", connection);
             command2.Parameters.AddWithValue("@fk_winner", posterUserId);
             command2.Parameters.AddWithValue("@id", userDeviceId);
@@ -584,6 +551,7 @@ namespace mainykdovanok.Repositories.Device
             await command2.ExecuteNonQueryAsync();
             return true;
         }
+
 
         public async Task<string> GetDeviceName(int deviceId)
         {
@@ -615,7 +583,7 @@ namespace mainykdovanok.Repositories.Device
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-               "SELECT id, name, description, fk_user, fk_status, end_datetime FROM device_ad " +
+               "SELECT id, name, description, fk_user, fk_status, winner_draw_datetime FROM device_ad " +
                 "WHERE (name LIKE CONCAT('%', @searchWord, '%') OR description LIKE CONCAT('%', @searchWord, '%')) " +
                 "AND fk_status = 1", connection);
             command.Parameters.AddWithValue("@searchWord", searchWord);
@@ -630,7 +598,7 @@ namespace mainykdovanok.Repositories.Device
                     Description = reader.GetString("description"),
                     UserId = reader.GetInt32("fk_user"),
                     Images = await _imageRepo.GetByDeviceFirst(reader.GetInt32("id")),
-                    EndDateTime = reader.GetDateTime("end_datetime")
+                    WinnerDrawDateTime = reader.GetDateTime("winner_draw_datetime")
                 };
                 foundDevices.Add(Device);
             }
@@ -646,7 +614,7 @@ namespace mainykdovanok.Repositories.Device
 
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT e.fk_offered_device, e.offer_message, i.name, i.description, i.location, i.end_datetime, CONCAT(u.name, ' ', u.surname) AS user " +
+                "SELECT e.fk_offered_device, e.offer_message, i.name, i.description, i.location, i.winner_draw_datetime, CONCAT(u.name, ' ', u.surname) AS user " +
                 "FROM device_exchange_offer AS e " +
                 "INNER JOIN device_ad AS i ON i.id = e.fk_offered_device " +
         "JOIN user AS u ON i.fk_user = u.user_id " +
@@ -667,7 +635,7 @@ namespace mainykdovanok.Repositories.Device
                         Name = reader.GetString("name"),
                         Description = reader.GetString("description"),
                         Location = reader.GetString("location"),
-                        EndDateTime = reader.GetDateTime("end_datetime"),
+                        WinnerDrawDateTime = reader.GetDateTime("winner_draw_datetime"),
                         Images = await _imageRepo.GetByDevice(Convert.ToInt32(reader["fk_offered_device"])),
                         User = reader.GetString("user"),
                     };

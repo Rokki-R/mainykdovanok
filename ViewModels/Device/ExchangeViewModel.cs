@@ -19,8 +19,8 @@ namespace mainykdovanok.ViewModels.Device
         [JsonProperty("location")]
         public string Location { get; set; }
 
-        [JsonProperty("end_datetime")]
-        public DateTime? EndDateTime { get; set; }
+        [JsonProperty("winner_draw_datetime")]
+        public DateTime? WinnerDrawDateTime { get; set; }
 
         [JsonProperty("images")]
         public List<DeviceImageViewModel> Images { get; set; }

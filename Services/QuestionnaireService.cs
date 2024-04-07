@@ -5,6 +5,7 @@ using mainykdovanok.Repositories.Device;
 using mainykdovanok.Repositories.User;
 using mainykdovanok.Tools;
 using mainykdovanok.ViewModels.User;
+using mainykdovanok.Models.mainykdovanok.Models.Device;
 
 namespace mainykdovanok.Services
 {
@@ -19,7 +20,7 @@ namespace mainykdovanok.Services
             _userRepo = new UserRepo();
         }
 
-        public async void NotifyWinner(QuestionnaireWinnerModel winner, int posterUserId)
+        public async void NotifyWinner(WinnerSelectionModel winner, int posterUserId)
         {
             SendEmail emailer = new SendEmail();
 

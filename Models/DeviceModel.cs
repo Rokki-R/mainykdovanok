@@ -21,6 +21,6 @@
 
         public List<string> Questions { get; set; }
 
-        public DateTime EndDate { get; set; }
+        public DateTime WinnerDrawDate { get; set; }
     }
 }

@@ -34,8 +34,8 @@ namespace mainykdovanok.ViewModels.Device
         [JsonProperty("creation_datetime")]
         public DateTime CreationDateTime { get; set; }
 
-        [JsonProperty("end_datetime")]
-        public DateTime? EndDateTime { get; set; }
+        [JsonProperty("winner_draw_datetime")]
+        public DateTime? WinnerDrawDateTime { get; set; }
 
         [JsonProperty("fk_winner")]
         public int? WinnerId { get; set; }
