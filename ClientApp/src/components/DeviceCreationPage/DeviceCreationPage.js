@@ -14,7 +14,7 @@ const DeviceCreationPage = () => {
     const [categories, setCategories] = useState([]);
     const [deviceType, setType] = useState('Pasirinkite, kaip norite atiduoti');
     const [deviceTypes, setDeviceTypes] = useState([]);
-    const [endDate, setEndDate] = useState('Pasirinkite datą');
+    const [lotteryWinnerDrawDate, setLotteryWinnerDrawDate] = useState('Pasirinkite datą');
     const navigate = useNavigate();
 
     const questionArray = [
@@ -118,7 +118,8 @@ const DeviceCreationPage = () => {
     }
 
     function checkFields() {
-        if (name === '' || description === '' || location === '' || category === 'Pasirinkite kategoriją' || deviceType === 'Pasirinkite, kaip norite atiduoti' || endDate === 'Pasirinkite datą') {
+        console.log(lotteryWinnerDrawDate)
+        if (name === '' || description === '' || location === '' || category === 'Pasirinkite kategoriją' || deviceType === 'Pasirinkite, kaip norite atiduoti') {
             toast.error('Reikia užpildyti visus laukus!');
             return false;
         }
@@ -144,6 +145,14 @@ const DeviceCreationPage = () => {
                     return;
                 }
             }
+            if (deviceType === '1')
+            {
+                if (lotteryWinnerDrawDate === 'Pasirinkite datą')
+                {
+                    toast.error("Privalote pasirinkti loterijos laimėtojo išrinkimo datą!");
+                    return;
+                }
+            }
             try {
                 const formData = new FormData();
                 formData.append('name', name);
@@ -151,7 +160,8 @@ const DeviceCreationPage = () => {
                 formData.append('location', location);
                 formData.append('category', category);
                 formData.append('type', deviceType);
-                formData.append('endDate', endDate);
+                formData.append('lotteryWinnerDrawDate', lotteryWinnerDrawDate);
+                console.log(lotteryWinnerDrawDate)
                 for (let i = 0; i < questions.length; i++) {
                     formData.append('questions', questions[i].value);
                 }
@@ -287,21 +297,25 @@ const DeviceCreationPage = () => {
                                 </>
                             )}
                             <Form.Group>
-                                <Form.Label>Pasirinkite skelbimo pabaigos datą:</Form.Label>
+                            {deviceType === '1' && (
+                                <>
+                                <Form.Label>Pasirinkite loterijos laimėtojo išrinkimo datą:</Form.Label>
                                 <Form.Control
                                     type='datetime-local'
-                                    value={endDate || ''}
+                                    value={lotteryWinnerDrawDate || ''}
                                     onChange={(e) => {
                                         const selectedDate = new Date(e.target.value);
                                         const currentDate = new Date();
                                         if (selectedDate < currentDate) {
                                             return;
                                         }
-                                        setEndDate(e.target.value);
+                                        setLotteryWinnerDrawDate(e.target.value);
                                     }}
                                     min={today}
-                                    placeholder='Pasirinkite skelbimo pabaigos datą'
+                                    placeholder='Pasirinkite loterijos laimėtojo išrinkimo datą'
                                 />
+                                </>
+                            )}
                             </Form.Group>
                             <div className='d-flex justify-content-between'>
                                 <Button onClick={(event) => handleCreate(event)} type='submit'>Sukurti</Button>

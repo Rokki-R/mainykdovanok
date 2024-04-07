@@ -14,6 +14,7 @@ using mainykdovanok.Services;
 using static System.Net.Mime.MediaTypeNames;
 using mainykdovanok.Repositories.Comment;
 using System.Reflection;
+using mainykdovanok.Models.mainykdovanok.Models.Device;
 
 namespace mainykdovanok.Controllers
 {
@@ -25,6 +26,7 @@ namespace mainykdovanok.Controllers
         private readonly CategoryRepo _categoryRepo;
         private readonly DeviceRepo _deviceRepo;
         private readonly ImageRepo _imageRepo;
+        private readonly UserRepo _userRepo;
         private readonly MotivationalLetterService _motivationalLetterService;
         private readonly ExchangeService _exchangeService;
         private readonly QuestionnaireService _questionnaireService;
@@ -35,6 +37,7 @@ namespace mainykdovanok.Controllers
             _categoryRepo = new CategoryRepo();
             _deviceRepo = new DeviceRepo();
             _imageRepo = new ImageRepo();
+            _userRepo = new UserRepo();
             _motivationalLetterService = new MotivationalLetterService();
             _exchangeService = new ExchangeService();
             _questionnaireService = new QuestionnaireService();
@@ -194,7 +197,7 @@ namespace mainykdovanok.Controllers
                     Type = Convert.ToInt32(form["type"]),
                     Images = form.Files.GetFiles("images").ToList(),
                     Questions = form["questions"].ToList(),
-                    EndDate = Convert.ToDateTime(form["endDate"]),
+                    WinnerDrawDate = Convert.ToDateTime(form["winner_draw_date"]),
                 };
 
                 device.Id = await _deviceRepo.Create(device);
@@ -488,38 +491,6 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpPost("chooseExchangeOfferWinner")]
-        public async Task<IActionResult> ChooseExchangeOfferWinner([FromBody] ExchangeOfferWinnerModel winner)
-        {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return Unauthorized();
-            }
-
-            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-            var device = await _deviceRepo.GetFullById(winner.DeviceId);
-            if (device == null || device.UserId != userId)
-            {
-                return StatusCode(403);
-            }
-
-            //Patikrinti ar prisijungęs naudotojas nėra admin
-            if (!User.IsInRole("0"))
-            {
-                return StatusCode(403);
-            }
-            try
-            {
-                _exchangeService.NotifyWinner(winner, userId);
-
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
         [HttpPost("submitLetter/{deviceId}")]
         public async Task<IActionResult> SubmitLetter(int deviceId)
         {
@@ -607,8 +578,9 @@ namespace mainykdovanok.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpPost("chooseLetterWinner")]
-        public async Task<IActionResult> ChooseLetterWinner([FromBody] MotivationalLetterWinnerModel winner)
+
+        [HttpPost("chooseExchangeOfferWinner")]
+        public async Task<IActionResult> ChooseExchangeOfferWinner([FromBody] ExchangeOfferWinnerModel winner)
         {
             if (!User.Identity.IsAuthenticated)
             {
@@ -627,10 +599,60 @@ namespace mainykdovanok.Controllers
             {
                 return StatusCode(403);
             }
+            try
+            {
+
+                SendEmail emailer = new SendEmail();
+
+                string deviceName = await _deviceRepo.GetDeviceName(winner.DeviceId);
+                UserModel user = await _userRepo.GetUser(winner.User);
+
+                await _deviceRepo.SetExchangeWinners(winner.DeviceId, user.Id, userId, winner.UserDeviceId);
+
+                await emailer.notifyOfferWinner(user.Email, deviceName, winner.DeviceId, winner.DeviceName);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("chooseWinner")]
+        public async Task<IActionResult> ChooseWinner([FromBody] WinnerSelectionModel winner)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            var device = await _deviceRepo.GetFullById(winner.DeviceId);
+            if (device == null || device.UserId != userId)
+            {
+                return StatusCode(403);
+            }
+
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
 
             try
             {
-                _motivationalLetterService.NotifyWinner(winner, userId);
+                if (winner.DeviceType == "Klausimynas")
+                {
+                    _motivationalLetterService.NotifyWinner(winner, userId);
+                }
+                else if (winner.DeviceType == "Motyvacinis laiškas")
+                {
+                    _questionnaireService.NotifyWinner(winner, userId);
+                }
+                else
+                {
+                    return BadRequest("Invalid winner selection type.");
+                }
 
                 return Ok();
             }
@@ -737,37 +759,6 @@ namespace mainykdovanok.Controllers
                 var result = await _deviceRepo.InsertAnswers(deviceId, answers, userId);
 
                 return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost("chooseQuestionnaireWinner")]
-        public async Task<IActionResult> ChooseQuestionnaireWinner([FromBody] QuestionnaireWinnerModel winner)
-        {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return Unauthorized();
-            }
-
-            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
-            var device = await _deviceRepo.GetFullById(winner.DeviceId);
-            if (device == null || device.UserId != userId)
-            {
-                return StatusCode(403);
-            }
-
-            if (!User.IsInRole("0"))
-            {
-                return StatusCode(403);
-            }
-            try
-            {
-                _questionnaireService.NotifyWinner(winner, userId);
-
-                return Ok();
             }
             catch (Exception ex)
             {

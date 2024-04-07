@@ -73,10 +73,6 @@ function MyDevicesPage() {
                                             <span>{device.type}</span>
                                             <span>{device.location}</span>
                                         </li>
-                                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                                            <span>Baigiasi:</span>
-                                            <span>{new Date(device.endDateTime).toLocaleString('lt-LT').slice(5, -3)}</span>
-                                        </li>
                                     </ul>
                                     <div className="d-flex justify-content-end">
                                         <Button variant="primary" onClick={() => handleOpen(device.id)}>Peržiūrėti</Button>

@@ -11,7 +11,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddHostedService<LotteryService>();
-builder.Services.AddHostedService<DeviceStatusService>();
 
 builder.Logging.AddSerilog(new LoggerConfiguration()
     .MinimumLevel.Information()

@@ -1,4 +1,5 @@
 ﻿using mainykdovanok.Models;
+using mainykdovanok.Models.mainykdovanok.Models.Device;
 using mainykdovanok.Repositories.Device;
 using mainykdovanok.Repositories.User;
 using mainykdovanok.Tools;
@@ -24,14 +25,9 @@ namespace mainykdovanok.Services
             string deviceName = await _deviceRepo.GetDeviceName(winner.DeviceId);
             UserModel user = await _userRepo.GetUser(winner.User);
 
-            //await _deviceRepo.SetDeviceWinner(winner.DeviceId, user.Id);
-
             await _deviceRepo.SetExchangeWinners(winner.DeviceId, user.Id, posterUserId, winner.UserDeviceId);
 
             await emailer.notifyOfferWinner(user.Email, deviceName, winner.DeviceId, winner.DeviceName);
-
-            await _deviceRepo.UpdateDeviceStatus(winner.DeviceId, 2);
-            await _deviceRepo.UpdateDeviceStatus(winner.UserDeviceId, 2);
         }
     }
 }

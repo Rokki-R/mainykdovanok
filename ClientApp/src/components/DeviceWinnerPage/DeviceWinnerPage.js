@@ -119,6 +119,7 @@ export const DeviceWinnerPage = () => {
             };
     
             const response = await axios.post('api/devicewinner/confirm', data);
+            window.location.reload();
             toast.success('Sėkmingai patvirtinta!');
         } catch (error) {
             toast.error('Įvyko klaida patvirtinant!');

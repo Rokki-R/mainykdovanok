@@ -25,7 +25,6 @@ export const DeviceViewPage = () => {
   const [userDevices, setUserDevices] = useState(null);
   const [viewerId, setViewerId] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [isPastEndTime, setIsPastEndTime] = useState(true);
   const [isUserParticipating, setIsUserParticipating] = useState(false);
   const [deviceOwner, setDeviceOwner] = useState(null);
   const [comments, setComments] = useState([]);
@@ -64,14 +63,6 @@ export const DeviceViewPage = () => {
 
     fetchDevice();
   }, [deviceId]);
-
-  useEffect(() => {
-    if (device) {
-      setIsPastEndTime(
-        currentTime.getTime() > new Date(device.endDateTime).getTime()
-      );
-    }
-  }, [device, currentTime]);
 
   useEffect(() => {
     if (device && device.type === "Mainai į kita prietaisą") {
@@ -437,7 +428,7 @@ export const DeviceViewPage = () => {
 
                 <Card.Title>{device.name}</Card.Title>
                 <Card.Text>{device.description}</Card.Text>
-                {device.status !== "Aktyvus" || isPastEndTime ? (
+                {device.status !== "Aktyvus" ? (
                   <div>
                     <hr></hr>
                     <Card.Text>Šis skelbimas nebegalioja.</Card.Text>
@@ -484,7 +475,7 @@ export const DeviceViewPage = () => {
                         <Button
                           variant="primary"
                           type="submit"
-                          disabled={device.status !== "Aktyvus" || isPastEndTime || device.userId === viewerId}
+                          disabled={device.status !== "Aktyvus" || device.userId === viewerId}
                         >
                           Siūlyti
                         </Button>
@@ -532,7 +523,7 @@ export const DeviceViewPage = () => {
                         <Button
                           variant="primary"
                           type="submit"
-                          disabled={device.status !== "Aktyvus" || isPastEndTime || device.userId === viewerId}
+                          disabled={device.status !== "Aktyvus" || device.userId === viewerId}
                         >
                           Atsakyti
                         </Button>
@@ -570,7 +561,7 @@ export const DeviceViewPage = () => {
                     <p>Dalyvių skaičius: {device.participants}</p>
                     <p>
                       Laimėtojas bus išrinktas{" "}
-                      {new Date(device.endDateTime).toLocaleString("lt-LT")}
+                      {new Date(device.winnerDrawDateTime).toLocaleString("lt-LT")}
                     </p>
                     <Row>
                       <Col>
@@ -578,7 +569,7 @@ export const DeviceViewPage = () => {
                           <Button
                             variant="primary"
                             type="submit"
-                            disabled={isPastEndTime || device.userId === viewerId}
+                            disabled={device.userId === viewerId}
                             onClick={(event) => handleSubmit(event, true)}
                           >
                             Nebedalyvauti
@@ -587,7 +578,7 @@ export const DeviceViewPage = () => {
                           <Button
                             variant="primary"
                             type="submit"
-                            disabled={isPastEndTime || device.userId === viewerId}
+                            disabled={device.userId === viewerId}
                             onClick={(event) => handleSubmit(event, false)}
                           >
                             Dalyvauti
@@ -632,7 +623,7 @@ export const DeviceViewPage = () => {
                                         ))}
                                         <Row>
                                             <Col>
-                                                <Button variant="primary" type="submit" disabled={device.status !== "Aktyvus" || isPastEndTime || device.userId === viewerId}>Atsakyti</Button>
+                                                <Button variant="primary" type="submit" disabled={device.status !== "Aktyvus" || device.userId === viewerId}>Atsakyti</Button>
                                             </Col>
                                             <Col className="d-flex justify-content-end">
                                                 {device.userId === viewerId ? (
