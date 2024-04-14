@@ -1,4 +1,4 @@
-.outerBoxWrapper {
+.outerBoxItemWrapper {
     padding-top: 80px;
     padding-bottom: 80px;
 }
@@ -35,16 +35,15 @@ hr {
 
 .borderless-accordion .accordion-button {
     padding: 0.5rem 1rem;
-    background-color: transparent;
-    color: #000; /* Change the color as needed */
-    border-bottom: 1px solid #dee2e6; /* Optional: Add a bottom border between items */
+    background-color: black, transparent;
+    color: #000;
+    border-bottom: 1px solid #dee2e6;
 }
 
 .borderless-accordion .accordion-body {
     padding: 0;
 }
 
-/* You can adjust the margin-right value to move the accordion header text */
 .accordion-header-text {
     justify-content: center;
   }
@@ -59,4 +58,9 @@ hr {
 {
     margin-top: 25px;
     text-align: right;
+}
+
+.commentsCard
+{
+    margin-top: 10px;
 }

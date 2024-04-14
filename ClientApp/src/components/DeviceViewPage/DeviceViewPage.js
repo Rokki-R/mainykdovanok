@@ -130,6 +130,7 @@ export const DeviceViewPage = () => {
   const handleCommentChange = (event) => {
     setNewComment(event.target.value);
   };
+  
 
   const handleAnswerChange = (event, questionId) => {
     setAnswers({
@@ -139,10 +140,16 @@ export const DeviceViewPage = () => {
 };
 
   const handleSubmitComment = async (event) => {
+
     event.preventDefault();
 
     if (viewerId === null) {
       toast.error("Turite būti prisijungęs!");
+      return;
+    }
+
+    if (newComment.length < 10) {
+      toast.error("Parašytas komentaras yra per trumpas!");
       return;
     }
 
@@ -363,13 +370,13 @@ export const DeviceViewPage = () => {
   };
 
   return device && deviceOwner ? (
-    <div className="outerBoxWrapper">
+    <div className="outerBoxItemWrapper">
       <Toaster />
       <Container className="my-5">
         <Row>
           <Col md={4}>
             {device.images && device.images.length > 0 && (
-              <Carousel>
+              <Carousel indicators={false}>
                 {device.images.map((image, index) => (
                   <Carousel.Item key={index}>
                     <img
@@ -394,7 +401,6 @@ export const DeviceViewPage = () => {
                 >
                   <Accordion.Item eventKey="0">
                     <Accordion.Header
-                      className="accordion-header-text"
                       style={{ outline: "none" }}
                     >
                       Skelbimo savininko informacija
@@ -648,7 +654,7 @@ export const DeviceViewPage = () => {
               </Card.Footer>
             </Card>
 
-            <Card>
+            <Card className="commentsCard">
               <Card.Body>
                 <Card.Title>Komentarai</Card.Title>
                 {comments.length > 0 ? (

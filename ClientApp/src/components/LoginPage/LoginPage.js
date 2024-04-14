@@ -80,7 +80,7 @@ export const LoginPage = () => {
 
     return (
         <div className='page-container'>
-        <div className='outerBoxWrapper'>
+        <div className='outerLoginBoxWrapper'>
           <Card className='custom-card'>
           <Toaster />
           <Card.Header className='header d-flex justify-content-between align-items-center'>

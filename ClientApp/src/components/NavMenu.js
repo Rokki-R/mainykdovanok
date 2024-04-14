@@ -131,7 +131,7 @@ export class NavMenu extends Component {
         window.location.href = "/prisijungimas";
       } else if (response.status === 401) {
         // 401 - Unauthorized
-        toast.error("Jūs jau esate atsijungę!");
+        toast.error("Jūs jau esate atsijungęs!");
       } else {
         // 500 - Internal server error
         toast.error("Įvyko klaida, susisiekite su administratoriumi!");
@@ -164,14 +164,14 @@ export class NavMenu extends Component {
       <>
         <Toaster />
         <Navbar
-          style={{ backgroundColor: "#3183ab", height: "95px" }}
+          style={{ backgroundColor: "#c3d5c7", height: "95px" }}
           expand="lg"
           sticky="top"
         >
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse
             id="basic-navbar-nav"
-            style={{ backgroundColor: "#3183ab" }}
+            style={{ backgroundColor: "#c3d5c7" }}
           >
             <Form inline className="d-flex">
               <FormControl
@@ -187,7 +187,6 @@ export class NavMenu extends Component {
               />
               <Button
                 className="buttonsearch"
-                variant="primary"
                 onClick={this.handleSearch}
               >
                 Ieškoti

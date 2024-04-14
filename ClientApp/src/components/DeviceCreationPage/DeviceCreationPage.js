@@ -14,7 +14,7 @@ const DeviceCreationPage = () => {
     const [categories, setCategories] = useState([]);
     const [deviceType, setType] = useState('Pasirinkite, kaip norite atiduoti');
     const [deviceTypes, setDeviceTypes] = useState([]);
-    const [lotteryWinnerDrawDate, setLotteryWinnerDrawDate] = useState('Pasirinkite datą');
+    const [lotteryWinnerDrawDate, setLotteryWinnerDrawDate] = useState(null);
     const navigate = useNavigate();
 
     const questionArray = [
@@ -112,7 +112,7 @@ const DeviceCreationPage = () => {
         if (images.length > 0) {
             return images.map((image) => {
                 const imageUrl = URL.createObjectURL(image);
-                return <img src={imageUrl} style={{ maxWidth: '15%', height: 'auto', marginRight: '10px', border: '1px solid white' }}></img>;
+                return <img src={imageUrl} style={{ maxWidth: '15%', height: '80px', marginRight: '10px', border: '1px solid white' }}></img>;
             })
         }
     }
@@ -147,7 +147,7 @@ const DeviceCreationPage = () => {
             }
             if (deviceType === '1')
             {
-                if (lotteryWinnerDrawDate === 'Pasirinkite datą')
+                if (lotteryWinnerDrawDate === null)
                 {
                     toast.error("Privalote pasirinkti loterijos laimėtojo išrinkimo datą!");
                     return;
@@ -209,7 +209,7 @@ const DeviceCreationPage = () => {
 
     return (
         <div className='page-container'>
-            <div className='outerBoxWrapper'>
+            <div className='outerDeviceCreationBoxWrapper'>
                 <Card className='custom-card'>
                     <Toaster />
                     <Card.Header className='header d-flex justify-content-between align-items-center'>

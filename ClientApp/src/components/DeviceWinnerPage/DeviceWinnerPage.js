@@ -134,7 +134,7 @@ export const DeviceWinnerPage = () => {
                 <Row>
                     <Col md={4}>
                         {device.images && device.images.length > 0 && (
-                            <Carousel>
+                            <Carousel indicators={false}>
                                 {device.images.map((image, index) => (
                                     <Carousel.Item key={index}>
                                         <img className="d-block w-100" 

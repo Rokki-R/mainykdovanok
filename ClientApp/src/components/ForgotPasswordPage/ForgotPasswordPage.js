@@ -59,16 +59,19 @@ const ForgotPasswordPage = () => {
             <Card>
                 <Toaster />
                 <Card.Header className='header d-flex justify-content-between align-items-center'>
-                    <div>Įveskite savo el. pašto adresą, kurį naudojate prisijungimui:</div>
+                    <div className='title-text'>Įveskite savo el. pašto adresą, kurį naudojate prisijungimui</div>
                 </Card.Header>
                 <Card.Body>
                     <Form>
                         <Form.Group controlId="email">
                             <Form.Control type="email" placeholder="El. paštas" value={email} onChange={(e) => setEmail(e.target.value)} />
                         </Form.Group>
+                        <div className='text-center'>
                         <Button className='submitForgotPasswordButton' type="submit" disabled={isSubmitting} onClick={(event) => handleSubmit(event)}>
                             Patvirtinti
                         </Button>
+                        </div>
+                        <hr></hr>
                         <div className="returnToLogin">
                             <a href="/prisijungimas" className="returnToLoginButton">Grįžti į prisijungimą</a>
                         </div>

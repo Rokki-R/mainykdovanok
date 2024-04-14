@@ -1,8 +1,13 @@
-* {
-    font-size: calc(10px + 0.390625vw);
+.outerDeviceCreationBoxWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding-top: 130px;
+    padding-bottom: 75px;
 }
+
 .itemOuterBox {
-    background-color: rgba(49, 131, 171, 0.9);
     width: 75%;
     padding: 2em;
     margin: auto;
@@ -75,5 +80,5 @@ button {
   }
 
   .custom-card {
-    width: 700px; 
+    width: 700px;
   }
