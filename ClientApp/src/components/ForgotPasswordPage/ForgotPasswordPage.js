@@ -55,11 +55,11 @@ const ForgotPasswordPage = () => {
     };
 
     return (
-        <div className='outerBoxWrapper'>
+        <div className='outerPasswordBoxWrapper'>
             <Card>
                 <Toaster />
                 <Card.Header className='header d-flex justify-content-between align-items-center'>
-                    <div className='title-text'>Įveskite savo el. pašto adresą, kurį naudojate prisijungimui</div>
+                    <div className='title-text'>Įveskite savo elektroninio pašto adresą, kurį naudojate prisijungimui</div>
                 </Card.Header>
                 <Card.Body>
                     <Form>

@@ -1,11 +1,13 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Spinner, Pagination } from 'react-bootstrap';
 import axios from 'axios';
 import './HomePage.css';
 
 function HomePage() {
     const [devices, setDevices] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(6);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -20,15 +22,27 @@ function HomePage() {
         fetchDevices();
     }, []);
 
+    const totalPages = devices ? Math.ceil(devices.length / itemsPerPage) : 0;
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
+    const currentDevices = devices ? devices.slice(indexOfFirstItem, indexOfLastItem) : [];
+
     const handleOpen = (deviceId) => {
         navigate(`/skelbimas/${deviceId}`);
+    }
+    
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
     }
 
     return (
         <Container className="home">
             <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Elektronikos prietaisų skelbimai</h3>
             <Row className="justify-content-center">
-                {devices ? devices.map((device) => (
+                {currentDevices.length > 0 ? currentDevices.map((device) => (
                     <Col sm={4} key={device.id} style={{ width: '300px' }}>
                         <Card className="mb-4">
                             <img
@@ -61,6 +75,15 @@ function HomePage() {
                     </Col>
                 )}
             </Row>
+            {totalPages > 1 && (
+                <Pagination className="justify-content-center">
+                    {[...Array(totalPages)].map((_, index) => (
+                         <Pagination.Item key={index + 1} active={index + 1 === currentPage} onClick={() => handlePageChange(index + 1)} style={{ color: "#0d3c34", borderColor: "#0d3c34" }}>
+                         {index + 1}
+                     </Pagination.Item>
+                    ))}
+                </Pagination>
+            )}
         </Container>
     );
 }

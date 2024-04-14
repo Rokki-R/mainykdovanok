@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Card, Button, Carousel, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Carousel, Spinner, Pagination } from 'react-bootstrap';
 import axios from 'axios';
 import './SearchResultsByCategoryPage.css';
 
@@ -8,6 +8,8 @@ function SearchResultsByCategoryPage() {
   const { categoryId } = useParams();  
   const [devices, setDevices] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(6);
   const [category, setCategory] = useState('');
   const navigate = useNavigate();
 
@@ -50,6 +52,18 @@ function SearchResultsByCategoryPage() {
   const handleOpen = (deviceId) => {
     navigate(`/skelbimas/${deviceId}`);
   };
+
+  const totalPages = devices ? Math.ceil(devices.length / itemsPerPage) : 0;
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
+  const currentDevices = devices ? devices.slice(indexOfFirstItem, indexOfLastItem) : [];
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  }
 
   return devices && !loading ? (
     <Container className="home">
@@ -94,6 +108,15 @@ function SearchResultsByCategoryPage() {
                     </Col>
                 ))}
             </Row>
+            {totalPages > 1 && (
+                  <Pagination className="justify-content-center">
+                    {[...Array(totalPages)].map((_, index) => (
+                      <Pagination.Item key={index + 1} active={index + 1 === currentPage} onClick={() => handlePageChange(index + 1)} style={{ backgroundColor: "#0d3c34", borderColor: "#0d3c34" }}>
+                        {index + 1}
+                      </Pagination.Item>
+                    ))}
+                  </Pagination>
+                )}
     </Container>
   ) : (
     <Container className="my-5">
