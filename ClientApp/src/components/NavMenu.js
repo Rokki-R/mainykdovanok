@@ -62,7 +62,7 @@ export class NavMenu extends Component {
   handleSearchInputChange = (event) => {
     this.setState({ searchQuery: event.target.value });
   };
-  
+
   handleSearch = () => {
     if (!this.state.searchQuery) {
       toast.error("Negalite ieškoti skelbimų nieko neįvedę paieškos lange");
@@ -156,8 +156,7 @@ export class NavMenu extends Component {
     const maxCategoryLength = 20;
     let displayCategory = this.state.selectedCategory;
     if (displayCategory.length > maxCategoryLength) {
-      displayCategory =
-        displayCategory.substring(0, maxCategoryLength) + "...";
+      displayCategory = displayCategory.substring(0, maxCategoryLength) + "...";
     }
 
     return (
@@ -168,6 +167,16 @@ export class NavMenu extends Component {
           expand="lg"
           sticky="top"
         >
+          <Navbar.Brand>
+            <Link to="/">
+              <Image
+                src="/images/logo-green.png"
+                alt="Logo"
+                style={{ height: "60px", width: "auto", marginLeft: "5px" }}
+              />
+            </Link>
+          </Navbar.Brand>
+
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse
             id="basic-navbar-nav"
@@ -185,18 +194,12 @@ export class NavMenu extends Component {
                 value={this.state.searchQuery}
                 onChange={this.handleSearchInputChange}
               />
-              <Button
-                className="buttonsearch"
-                onClick={this.handleSearch}
-              >
+              <Button className="buttonsearch" onClick={this.handleSearch}>
                 Ieškoti
               </Button>
             </Form>
             <Nav className="ms-auto">
-              <NavDropdown
-                title={displayCategory}
-                className="categories"
-              >
+              <NavDropdown title={displayCategory} className="categories">
                 {this.state.categories.map((category) => (
                   <NavDropdown.Item
                     key={category.id}
@@ -235,43 +238,42 @@ export class NavMenu extends Component {
           </Navbar.Collapse>
         </Navbar>
         <footer>
-  <div className="links">
-    {this.state.isLogged ? (
-      <>
-        {this.state.userRole === 0 && (
-          <Link className="links" to="/manoskelbimai">
-            Mano skelbimai
-          </Link>
-        )}
-        {this.state.userRole === 0 && (
-          <Link className="links" to="/laimejimai">
-            Laimėti skelbimai
-          </Link>
-        )}
-        {this.state.userRole === 1 && (
-          <Link className="links" to="/admin">
-            Naudotojai
-          </Link>
-        )}
-        <div className="ml-auto">
-          <Link className="links" to="/manoprofilis">
-            Mano profilis
-          </Link>
-        </div>
-      </>
-    ) : (
-      <>
-        <Link className="links" to="/prisijungimas">
-          Prisijungti
-        </Link>
-        <Link className="links" to="/registracija">
-          Registruotis
-        </Link>
-      </>
-    )}
-  </div>
-</footer>
-
+          <div className="links">
+            {this.state.isLogged ? (
+              <>
+                {this.state.userRole === 0 && (
+                  <Link className="links" to="/manoskelbimai">
+                    Mano skelbimai
+                  </Link>
+                )}
+                {this.state.userRole === 0 && (
+                  <Link className="links" to="/laimejimai">
+                    Laimėti skelbimai
+                  </Link>
+                )}
+                {this.state.userRole === 1 && (
+                  <Link className="links" to="/admin">
+                    Naudotojai
+                  </Link>
+                )}
+                <div className="ml-auto">
+                  <Link className="links" to="/manoprofilis">
+                    Mano profilis
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <Link className="links" to="/prisijungimas">
+                  Prisijungti
+                </Link>
+                <Link className="links" to="/registracija">
+                  Registruotis
+                </Link>
+              </>
+            )}
+          </div>
+        </footer>
       </>
     );
   }
