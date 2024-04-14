@@ -26,7 +26,7 @@ function HomePage() {
 
     return (
         <Container className="home">
-            <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Naujausi prietaisų skelbimai</h3>
+            <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Elektronikos prietaisų skelbimai</h3>
             <Row className="justify-content-center">
                 {devices ? devices.map((device) => (
                     <Col sm={4} key={device.id} style={{ width: '300px' }}>

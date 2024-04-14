@@ -197,8 +197,18 @@ namespace mainykdovanok.Controllers
                     Type = Convert.ToInt32(form["type"]),
                     Images = form.Files.GetFiles("images").ToList(),
                     Questions = form["questions"].ToList(),
-                    WinnerDrawDate = Convert.ToDateTime(form["winner_draw_date"]),
                 };
+
+                string lotteryWinnerDrawDateString = form["lotteryWinnerDrawDate"];
+                if (!string.IsNullOrEmpty(lotteryWinnerDrawDateString) && DateTime.TryParse(lotteryWinnerDrawDateString, out DateTime lotteryWinnerDrawDate))
+                {
+                    device.WinnerDrawDate = lotteryWinnerDrawDate;
+                }
+                else
+                {
+                    device.WinnerDrawDate = DateTime.MinValue;
+                }
+
 
                 device.Id = await _deviceRepo.Create(device);
 

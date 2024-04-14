@@ -39,10 +39,10 @@ export const UserProfilePage = () => {
                             <strong>El. paštas:</strong> {user.email}
                         </Card.Text>
                         <Card.Text className="text-center mb-0">
-                            <strong>Padovanotų elektronikos prietaisų kiekis:</strong> {user.itemsGifted}
+                            <strong>Padovanotų elektronikos prietaisų kiekis:</strong> {user.devicesGifted}
                         </Card.Text>
                         <Card.Text className="text-center mb-0">
-                            <strong>Laimėtų elektronikos prietaisų kiekis:</strong> {user.itemsWon}
+                            <strong>Laimėtų elektronikos prietaisų kiekis:</strong> {user.devicesWon}
                         </Card.Text>
                     </Card.Body>
                 </Card>

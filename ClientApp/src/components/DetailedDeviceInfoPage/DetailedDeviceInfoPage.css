@@ -11,3 +11,9 @@
 {
     margin-top: 10px;
 }
+
+.reviewProfileContent
+{
+    display: flex;
+    align-items: end;
+}

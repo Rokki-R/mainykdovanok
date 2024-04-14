@@ -12,21 +12,6 @@ const PasswordChangePage = () => {
     const [matchMessage, setMatchMessage] = useState('');
     const navigate = useNavigate();
 
-    const onChange = (e) => {
-        let password = e.target.value;
-        setPassword(password);
-        if (password.length >= 8 && /^(?=.*\d)(?=.*[!@#$%^&*+\-])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(password)) {
-            setMessage("");
-        }
-        else {
-            setMessage("Slaptažodis turi turėti mažąsias, didžiąsias raides, skaičius, spec. simbolius ir būti bent 8 simbolių ilgio!");
-
-            if (password.length > 0 && confirmPassword.length > 0) {
-                setMatchMessage("");   
-            }
-        }
-    }
-
     function checkFields() {
         if (password === confirmPassword && password.length >= 8 && confirmPassword.length >= 8 && /^(?=.*\d)(?=.*[!@#$%^&*+\-])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(password)) {
             setMatchMessage("");
@@ -37,9 +22,14 @@ const PasswordChangePage = () => {
             setMatchMessage("Slaptažodžių laukai turi būti užpildyti!");
             return false;
         }
-        else {
+        else if (password !== confirmPassword)
+        {
             setMatchMessage("Slaptažodžiai turi sutapti!");
             return false;
+        }
+        else
+        {
+            setMatchMessage("Slaptažodis turi būti sudarytas bent iš 8 simbolių, turėti bent vieną didžiąją raidę, skaičių bei spec. simbolį");
         }
     }
 
@@ -79,27 +69,29 @@ const PasswordChangePage = () => {
     }
 
     return (
-        <div className='outerBoxWrapper'>
-            <Card>
+        <div className='outerPasswordBoxWrapper'>
+            <Card className='passwordChangeCard'>
                 <Toaster />
                 <Card.Header className='header d-flex justify-content-between align-items-center'>
-                    <div>Slaptažodžio keitimas</div>
+                    <div className='title-text'>Slaptažodžio keitimas</div>
                 </Card.Header>
                 <Card.Body>
                     <Form>
                         <Form.Group controlId="password">
                             <Form.Label className="label">Naujas slaptažodis</Form.Label>
-                            <Form.Control type="password" name='password' id='password' value={password} onChange={onChange} placeholder='Slaptažodis' />
+                            <Form.Control type="password" name='password' id='password' value={password} onChange={(e) => setPassword(e.target.value)} placeholder='Slaptažodis' />
                         </Form.Group>
                         <Form.Group controlId="confirmPassword">
                             <Form.Label className="label">Pakartoti naują slaptažodį</Form.Label>
                             <Form.Control type="password" name='confirmPassword' id='confirmPassword' value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder='Pakartokite slaptažodį' />
                         </Form.Group>
-                        {message && <Alert variant="danger">{message}</Alert>}
-                        {matchMessage && <Alert variant="danger">{matchMessage}</Alert>}
+                        {message && <Alert variant="danger" style={{marginTop: "10px"}}>{message}</Alert>}
+                        {matchMessage && <Alert variant="danger" style={{marginTop: "10px"}}>{matchMessage}</Alert>}
+                        <div className='text-center'>
                         <Button className='change' type="submit" onClick={(event) => handleSubmit(event)} >
                             Patvirtinti
                         </Button>
+                        </div>
                         <div className="returnToLogin">
                             <a href="/prisijungimas" className="returnToLoginButton">Grįžti į prisijungimą</a>
                         </div>

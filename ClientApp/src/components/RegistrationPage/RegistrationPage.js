@@ -87,13 +87,12 @@ const handleSubmit = (event) => {
 
   return (
     <div className='page-container'>
-    <div className='outerBoxWrapper'>
+    <div className='outerRegistrationBoxWrapper'>
       <Card className='custom-card'>
-        <CardHeader className='header d-flex justify-content-between align-items-center'>Registration</CardHeader>
+      <CardHeader className='header d-flex justify-content-between align-items-center' style={{ color: 'black' }}>Registracija</CardHeader>
         <CardBody>
           <Form onSubmit={handleSubmit}>
             <FormGroup>
-              <Label for="name">Name</Label>
               <Input
                 type="text"
                 className='input'
@@ -101,11 +100,10 @@ const handleSubmit = (event) => {
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your name"
+                placeholder="Įveskite savo vardą"
               />
             </FormGroup>
             <FormGroup>
-              <Label for="surname">Surname</Label>
               <Input
                 type="text"
                 className='input'
@@ -113,11 +111,10 @@ const handleSubmit = (event) => {
                 id="surname"
                 value={surname}
                 onChange={(e) => setSurname(e.target.value)}
-                placeholder="Enter your surname"
+                placeholder="Įveskite savo pavardę"
               />
             </FormGroup>
             <FormGroup>
-              <Label for="email">Email</Label>
               <Input
                 type="email"
                 className='input'
@@ -125,11 +122,10 @@ const handleSubmit = (event) => {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder="Įveskite savo elektroninį paštą"
               />
             </FormGroup>
             <FormGroup>
-              <Label for="password">Password</Label>
               <Input
                 type="password"
                 className='input'
@@ -137,11 +133,10 @@ const handleSubmit = (event) => {
                 id="password"
                 value={password}
                 onChange={onChange}
-                placeholder="Enter your password"
+                placeholder="Įveskite slaptažodį"
               />
             </FormGroup>
             <FormGroup>
-              <Label for="confirmPassword">Repeat Password</Label>
               <Input
                 type="password"
                 className='input'
@@ -149,18 +144,19 @@ const handleSubmit = (event) => {
                 id="confirmPassword"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Repeat your password"
+                placeholder="Pakartokite slaptažodį"
               />
             </FormGroup>
             <Label className='warningText'>{message}</Label>
             <Label className='warningText'>{matchMessage}</Label>
             <div className='text-center'>
-                <Button className='btn btn-primary' onClick={(event) => handleSubmit(event)} type='submit'>
-                Registruotis
-                </Button>
-            </div>
+            <Button className='btn btn-primary' onClick={(event) => handleSubmit(event)} type='submit'>
+              Registruotis
+            </Button>
+          </div>
+            <hr></hr>
             <div className="mt-3 text-center">
-                Already have an account? <Link to="/login">Login</Link>
+                Jau turite paskyrą? <Link to="/login">Prisijungti</Link>
             </div>
           </Form>
         </CardBody>

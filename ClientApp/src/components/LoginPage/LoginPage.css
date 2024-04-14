@@ -1,6 +1,8 @@
-.outerBoxWrapper {
-    padding-top: 80px;
-    padding-bottom: 80px;
+.outerLoginBoxWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
 .outerBox {
@@ -8,7 +10,6 @@
     padding: 2em;
     margin: auto;
     border-radius: 20px;
-    background-color: rgba(49, 131, 171, 0.9);
 }
 
 .innerBox {
@@ -37,7 +38,7 @@ button {
     border-radius: 5px;
 }
 
-.forgotPasswordButton, .noAccount {
+.forgotPasswordButton, .noAccount, .text-center {
     color: black
 }
 

@@ -156,45 +156,46 @@ export const DetailedDeviceInfoPage = () => {
 
     return device && ((device.type === 'Motyvacinis laiškas' && deviceLetters) || (device.type === 'Loterija' && deviceLotteryParticipants) || (device.type === 'Mainai į kita prietaisą' && deviceOffers) || (device.type === 'Klausimynas' && deviceQuestions_Answers)) ? (
         <div className="my-div" style={{ marginTop: "120px" }}>
-            {device.type === 'Mainai į kita prietaisą' && (
-                <Container className="home">
-                    <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Pasiūlymai mainams</h3>
-                    <Row className="justify-content-center">
-                        {deviceOffers.map((device) => (
-                            <Col sm={4} key={device.id} style={{ width: '300px' }}>
-                                <Card className="mb-4">
-                                    <Carousel style={{ height: "250px" }} >
-                                        {device.images && device.images.map((image, index) => (
-                                            <Carousel.Item key={index}>
-                                                <img
-                                                    className="d-block w-100"
-                                                    style={{ objectFit: "cover" }}
-                                                    src={`data:image/png;base64,${image.data}`}
-                                                    alt={device.name}
-                                                />
-                                            </Carousel.Item>
-                                        ))}
-                                    </Carousel>
-                                    <Card.Body>
-                                        <Card.Title>{device.name}</Card.Title>
-                                        <Card.Text>{device.description}</Card.Text>
-                                        <Card.Text>{device.message}</Card.Text>
-                                        <Card.Text>-{device.user}</Card.Text>
-                                        <ul className="list-group list-group-flush mb-3">
-                                            <li className="list-group-item d-flex justify-content-between align-items-center">
-                                                <span>{device.location}</span>
-                                            </li>
-                                        </ul>
-                                        <div className="d-flex justify-content-end">
-                                            <Button variant="primary" disabled={isSubmitting} onClick={() => handleOfferWinner(device.user, device.name, device.id)}>Mainyti!</Button>
-                                        </div>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                        ))}
-                    </Row>
-                </Container>
-            )}
+           {device.type === 'Mainai į kita prietaisą' && (
+    <Container className="home">
+        <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Pasiūlymai mainams</h3>
+        <Row className="justify-content-center">
+            {deviceOffers.map((device) => (
+                <Col sm={4} key={device.id} style={{ width: '300px' }}>
+                    <Card className="mb-4">
+                        <Carousel indicators={false} style={{ height: "250px" }}>
+                            {device.images && device.images.map((image, index) => (
+                                <Carousel.Item key={index}>
+                                    <img
+                                        className="d-block w-100"
+                                        style={{ objectFit: "cover" }}
+                                        src={`data:image/png;base64,${image.data}`}
+                                        alt={device.name}
+                                    />
+                                </Carousel.Item>
+                            ))}
+                        </Carousel>
+                        <Card.Body>
+                            <Card.Title>{device.name}</Card.Title>
+                            <Card.Text>{device.description}</Card.Text>
+                            <Card.Text>{device.message}</Card.Text>
+                            <Card.Text>-{device.user}</Card.Text>
+                            <ul className="list-group list-group-flush mb-3">
+                                <li className="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>{device.location}</span>
+                                </li>
+                            </ul>
+                            <div className="d-flex justify-content-between align-items-center">
+                                <Button variant="primary" disabled={isSubmitting} onClick={() => handleOfferWinner(device.user, device.name, device.id)}>Mainyti!</Button>
+                                <Button variant="primary" onClick={() => navigate(`/klientas/${device.user}`)}>Peržiūrėti profilį</Button>
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            ))}
+        </Row>
+    </Container>
+)}
 
             {device.type === 'Motyvacinis laiškas' && (
                 <ListGroup>
@@ -202,7 +203,17 @@ export const DetailedDeviceInfoPage = () => {
                         Object.keys(deviceLetters.letters).map((user) => (
                             <Container key={user}>
                                 <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenWinner(device.type, user)}>Atiduoti</Button>
-                                <ListGroupItem variant="primary"><b>Motyvacinis laiškas:</b> {user} </ListGroupItem>
+                                <ListGroupItem variant="primary">
+    <div className="d-flex justify-content-between align-items-center">
+        <div className="d-flex align-items-center">
+            <b>Motyvacinis laiškas:</b>&nbsp;{user}
+        </div>
+        <div className="d-flex align-items-center">
+            <Button className='ReviewProfileButton' variant="primary" size="sm" onClick={() => navigate(`/klientas/${user.id}`)}>Peržiūrėti profilį</Button>
+        </div>
+    </div>
+</ListGroupItem>
+
                                 {deviceLetters.letters[user].map((letter, index) => (
                                     <ListGroup key={letter.id}>
                                         <ListGroupItem variant="light"> {letter.letter} </ListGroupItem>
@@ -227,7 +238,7 @@ export const DetailedDeviceInfoPage = () => {
                                     {user.name} {user.surname}
                                 </div>
                                 <div className="d-flex align-items-center">
-                                    <Button className='ReviewProfileButton' variant="primary" size="sm" onClick={() => navigate(`/klientas/${user.id}`)}>View Profile</Button>
+                                    <Button className='ReviewProfileButton' variant="primary" size="sm" onClick={() => navigate(`/klientas/${user.id}`)}>Peržiūrėti profilį</Button>
                                 </div>
                             </ListGroupItem>
                         ))
@@ -242,7 +253,17 @@ export const DetailedDeviceInfoPage = () => {
                         Object.keys(deviceQuestions_Answers.questionnaires).map((user) => (
                             <Container key={user}>
                                 <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenWinner(device.type, user)}>Atiduoti</Button>
-                                <ListGroupItem variant="primary"><b>Klausimyno atsakymai:</b> {user} </ListGroupItem>
+                                <ListGroupItem variant="primary">
+    <div className="d-flex justify-content-between align-items-center">
+        <div className="d-flex align-items-center">
+        <b>Klausimyno atsakymai:</b>&nbsp;{user}
+        </div>
+        <div className="d-flex align-items-center">
+            <Button className='ReviewProfileButton' variant="primary" size="sm" onClick={() => navigate(`/klientas/${user.id}`)}>Peržiūrėti profilį</Button>
+        </div>
+    </div>
+</ListGroupItem>
+
                                 {deviceQuestions_Answers.questionnaires[user].map((questionnaire, index) => (
                                     <ListGroup key={questionnaire.id}>
                                         <ListGroupItem variant="info"><b>Klausimas nr. {index + 1}</b> {questionnaire.question} </ListGroupItem>
