@@ -11,6 +11,7 @@ using System.Web;
 using MySqlX.XDevAPI.Common;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using System.Text.RegularExpressions;
 
 namespace mainykdovanok.Controllers.UserAuthentication
 {
@@ -81,6 +82,11 @@ namespace mainykdovanok.Controllers.UserAuthentication
             string name = form["name"].ToString();
             string surname = form["surname"].ToString();
 
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(surname))
+            {
+                return BadRequest(new { message = "Negalima palikti tuščių laukų" });
+            }
+
             int user_id = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
             string sql = "UPDATE user SET name = @name, surname = @surname WHERE user_id = @user_id";
@@ -129,12 +135,29 @@ namespace mainykdovanok.Controllers.UserAuthentication
             return BadRequest();
         }
 
+        private static bool IsEmailValid(string email)
+        {
+            string regex = @"^[^@\s]+@[^@\s]+\.(com|net|org|gov)$";
+
+            return Regex.IsMatch(email, regex, RegexOptions.IgnoreCase);
+        }
+
+        private static bool IsPasswordValid(string password)
+        {
+            string regex = @"^(?=.*\d)(?=.*[!@#$%^&*+\-])(?=.*[a-z])(?=.*[A-Z]).{8,}$";
+            return Regex.IsMatch(password, regex);
+        }
+
         [HttpPost("forgotPassword")]
         public async Task<IActionResult> ForgotPassword(PasswordResetViewModel resetRequest)
         {
             string sql = "SELECT email FROM user WHERE email = @email";
             var parameters = new { email = resetRequest.Email };
             var result = await _userRepo.LoadData(sql, parameters);
+            if (string.IsNullOrWhiteSpace(resetRequest.Email) || !IsEmailValid(resetRequest.Email))
+            {
+                return BadRequest(new { message = "Neteisingai įvestas el. paštas!" });
+            }
 
             if (result.Rows.Count == 0)
             {
@@ -180,7 +203,18 @@ namespace mainykdovanok.Controllers.UserAuthentication
             string sql = "SELECT password_change_token, password_change_time FROM user WHERE email = @email AND password_change_token = @token";
             var parameters = new { email = passwordChange.Email, token = passwordChange.Token };
             var result = await _userRepo.LoadData(sql, parameters);
-
+            if (string.IsNullOrWhiteSpace(passwordChange.Password) || string.IsNullOrWhiteSpace(passwordChange.ConfirmPassword))
+            {
+                return BadRequest(new { message = "Privaloma užpildyti abu slaptažodžio laukus!" });
+            }
+            if (passwordChange.Password != passwordChange.ConfirmPassword)
+            {
+                return BadRequest(new { message = "Slaptažodžiai privalo sutapti!" });
+            }
+            if (!IsPasswordValid(passwordChange.Password))
+            {
+                return BadRequest(new { message = "Slaptažodis turi turėti mažiausiai 8 simbolius, bent vieną didžiają raidę, skaičių ir specialų simbolį!" });
+            }
             if (result.Rows.Count == 0)
             {
                 return StatusCode(401);

@@ -36,11 +36,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 //For testing endpoints with swagger UI
 
-//builder.Services.AddSwaggerGen(c =>
-//{
-//    c.SwaggerDoc("v1", new() { Title = "Your API", Version = "v1" });
-//});
-
+/*builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "Your API", Version = "v1" });
+});
+*/
 var app = builder.Build();
 
 // Configure CORS
@@ -62,12 +62,12 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-//app.UseSwagger();
-//app.UseSwaggerUI(c =>
-//{
-//    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API V1");
-//});
-
+/*app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Your API V1");
+});
+*/
 app.UseAuthentication();
 app.UseAuthorization();
 

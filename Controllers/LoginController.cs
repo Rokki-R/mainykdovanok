@@ -11,6 +11,7 @@ using System.Web;
 using MySqlX.XDevAPI.Common;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using System.Text.RegularExpressions;
 
 namespace mainykdovanok.Controllers
 {
@@ -27,12 +28,35 @@ namespace mainykdovanok.Controllers
             _userRepo = new UserRepo();
         }
 
+        private static bool IsEmailValid(string email)
+        {
+            string regex = @"^[^@\s]+@[^@\s]+\.(com|net|org|gov)$";
+
+            return Regex.IsMatch(email, regex, RegexOptions.IgnoreCase);
+        }
+
+        private static bool IsPasswordValid(string password)
+        {
+            string regex = @"^(?=.*\d)(?=.*[!@#$%^&*+\-])(?=.*[a-z])(?=.*[A-Z]).{8,}$";
+            return Regex.IsMatch(password, regex);
+        }
+
         [HttpPost("login")]
         public async Task<IActionResult> login(LoginViewModel loginData)
         {
             string sql = "SELECT user_id, name, surname, password_hash, password_salt, verification_token, user_role, fk_user_status FROM user WHERE email = @email";
             var parameters = new { email = loginData.Email };
             var result = await _userRepo.LoadData(sql, parameters);
+
+            if (string.IsNullOrWhiteSpace(loginData.Email) || string.IsNullOrWhiteSpace(loginData.Password))
+            {
+                return BadRequest(new { message = "Visi laukai turi būti užpildyti!" });
+            }
+
+            if (!IsEmailValid(loginData.Email))
+            {
+                return BadRequest(new { message = "Neteisingas el. pašto formatas!" });
+            }
 
             if (result.Rows.Count == 0)
             {
@@ -112,6 +136,27 @@ namespace mainykdovanok.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegistrationViewModel registration)
         {
+
+            if (string.IsNullOrWhiteSpace(registration.Name) || string.IsNullOrWhiteSpace(registration.Surname) || string.IsNullOrWhiteSpace(registration.Email) || string.IsNullOrWhiteSpace(registration.Password) || string.IsNullOrWhiteSpace(registration.ConfirmPassword))
+            {
+                return BadRequest(new { message = "Visi laukai turi būti užpildyti!" });
+            }
+
+            if (!IsEmailValid(registration.Email))
+            {
+                return BadRequest(new { message = "Neteisingas el. pašto formatas!" });
+            }
+
+            if (!IsPasswordValid(registration.Password))
+            {
+                return BadRequest(new { message = "Slaptažodis turi turėti mažiausiai 8 simbolius, bent vieną didžiają raidę, skaičių ir specialų simbolį!" });
+            }
+
+            if (registration.Password != registration.ConfirmPassword)
+            {
+                return BadRequest(new { message = "Slaptažodžiai turi sutapti!" });
+            }
+
             bool emailExists = await _userRepo.CheckEmailExists(registration.Email);
             if (emailExists)
             {

@@ -186,6 +186,20 @@ namespace mainykdovanok.Controllers
             try
             {
                 var form = await Request.ReadFormAsync();
+
+                if (form.Files.GetFiles("images").Count == 0)
+                {
+                    return BadRequest("Privaloma įkelti bent vieną nuotrauką!");
+                }
+
+                if (string.IsNullOrEmpty(form["name"]) ||
+                    string.IsNullOrEmpty(form["description"]) ||
+                    string.IsNullOrEmpty(form["location"]) ||
+                    string.IsNullOrEmpty(form["category"]) ||
+                    string.IsNullOrEmpty(form["type"]))
+                {
+                    return BadRequest("Privaloma užpildyti visus skelbimo sukūrimo formos laukus!");
+                }
                 DeviceModel device = new DeviceModel()
                 {
                     Name = form["name"].ToString(),
@@ -208,7 +222,6 @@ namespace mainykdovanok.Controllers
                 {
                     device.WinnerDrawDate = DateTime.MinValue;
                 }
-
 
                 device.Id = await _deviceRepo.Create(device);
 
@@ -543,6 +556,11 @@ namespace mainykdovanok.Controllers
                     Letter = form["letter"].ToString()
                 };
 
+                if (letter.Letter.Length < 10)
+                {
+                    return BadRequest("Motyvacinis laiškas yra per trumpas");
+                }
+
                 var result = await _deviceRepo.InsertLetter(deviceId, letter, userId);
 
                 return Ok(result);
@@ -797,7 +815,16 @@ namespace mainykdovanok.Controllers
             }
 
             try
-            {   
+            {
+
+                if (string.IsNullOrEmpty(form["name"]) ||
+                    string.IsNullOrEmpty(form["description"]) ||
+                    string.IsNullOrEmpty(form["location"]) ||
+                    string.IsNullOrEmpty(form["category"]))
+                {
+                    return BadRequest("Privaloma užpildyti visus skelbimo sukūrimo formos laukus!");
+                }
+
                 DeviceModel updateDevice = new DeviceModel()
                 {
                     Id = id,
@@ -805,73 +832,8 @@ namespace mainykdovanok.Controllers
                     Description = form["description"],
                     Category = Convert.ToInt32(form["fk_Category"]),
                     Images = Request.Form.Files.GetFiles("images").ToList(),
-                    Type = Convert.ToInt32(form["type"]),
-                    Questions = form["questions"].ToList()
                 };
-                var updateDeviceType = await _typeRepo.GetType(updateDevice.Type);
-
-                var answers = await _deviceRepo.GetAnswers(id);
-                if (device.Type != updateDeviceType.Name)
-                {
-                    switch (device.Type)
-                    {
-                        case "Motyvacinis laiškas":
-                            var letters = await _deviceRepo.GetLetters(id);
-                            if (letters.Any())
-                            {
-                                return BadRequest("Negalite pakeisti skelbimo tipo, nes jūsų skelbimas jau sulaukė susidomėjimo!");
-                            }
-                            break;
-                        case "Mainai į kita prietaisą":
-                            var offers = await _deviceRepo.GetOffers(id);
-                            if (offers.Any())
-                            {
-                                return BadRequest("Negalite pakeisti skelbimo tipo, nes jūsų skelbimas jau sulaukė susidomėjimo!");
-                            }
-                            break;
-                        case "Loterija":
-                            var participants = await _deviceRepo.GetLotteryParticipants(id);
-                            if (participants.Any())
-                            {
-                                return BadRequest("Negalite pakeisti skelbimo tipo, nes jūsų skelbimas jau sulaukė susidomėjimo!");
-                            }
-                            break;
-                        case "Klausimynas":
-                            if (answers.Any())
-                            {
-                                return BadRequest("Negalite pakeisti skelbimo tipo, nes jūsų skelbimas jau sulaukė susidomėjimo!");
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                if (updateDevice.Type == 4)
-                {
-                    var deviceQuestions = await _deviceRepo.GetQuestions(id);
-                    List<string> deviceQuestionStrings = deviceQuestions.Select(question => question.Question).ToList();
-
-                    bool questionsEdited = !Enumerable.SequenceEqual<string>(updateDevice.Questions, deviceQuestionStrings);
-
-                    if (questionsEdited)
-                    {
-                        if (!answers.Any())
-                        {
-                            await _deviceRepo.DeleteQuestions(id);
-                            await _deviceRepo.InsertQuestions(updateDevice);
-                        }
-                        else
-                        {
-                            return BadRequest("Negalite pakeisti skelbimo klausimų, nes į dabartinius klausimus jau atsakė bent 1 asmuo!");
-                        }
-                    }
-                }
-
-                if (device.Type == "Klausimynas" && updateDeviceType.Name != "Klausimynas")
-                {
-                    await _deviceRepo.DeleteQuestions(id);
-                }
+              
                 var imagesToDelete = form["imagesToDelete"].Select(idStr => Convert.ToInt32(idStr)).ToList();
 
                 if (imagesToDelete.Count > 0)

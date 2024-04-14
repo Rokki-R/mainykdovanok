@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mainykdovanok.Models;
 using mainykdovanok.Repositories.Comment;
+using System.Diagnostics.Metrics;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -49,6 +50,11 @@ namespace mainykdovanok.Controllers
             try
             {
                 int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+
+                if (comment.Comment.Length < 10)
+                { 
+                    return BadRequest("Parašytas komentaras yra per trumpas");
+                }
 
                 comment.UserId = userId;
                 comment.DeviceId = deviceId;

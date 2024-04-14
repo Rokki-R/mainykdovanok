@@ -15,5 +15,7 @@ namespace mainykdovanok.ViewModels.User
 
         [JsonProperty("password")]
         public string Password { get; set; }
+        [JsonProperty("confirm_password")]
+        public string ConfirmPassword { get; set; }
     }
 }

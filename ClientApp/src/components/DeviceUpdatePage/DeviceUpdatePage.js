@@ -13,14 +13,10 @@ function DeviceUpdatePage() {
   const [viewerId, setViewerId] = useState(null);
   const [category, setCategory] = useState('Pasirinkite kategoriją');
   const [categories, setCategories] = useState([]);
-  const [deviceType, setType] = useState('Pasirinkite, kaip norite atiduoti');
-  const [deviceTypes, setDeviceTypes] = useState([]);
   const [images, setImages] = useState([]);
   const [imagesToDelete, setImagesToDelete] = useState([]);
   const [device, setDevice] = useState(null);
-  const [questions, setQuestions] = useState([]);
   const [showMessage, setShowMessage] = useState(false);
-  const [isLoggedInAsAdmin, setIsLoggedInAsAdmin] = useState(false);
 
   const navigate = useNavigate();
 
@@ -32,17 +28,6 @@ function DeviceUpdatePage() {
       setName(response.data.name);
       setDescription(response.data.description);
       setCategory(response.data.fk_Category);
-      console.log(response.data.type);
-  
-      if (response.data.type === 'Klausimynas') {
-        try {
-          const questionsResponse = await axios.get(`/api/device/getQuestions/${deviceId}`);
-          setQuestions(questionsResponse.data.questionnaires);
-          console.log(questionsResponse.data);
-        } catch (error) {
-          console.error('Failed to fetch questions:', error);
-        }
-      }
     }
     fetchDevice();
   }, [deviceId]);
@@ -51,12 +36,10 @@ function DeviceUpdatePage() {
   useEffect(() => {
     async function fetchData() {
         try {
-            const [categoriesResponse, deviceTypesResponse] = await Promise.all([
+            const [categoriesResponse] = await Promise.all([
                 axios.get("api/device/getCategories"),
-                axios.get("api/device/getDeviceTypes")
             ]);
             setCategories(categoriesResponse.data);
-            setDeviceTypes(deviceTypesResponse.data);
         } catch (error) {
             console.log(error);
             toast.error("Įvyko klaida, susisiekite su administratoriumi!");
@@ -88,12 +71,10 @@ function DeviceUpdatePage() {
 
 
 
-  if (!isLoggedInAsAdmin) {
-    if (device && viewerId && device.userId !== viewerId) {
-      navigate('/');
-      toast.error('Jūs nesate šio skelbimo savininkas');
-    }
-  }
+  if (device && viewerId && device.userId !== viewerId) {
+  navigate('/');
+  toast.error('Jūs nesate šio skelbimo savininkas');
+}
 
 
   const handleSubmit = async (event) => {
@@ -104,31 +85,16 @@ function DeviceUpdatePage() {
       data.append('name', name || device.name);
       data.append('description', description || device.description);
       data.append('fk_Category', category || device.fk_Category);
-      data.append('type', deviceType || device.type);
       if (device.images.length === 0 && images.length === 0) {
         toast.error('Negalite palikti skelbimo be nuotraukos');
         await new Promise(resolve => setTimeout(resolve, 1000));
         window.location.reload();
         return;
       }
-      if (name === '' || description === '' || category === 'Pasirinkite kategoriją'|| deviceType === 'Pasirinkite, kaip norite atiduoti') {
+      if (name === '' || description === '' || category === 'Pasirinkite kategoriją') {
         toast.error('Užpildykite visus laukus!');
         return;
       }
-      if (deviceType === '4') {
-        let hasEmptyQuestion = false;
-        questions.forEach((question) => {
-            if (question.question.trim() === "") {
-                hasEmptyQuestion = true;
-                return;
-            }
-        });
-        if (hasEmptyQuestion || questions.length === 0) 
-        {
-            toast.error(`Negalite palikti tuščių klausimų!`);
-            return;
-        }
-    }
       
       if (images.length > 6 || images.length + device.images.length > 6) {
         toast.error('Daugiausiai galite įkelti 6 nuotraukas');
@@ -144,10 +110,6 @@ function DeviceUpdatePage() {
       for (let i = 0; i < imagesToDelete.length; i++) {
         data.append('imagesToDelete', imagesToDelete[i]);
       }
-
-      for (let i = 0; i < questions.length; i++) {
-        data.append('questions', questions[i].question);
-        }
 
       await axios.put(`/api/device/update/${deviceId}`, data);
       toast.success('Skelbimas sėkmingai atnaujintas!');
@@ -241,18 +203,6 @@ function DeviceUpdatePage() {
       console.log(error);
     }
   }
-
-  const getAllDeviceTypes = () => {
-    try {
-        return deviceTypes.map((deviceType) => {
-            return <option value={deviceType.id}>{deviceType.name}</option>;
-        });
-    }
-    catch (error) {
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
-        console.log(error);
-    }
-}
   
   const handleCancel = () => {
     navigate(`/skelbimas/${deviceId}`);
@@ -261,33 +211,10 @@ function DeviceUpdatePage() {
   if (!device || !categories) {
     return <div><Spinner>Loading...</Spinner></div>;
   }
-
-  const handleQuestionChange = (e, index) => {
-    const { value } = e.target;
-    setQuestions((prevQuestions) => {
-      const updatedQuestions = [...prevQuestions];
-      updatedQuestions[index].question = value;
-      return updatedQuestions;
-    });
-  };
   
-  
-  const addQuestion = () => {
-    setQuestions((prevQuestions) => [
-      ...prevQuestions,
-      { question: '' }
-    ]);
-  };
-  
-  const removeQuestion = (indexToRemove) => {
-    setQuestions((prevQuestions) => prevQuestions.filter((_, index) => index !== indexToRemove));
-  };
-
-  
-
   return (
     <div className='page-container'>
-      <div className='outerBoxWrapper'>
+      <div className='outerDeviceUpdateBoxWrapper'>
         <Card className='custom-card'>
           <Toaster />
           <Card.Header className='header d-flex justify-content-between align-items-center'>
@@ -334,56 +261,6 @@ function DeviceUpdatePage() {
                   {getAllCategories()}
                 </Form.Select>
               </Form.Group>
-              <Form.Group className='text-center mb-3'>
-  <Form.Select value={deviceType} onChange={(e) => setType(e.target.value)}>
-    <option>Pasirinkite, kaip norite atiduoti</option>
-    {getAllDeviceTypes()}
-  </Form.Select>
-</Form.Group>
-
-<Form.Group>
-{device && device.type === 'Klausimynas' && (deviceType === 'Pasirinkite, kaip norite atiduoti' || deviceType === '4') && (
-    <>
-      <h4>Klausimai:</h4>
-      {questions.map((question, index) => (
-        <div key={index} className="mb-3">
-          <InputGroup>
-            <Form.Control
-              type="text"
-              value={question.question}
-              onChange={(e) => handleQuestionChange(e, index)}
-              placeholder={`Klausimas ${index + 1}`}
-            />
-            <Button variant="danger" onClick={() => removeQuestion(index)}>-</Button>
-          </InputGroup>
-        </div>
-      ))}
-      <Button variant="primary" onClick={addQuestion}>Pridėti klausimą</Button>
-    </>
-  )}
-  {device && device.type !== 'Klausimynas' && deviceType === '4' && (
-    <>
-      <h4>Klausimai:</h4>
-      {questions.map((question, index) => (
-        <div key={index} className="mb-3">
-          <InputGroup>
-            <Form.Control
-              type="text"
-              value={question.question}
-              onChange={(e) => handleQuestionChange(e, index)}
-              placeholder={`Klausimas ${index + 1}`}
-            />
-            <Button variant="danger" onClick={() => removeQuestion(index)}>-</Button>
-          </InputGroup>
-        </div>
-      ))}
-      <Button variant="primary" onClick={addQuestion}>Pridėti klausimą</Button>
-      </>
-  )}
-</Form.Group>
-
-
-
               <div className='d-flex justify-content-between'>
                 <Button onClick={(event) => handleSubmit(event)} type='submit'>Atnaujinti</Button>
                 <Button onClick={(event) => handleCancel(event)} type='submit'>Atšaukti</Button>

@@ -61,6 +61,7 @@ const handleSubmit = (event) => {
               surname: surname,
               password: password,
               email: email,
+              confirmPassword: confirmPassword
           }),
       };
       fetch("api/user/register", requestOptions)
