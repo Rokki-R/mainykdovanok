@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Row, Col, Card, Button, Spinner, Table } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import './AdministratorPage.css';
@@ -47,54 +47,49 @@ function AdministratorPage() {
     };
 
     return (
-        <Container className="admin">
-            <Row>
-                <Col>
-                    <Card>
-                        <Card.Header as="h5">Naudotojai</Card.Header>
-                        <Card.Body>
-                            {loading ? (
-                                <Spinner animation="border" role="status" />
-                            ) : (
-                                <Table striped bordered hover>
-                                    <thead>
-                                        <tr>
-                                            <th>Vardas</th>
-                                            <th>Pavardė</th>
-                                            <th>El. paštas</th>
-                                            <th>Laimėtų prietaisų kiekis</th>
-                                            <th>Padovanotų prietaisų kiekis</th>
-                                            <th>Būsena</th>
-                                            <th>Veiksmas</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {users.map(user => (
-                                            <tr key={user.id}>
-                                                <td className="align-middle">{user.name}</td>
-                                                <td className="align-middle">{user.surname}</td>
-                                                <td className="align-middle">{user.email}</td>
-                                                <td className="align-middle">{user.devicesWon}</td>
-                                                <td className="align-middle">{user.devicesGifted}</td>
-                                                <td className="align-middle">{user.status}</td>
-                                                <td className="align-middle">
-                                                    {user.status === 'Neužblokuotas' ? (
-                                                        <Button variant="danger" onClick={() => handleActionClick(user.id, 'Blokuoti')}>Blokuoti</Button>
-                                                    ) : (
-                                                        <Button variant="success" onClick={() => handleActionClick(user.id, 'Atblokuoti')}>Atblokuoti</Button>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </Table>
-                            )}
-                        </Card.Body>
-                    </Card>
-                </Col>
-            </Row>
+        <Container className="my-5 admin">
+            <div className="user-table-container">
+                <Toaster />
+                {loading ? (
+                    <Spinner animation="border" role="status" />
+                ) : (
+                    <table className="user-table">
+                        <thead>
+                            <tr>
+                                <th>Vardas</th>
+                                <th>Pavardė</th>
+                                <th>El. paštas</th>
+                                <th>Laimėtų prietaisų kiekis</th>
+                                <th>Padovanotų prietaisų kiekis</th>
+                                <th>Būsena</th>
+                                <th>Veiksmas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {users.map(user => (
+                                <tr key={user.id}>
+                                    <td>{user.name}</td>
+                                    <td>{user.surname}</td>
+                                    <td>{user.email}</td>
+                                    <td>{user.devicesWon}</td>
+                                    <td>{user.devicesGifted}</td>
+                                    <td>{user.status}</td>
+                                    <td>
+                                        {user.status === 'Neužblokuotas' ? (
+                                            <Button variant="danger" onClick={() => handleActionClick(user.id, 'Blokuoti')}>Blokuoti</Button>
+                                        ) : (
+                                            <Button variant="success" onClick={() => handleActionClick(user.id, 'Atblokuoti')}>Atblokuoti</Button>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
+            </div>
         </Container>
     );
+    
 }
 
 export default AdministratorPage;

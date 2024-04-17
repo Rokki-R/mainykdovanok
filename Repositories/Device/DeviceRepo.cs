@@ -52,9 +52,10 @@ namespace mainykdovanok.Repositories.Device
             {
                 await connection.OpenAsync();
                 using (MySqlCommand command = new MySqlCommand("SELECT device_ad.id, device_ad.name, device_ad.description, " +
-                "device_ad.fk_user, device_ad.location, device_ad.winner_draw_datetime, device_type.type as type " +
+                "device_ad.fk_user, device_ad.location, device_ad.winner_draw_datetime, device_type.type as type, device_category.name as category_name " +
                 "FROM device_ad " +
                 "LEFT JOIN device_type ON device_ad.fk_type = device_type.id " +
+                "LEFT JOIN device_category ON device_ad.fk_category = device_category.id " +
                 "WHERE device_ad.fk_status = 1", connection))
                 {
                     using (DbDataReader reader = await command.ExecuteReaderAsync())
@@ -68,6 +69,7 @@ namespace mainykdovanok.Repositories.Device
                                 Name = reader["name"].ToString(),
                                 Description = reader["description"].ToString(),
                                 Type = reader["type"].ToString(),
+                                Category = reader["category_name"].ToString(),
                                 Location = reader["location"].ToString(),
                                 WinnerDrawDateTime = Convert.ToDateTime(reader["winner_draw_datetime"])
                             };

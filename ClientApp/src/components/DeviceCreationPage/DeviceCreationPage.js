@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import axios from 'axios';
-import { Form, Button, Card } from 'react-bootstrap';
+import { Form, Button, Card, Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router';
 import './DeviceCreationPage.css'
 
@@ -208,8 +208,7 @@ const DeviceCreationPage = () => {
     const today = new Date().toISOString().split('T')[0];
 
     return (
-        <div className='page-container'>
-            <div className='outerDeviceCreationBoxWrapper'>
+            <Container className='my-5 outerDeviceCreationBoxWrapper'>
                 <Card className='custom-card'>
                     <Toaster />
                     <Card.Header className='header d-flex justify-content-between align-items-center'>
@@ -324,8 +323,7 @@ const DeviceCreationPage = () => {
                         </Form>
                     </Card.Body>
                 </Card>
-            </div>
-        </div>
+            </Container>
     )
 }
 export default DeviceCreationPage

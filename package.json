@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "react-dropdown-tree-select": "^2.8.0",
     "react-image-magnify": "^2.7.4"
   }
 }

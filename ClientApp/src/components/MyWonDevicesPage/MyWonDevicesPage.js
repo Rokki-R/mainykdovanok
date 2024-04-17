@@ -52,7 +52,7 @@ function MyDevicesPage() {
                 <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Jūsų skelbimai</h3>
             )}
             {devices.length === 0 ? (
-                <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Jūs neturite įkėlęs skelbimo</h3>
+                <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Jūs dar nesate laimėjęs elektronikos prietaisų</h3>
             ) : (
                 <Row className="justify-content-center">
                     {devices.map((device) => (

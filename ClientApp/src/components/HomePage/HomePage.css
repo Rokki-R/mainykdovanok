@@ -12,6 +12,14 @@
     display: flex;
 }
 
+/* Add this to your HomePage.css or any other CSS file */
+
+.dropdown-item:focus, .dropdown-item.active {
+    background-color: transparent !important;
+    color: #000 !important; /* Change the color to your desired text color */
+}
+
+
 
 .li {
     flex: 1 0 25%;

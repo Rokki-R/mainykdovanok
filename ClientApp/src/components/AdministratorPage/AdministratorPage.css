@@ -1,8 +1,28 @@
 .admin {
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    padding: 100px;
+    padding-top: 100px;
+    padding-bottom: 80px;
+}
+
+.user-table-container {
+    width: 100%;
+    max-width: 800px;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.user-table th,
+.user-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.user-table th {
+    background-color: #f2f2f2;
 }

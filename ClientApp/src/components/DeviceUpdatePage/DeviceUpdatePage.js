@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import toast, { Toaster } from 'react-hot-toast';
-import { Spinner, Form, Button, Card, InputGroup } from 'react-bootstrap';
+import { Spinner, Form, Button, Card, Container } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import './DeviceUpdatePage.css';
@@ -213,8 +213,7 @@ function DeviceUpdatePage() {
   }
   
   return (
-    <div className='page-container'>
-      <div className='outerDeviceUpdateBoxWrapper'>
+      <Container className='my-5 outerDeviceUpdateBoxWrapper'>
         <Card className='custom-card'>
           <Toaster />
           <Card.Header className='header d-flex justify-content-between align-items-center'>
@@ -268,8 +267,7 @@ function DeviceUpdatePage() {
             </Form>
           </Card.Body>
         </Card>
-      </div>
-    </div>
+      </Container>
   );
 }
 
