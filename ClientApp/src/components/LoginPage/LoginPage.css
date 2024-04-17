@@ -8,9 +8,21 @@
 .outerBox {
     width: 50%;
     padding: 2em;
-    margin: auto;
     border-radius: 20px;
+    margin-bottom: 0; /* Add this line */
 }
+
+/* Remove or adjust the margin-bottom for .innerBox if needed */
+.innerBox {
+    padding: 20px 10px;
+    margin-bottom: 0; /* Add this line */
+}
+
+/* Add this new CSS rule */
+.custom-card {
+    margin-bottom: 0;
+}
+
 
 .innerBox {
     padding: 20px 10px;

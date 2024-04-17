@@ -822,7 +822,7 @@ namespace mainykdovanok.Controllers
                     string.IsNullOrEmpty(form["location"]) ||
                     string.IsNullOrEmpty(form["category"]))
                 {
-                    return BadRequest("Privaloma užpildyti visus skelbimo sukūrimo formos laukus!");
+                    return BadRequest("Privaloma užpildyti visus skelbimo atnaujinimo formos laukus!");
                 }
 
                 DeviceModel updateDevice = new DeviceModel()

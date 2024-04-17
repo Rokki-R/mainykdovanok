@@ -49,14 +49,14 @@ function MyDevicesPage() {
     return devices ? (
         <Container className="home">
             {devices.length > 0 && (
-                <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Jūsų skelbimai</h3>
+                <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Jūsų aktyvūs skelbimai</h3>
             )}
             {devices.length === 0 ? (
-                <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Jūs neturite įkėlęs skelbimo</h3>
+                <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Jūs neturite nei vieno aktyvaus skelbimo</h3>
             ) : (
                 <Row className="justify-content-center">
                     {devices.map((device) => (
-                        <Col sm={4} key={device.id} style={{ width: '300px' }}>
+                        <Col sm={4} key={device.id} style={{ width: '350px' }}>
                             <Card className="mb-4">
                                 <img
                                     className="d-block w-100"
@@ -65,18 +65,14 @@ function MyDevicesPage() {
                                     src={device.images && device.images.length > 0 ? `data:image/png;base64,${device.images[0].data}` : ""}
                                     alt={device.name}
                                 />
-                                <Card.Body>
-                                    <Card.Title>{device.name}</Card.Title>
-                                    <Card.Text>{device.description}</Card.Text>
-                                    <ul className="list-group list-group-flush mb-3">
-                                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                                            <span>{device.type}</span>
-                                            <span>{device.location}</span>
-                                        </li>
-                                    </ul>
-                                    <div className="d-flex justify-content-end">
-                                        <Button variant="primary" onClick={() => handleOpen(device.id)}>Peržiūrėti</Button>
-                                    </div>
+                               <Card.Body>
+                                            <Card.Title>{device.name}</Card.Title>
+                                            <hr></hr>
+                                            <Card.Text>Atidavimo būdas: {device.type}</Card.Text>
+                                            <Card.Text>Vietovė: {device.location}</Card.Text>
+                                            <div className="d-flex justify-content-end">
+                                                <Button variant="primary" onClick={() => handleOpen(device.id)}>Peržiūrėti</Button>
+                                            </div>
                                 </Card.Body>
                             </Card>
                         </Col>

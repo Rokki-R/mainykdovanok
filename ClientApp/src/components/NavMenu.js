@@ -182,37 +182,7 @@ export class NavMenu extends Component {
             id="basic-navbar-nav"
             style={{ backgroundColor: "#c3d5c7" }}
           >
-            <Form inline className="d-flex">
-              <FormControl
-                style={{
-                  width: "250px",
-                  height: "50px",
-                  margin: "5px 0px 0px 0px",
-                }}
-                type="text"
-                placeholder="Įveskite..."
-                value={this.state.searchQuery}
-                onChange={this.handleSearchInputChange}
-              />
-              <Button className="buttonsearch" onClick={this.handleSearch}>
-                Ieškoti
-              </Button>
-            </Form>
             <Nav className="ms-auto">
-              <NavDropdown title={displayCategory} className="categories">
-                {this.state.categories.map((category) => (
-                  <NavDropdown.Item
-                    key={category.id}
-                    onClick={() => this.getDevicesByCategory(category.id)}
-                  >
-                    {category.name}
-                  </NavDropdown.Item>
-                ))}
-                <NavDropdown.Divider />
-                <NavDropdown.Item onClick={() => this.getAllDevices()}>
-                  Visi
-                </NavDropdown.Item>
-              </NavDropdown>
               {userRole === 0 && (
                 <div className="d-inline-block align-middle">
                   <Button

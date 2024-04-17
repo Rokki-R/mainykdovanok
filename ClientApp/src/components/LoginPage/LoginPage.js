@@ -79,9 +79,8 @@ export const LoginPage = () => {
     
 
     return (
-        <div className='page-container'>
-        <div className='outerLoginBoxWrapper'>
-          <Card className='custom-card'>
+        <Container className="my-5 outerLoginBoxWrapper">
+          <Card className='custom-card' md={1}>
           <Toaster />
           <Card.Header className='header d-flex justify-content-between align-items-center'>
             <div className='text-center'>Prisijungimas</div>
@@ -89,32 +88,34 @@ export const LoginPage = () => {
               <Card.Body>
               <Form>
               <Form.Group className='text-center'>
-                <Form.Control
-                  className='input'
-                  type='email'
-                  name='email'
-                  id='email'
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder='Įveskite el. paštą'
-                />
-              </Form.Group>
-              <Form.Group className='text-center'>
-                <Form.Control
-                  className='input'
-                  type='password'
-                  name='password'
-                  id='password'
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder='Įveskite slaptažodį'
-                />
-              </Form.Group>
-              <div className='text-center'>
-                <Button className='btn btn-primary' onClick={(event) => handleSubmit(event)} type='submit'>
-                  Prisijungti
-                </Button>
-              </div>
+  <Form.Control
+    className='input'
+    type='email'
+    name='email'
+    id='email'
+    value={email}
+    onChange={(event) => setEmail(event.target.value)}
+    placeholder='Įveskite el. paštą'
+    sm={6}
+  />
+</Form.Group>
+<Form.Group className='text-center'>
+  <Form.Control
+    className='input'
+    type='password'
+    name='password'
+    id='password'
+    value={password}
+    onChange={(event) => setPassword(event.target.value)}
+    placeholder='Įveskite slaptažodį'
+    sm={6}
+  />
+</Form.Group>
+<div className='text-center'>
+  <Button className='btn btn-primary' onClick={(event) => handleSubmit(event)} type='submit'>
+    Prisijungti
+  </Button>
+</div>
               <div className='forgotPassword text-center'>
                 <a href='/pamirsau-slaptazodi' className='forgotPasswordButton'>
                   Pamiršau slaptažodį
@@ -132,7 +133,6 @@ export const LoginPage = () => {
             </Form>
           </Card.Body>
         </Card>
-      </div>
-    </div>
+        </Container>
     )
 }

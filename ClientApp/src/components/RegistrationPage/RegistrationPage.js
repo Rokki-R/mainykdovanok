@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Card, CardHeader, CardBody, Form, FormGroup, Label, Input, Button } from 'reactstrap';
+import { Card, CardHeader, CardBody, Form, FormGroup, Label, Input, Button, } from 'reactstrap';
+import { Container } from 'react-bootstrap';
 import { useNavigate } from 'react-router';
 import toast, { Toaster } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
@@ -45,7 +46,7 @@ function checkFields() {
         }
     }
     else {
-        setMatchMessage("Slaptažodiai turi sutapti!");
+        setMatchMessage("Slaptažodžiai turi sutapti!");
         return false;
     }
 }
@@ -64,10 +65,10 @@ const handleSubmit = (event) => {
               confirmPassword: confirmPassword
           }),
       };
-      fetch("api/user/register", requestOptions)
+      fetch("api/login/register", requestOptions)
           .then(response => {
               if (response.status === 200) {
-                  toast.success('Sėkmingai prisiregistravote. Elektroninio pašto patvirtinimas išsiųstas.');
+                  toast.success('Sėkmingai prisiregistravote.');
                   navigate("/prisijungimas");
                 } else if (response.status === 400) {
                   response.json().then(data => {
@@ -87,8 +88,7 @@ const handleSubmit = (event) => {
 }
 
   return (
-    <div className='page-container'>
-    <div className='outerRegistrationBoxWrapper'>
+    <Container className="my-5 outerRegistrationBoxWrapper">
       <Card className='custom-card'>
       <CardHeader className='header d-flex justify-content-between align-items-center' style={{ color: 'black' }}>Registracija</CardHeader>
         <CardBody>
@@ -162,8 +162,7 @@ const handleSubmit = (event) => {
           </Form>
         </CardBody>
       </Card>
-    </div>
-    </div>
+    </Container>
   );
 };
 
