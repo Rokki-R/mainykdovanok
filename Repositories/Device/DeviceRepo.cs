@@ -619,7 +619,7 @@ namespace mainykdovanok.Repositories.Device
                 "SELECT e.fk_offered_device, e.offer_message, i.name, i.description, i.location, i.winner_draw_datetime, CONCAT(u.name, ' ', u.surname) AS user " +
                 "FROM device_exchange_offer AS e " +
                 "INNER JOIN device_ad AS i ON i.id = e.fk_offered_device " +
-        "JOIN user AS u ON i.fk_user = u.user_id " +
+                "JOIN user AS u ON i.fk_user = u.user_id " +
                 "WHERE e.fk_main_device = @deviceId ",
                 connection);
 

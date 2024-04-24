@@ -155,7 +155,7 @@ export const DetailedDeviceInfoPage = () => {
     };
 
     return device && ((device.type === 'Motyvacinis laiškas' && deviceLetters) || (device.type === 'Loterija' && deviceLotteryParticipants) || (device.type === 'Mainai į kita prietaisą' && deviceOffers) || (device.type === 'Klausimynas' && deviceQuestions_Answers)) ? (
-        <div className="my-div" style={{ marginTop: "120px" }}>
+        <div className="my-div" style={{ paddingTop: "120px" }}>
            {device.type === 'Mainai į kita prietaisą' && (
     <Container className="home">
         <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Pasiūlymai mainams</h3>
