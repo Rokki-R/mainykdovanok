@@ -514,6 +514,8 @@ namespace mainykdovanok.Controllers
             }
         }
 
+
+
         [HttpPost("submitLetter/{deviceId}")]
         public async Task<IActionResult> SubmitLetter(int deviceId)
         {
@@ -638,6 +640,39 @@ namespace mainykdovanok.Controllers
                 await _deviceRepo.SetExchangeWinners(winner.DeviceId, user.Id, userId, winner.UserDeviceId);
 
                 await emailer.notifyOfferWinner(user.Email, deviceName, winner.DeviceId, winner.DeviceName);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("rejectExchangeOffer")]
+        public async Task<IActionResult> rejectExchangeOffer([FromBody] ExchangeOfferRejectModel rejectedOffer)
+        {
+            if (!User.Identity.IsAuthenticated)
+            {
+                return Unauthorized();
+            }
+
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            var device = await _deviceRepo.GetFullById(rejectedOffer.DeviceId);
+            if (device == null || device.UserId != userId)
+            {
+                return StatusCode(403);
+            }
+
+            //Patikrinti ar prisijungęs naudotojas nėra admin
+            if (!User.IsInRole("0"))
+            {
+                return StatusCode(403);
+            }
+            try
+            {
+
+                await _deviceRepo.DeleteOffer(rejectedOffer.DeviceId, rejectedOffer.UserDeviceId);
 
                 return Ok();
             }

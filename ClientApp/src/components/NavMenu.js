@@ -183,7 +183,7 @@ export class NavMenu extends Component {
             style={{ backgroundColor: "#c3d5c7" }}
           >
             <Nav className="ms-auto">
-              {userRole === 0 && (
+              {userRole === 0 ? (
                 <div className="d-inline-block align-middle">
                   <Button
                     className="buttoncreate"
@@ -194,7 +194,12 @@ export class NavMenu extends Component {
                     Dovanoti!
                   </Button>
                 </div>
-              )}
+              ) : userRole === 1 ? (
+                <Link className="nav-link" to="/admin">
+                  Naudotojai
+                </Link>
+              ) : null}
+
               {this.state.isLogged && (
                 <Link
                   className="nav-link"
@@ -207,43 +212,40 @@ export class NavMenu extends Component {
             </Nav>
           </Navbar.Collapse>
         </Navbar>
-        <footer>
-          <div className="links">
-            {this.state.isLogged ? (
-              <>
-                {this.state.userRole === 0 && (
-                  <Link className="links" to="/manoskelbimai">
-                    Mano skelbimai
+        {!this.state.isLogged || this.state.userRole !== 1 ? (
+          <footer>
+            <div className="links">
+              {this.state.isLogged ? (
+                <>
+                  {this.state.userRole === 0 && (
+                    <>
+                      <Link className="links" to="/manoskelbimai">
+                        Mano skelbimai
+                      </Link>
+                      <Link className="links" to="/laimejimai">
+                        Laimėti skelbimai
+                      </Link>
+                      <div className="ml-auto">
+                        <Link className="links" to="/manoprofilis">
+                          Mano profilis
+                        </Link>
+                      </div>
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Link className="links" to="/prisijungimas">
+                    Prisijungti
                   </Link>
-                )}
-                {this.state.userRole === 0 && (
-                  <Link className="links" to="/laimejimai">
-                    Laimėti skelbimai
+                  <Link className="links" to="/registracija">
+                    Registruotis
                   </Link>
-                )}
-                {this.state.userRole === 1 && (
-                  <Link className="links" to="/admin">
-                    Naudotojai
-                  </Link>
-                )}
-                <div className="ml-auto">
-                  <Link className="links" to="/manoprofilis">
-                    Mano profilis
-                  </Link>
-                </div>
-              </>
-            ) : (
-              <>
-                <Link className="links" to="/prisijungimas">
-                  Prisijungti
-                </Link>
-                <Link className="links" to="/registracija">
-                  Registruotis
-                </Link>
-              </>
-            )}
-          </div>
-        </footer>
+                </>
+              )}
+            </div>
+          </footer>
+        ) : null}
       </>
     );
   }

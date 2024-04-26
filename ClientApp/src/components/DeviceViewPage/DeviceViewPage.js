@@ -30,6 +30,7 @@ export const DeviceViewPage = () => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
   const [answers, setAnswers] = useState({});
+  const [userRole, setUserRole] = useState(null);
   
   const navigate = useNavigate();
 
@@ -115,6 +116,20 @@ export const DeviceViewPage = () => {
     fetchComments();
   }, [deviceId]);
 
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await axios.get("api/login/isLoggedIn");
+        setUserRole(response.data.userRole);
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+      }
+    };
+  
+    fetchUserRole();
+  }, [userRole]);
+  
+
   const handleDeviceSelect = (event) => {
     setSelectedDevice(event.target.value);
   };
@@ -189,10 +204,11 @@ export const DeviceViewPage = () => {
       return;
     } 
     
-    else if (device.type === "Motyvacinis laiškas" && letter.length === 0) {
-      toast.error("Negalite pateikti tuščio motyvacinio laiško!");
+    else if (device.type === "Motyvacinis laiškas" && letter.length <= 10) {
+      toast.error("Motyvacinis laiškas turi būti siekti bent 10 simbolių!");
       return;
     }
+    
 
     else if (device.type === 'Klausimynas') {
       const unansweredQuestions = device.questions.filter(q => !answers[q.id]);
@@ -443,6 +459,8 @@ export const DeviceViewPage = () => {
                 <hr></hr>
                 {device.type === "Mainai į kita prietaisą" && (
                   <Form onSubmit={handleSubmit}>
+                     {device.userId !== viewerId && device.status === "Aktyvus"  && userRole == 0 ? (
+                      <>
                     <Form.Group>
                       <Form.Label>
                         Pasirinkite savo prietaisą, kurį norite pasiūlyti:
@@ -476,18 +494,34 @@ export const DeviceViewPage = () => {
                         onChange={(e) => setMessage(e.target.value)}
                       />
                     </Form.Group>
+                    </> ) : null}
                     <Row>
                       <Col>
+                      {device.userId !== viewerId && device.status === "Aktyvus"  && userRole == 0 ? (
+                          <>
                         <Button
                           variant="primary"
                           type="submit"
-                          disabled={device.status !== "Aktyvus" || device.userId === viewerId}
                         >
                           Siūlyti
                         </Button>
+                        </>
+                      ) : null}
                       </Col>
                       <Col className="d-flex justify-content-end">
-                        {device.userId === viewerId ? (
+                      {userRole === 1 && device.status === "Aktyvus" ?
+                      (
+                        <>
+                        <Button
+                              style={{ marginRight: "10px" }}
+                              variant="primary"
+                              onClick={() => handleDelete(device.id)}
+                            >
+                              Ištrinti
+                            </Button>
+                        </>
+                      ) : null}
+                        {device.userId === viewerId && device.status === "Aktyvus" ? (
                           <>
                             <Button
                               style={{ marginRight: "10px" }}
@@ -517,6 +551,8 @@ export const DeviceViewPage = () => {
                 {device.type === "Motyvacinis laiškas" && (
                   <Form onSubmit={handleSubmit}>
                     <Row>
+                    {device.userId !== viewerId && device.status === "Aktyvus" && userRole == 0 ? (
+                      <>
                       <Form.Control
                         as="textarea"
                         rows={3}
@@ -529,13 +565,25 @@ export const DeviceViewPage = () => {
                         <Button
                           variant="primary"
                           type="submit"
-                          disabled={device.status !== "Aktyvus" || device.userId === viewerId}
                         >
                           Atsakyti
                         </Button>
                       </Col>
+                      </> ) : null}
                       <Col className="d-flex justify-content-end">
-                        {device.userId === viewerId ? (
+                      {userRole === 1 && device.status === "Aktyvus" ?
+                      (
+                        <>
+                        <Button
+                              style={{ marginRight: "10px" }}
+                              variant="primary"
+                              onClick={() => handleDelete(device.id)}
+                            >
+                              Ištrinti
+                            </Button>
+                        </>
+                      ) : null}
+                        {device.userId === viewerId && device.status === "Aktyvus" ? (
                           <>
                             <Button
                               style={{ marginRight: "10px" }}
@@ -564,12 +612,17 @@ export const DeviceViewPage = () => {
                 )}
                 {device.type === "Loterija" && (
                   <Form onSubmit={handleSubmit}>
+                     {device.userId !== viewerId && device.status === "Aktyvus" && userRole == 0 ? (
+                      <>
                     <p>Dalyvių skaičius: {device.participants}</p>
                     <p>
                       Laimėtojas bus išrinktas{" "}
                       {new Date(device.winnerDrawDateTime).toLocaleString("lt-LT")}
                     </p>
+                    </> ) : null}
                     <Row>
+                    {device.userId !== viewerId && device.status === "Aktyvus" && userRole == 0 ? (
+                      <>
                       <Col>
                         {isUserParticipating && viewerId !== null ? (
                           <Button
@@ -591,7 +644,20 @@ export const DeviceViewPage = () => {
                           </Button>
                         )}
                       </Col>
+                      </> ) : null}
                       <Col className="d-flex justify-content-end">
+                      {userRole === 1 && device.status === "Aktyvus" ?
+                      (
+                        <>
+                        <Button
+                              style={{ marginRight: "10px" }}
+                              variant="primary"
+                              onClick={() => handleDelete(device.id)}
+                            >
+                              Ištrinti
+                            </Button>
+                        </>
+                      ) : null}
                         {device.userId === viewerId ? (
                           <>
                             <Button
@@ -621,30 +687,52 @@ export const DeviceViewPage = () => {
                 )}
                 {device.type === 'Klausimynas' && (
                                     <Form onSubmit={handleSubmit}>
+                                      {device.userId !== viewerId && device.status === "Aktyvus" && userRole == 0 ? (
+                      <>
                                         {device.questions.map((question) => (
                                             <Form.Group key={question.id}>
                                                 <Form.Label>{question.question}</Form.Label>
                                                 <Form.Control type="text" onChange={(event) => handleAnswerChange(event, question.id)} />
                                             </Form.Group>
                                         ))}
+                                                </> ) : null}                                
                                         <Row>
+                                        {device.userId !== viewerId && device.status === "Aktyvus" && userRole == 0 ? (
+                      <>
+                                          
                                             <Col>
-                                                <Button variant="primary" type="submit" disabled={device.status !== "Aktyvus" || device.userId === viewerId}>Atsakyti</Button>
+                                                <Button variant="primary" type="submit">Atsakyti</Button>
                                             </Col>
+                                            </> ) : null}  
                                             <Col className="d-flex justify-content-end">
+                                            {userRole === 1 && device.status === "Aktyvus" ?
+                      (
+                        <>
+                        <Button
+                              style={{ marginRight: "10px" }}
+                              variant="primary"
+                              onClick={() => handleDelete(device.id)}
+                            >
+                              Ištrinti
+                            </Button>
+                        </>
+                      ) : null}
                                                 {device.userId === viewerId ? (
                                                     <>
-                                                        <Button style={{ marginRight: '10px' }} variant="primary" onClick={() => handleDelete(device.id)}>Ištrinti</Button>
-                                                        <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/redaguoti/${device.id}`}>
+                                                    <Link style={{ marginRight: '10px'}}>
+                                                        <Button variant="primary" onClick={() => handleDelete(device.id)}>Ištrinti</Button>
+                                                        </Link>
+                                                        <Link style={{ marginRight: '10px'}} to={`/skelbimas/redaguoti/${device.id}`}>
                                                             <Button variant="primary">Redaguoti</Button>
                                                         </Link>
-                                                        <Link style={{ marginRight: '10px', marginTop: '9px' }} to={`/skelbimas/info/${device.id}`}>
+                                                        <Link style={{ marginRight: '10px'}} to={`/skelbimas/info/${device.id}`}>
                                                             <Button variant="primary">Atsakymai</Button>
                                                         </Link>
                                                     </>
                                                 ) : null}
                                             </Col>
                                         </Row>
+
                                     </Form>
                                 )}
               </Card.Body>
