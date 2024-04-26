@@ -64,19 +64,6 @@ const DeviceCreationPage = () => {
             });
     }, []);
 
-    useEffect(() => {
-        if (images.length < 1) return;
-        if (images.length > 6) {
-            toast.error("Negalima įkelti daugiau nei 6 nuotraukų!", {
-                style: {
-                    backgroundColor: 'red',
-                    color: 'white',
-                },
-            });
-            return;
-        }
-    }, [images]);
-
     const getAllCategories = () => {
         try {
             return categories.map((category) => {
@@ -130,6 +117,25 @@ const DeviceCreationPage = () => {
 
     const handleCreate = (event) => {
         event.preventDefault()
+        if (images.length === 0)
+        {
+            toast.error("Privalote įkelti bent vieną nuotrauką", {
+                style: {
+                    backgroundColor: 'red',
+                    color: 'white',
+                },
+            });
+            return;
+        }
+        if (images.length > 6) {
+            toast.error("Negalima įkelti daugiau nei 6 nuotraukų!", {
+                style: {
+                    backgroundColor: 'red',
+                    color: 'white',
+                },
+            });
+            return;
+        }
         if (checkFields()) {
             if (deviceType === '4') {
                 let hasEmptyQuestion = false;

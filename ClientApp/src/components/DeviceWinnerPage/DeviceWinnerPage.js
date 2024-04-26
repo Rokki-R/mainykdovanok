@@ -76,6 +76,7 @@ export const DeviceWinnerPage = () => {
         setPhone(event.target.value);
     };
 
+
     const handleSubmit = (event) => {
         event.preventDefault();
 
@@ -115,7 +116,7 @@ export const DeviceWinnerPage = () => {
             const data = {
                 id: deviceId,
                 winnerId: device.winnerId,
-                userId: device.userId
+                ownerId: device?.userId
             };
     
             const response = await axios.post('api/devicewinner/confirm', data);

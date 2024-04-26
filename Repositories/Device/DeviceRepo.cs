@@ -554,6 +554,20 @@ namespace mainykdovanok.Repositories.Device
             return true;
         }
 
+        public async Task<bool> DeleteOffer(int deviceId, int offeredDeviceId)
+        {
+            using MySqlConnection connection = GetConnection();
+            using MySqlCommand command = new MySqlCommand(
+                "DELETE FROM device_exchange_offer WHERE fk_main_device=@device_id AND fk_offered_device=@offered_device_id", connection);
+
+            command.Parameters.AddWithValue("@device_id", deviceId);
+            command.Parameters.AddWithValue("@offered_device_id", offeredDeviceId);
+
+            await connection.OpenAsync();
+            await command.ExecuteNonQueryAsync();
+
+            return true;
+        }
 
         public async Task<string> GetDeviceName(int deviceId)
         {
