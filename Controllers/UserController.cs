@@ -52,7 +52,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
-            string sql = "SELECT name, surname, email, devices_gifted, devices_won FROM user WHERE user_id = @user_id";
+            string sql = "SELECT name, surname, email, phone_number, devices_gifted, devices_won FROM user WHERE user_id = @user_id";
             var parameters = new { user_id = userId };
             var result = await _userRepo.LoadData(sql, parameters);
 
@@ -64,10 +64,11 @@ namespace mainykdovanok.Controllers.UserAuthentication
             string name = result.Rows[0]["name"].ToString();
             string surname = result.Rows[0]["surname"].ToString();
             string email = result.Rows[0]["email"].ToString();
+            string phone_number = result.Rows[0]["phone_number"].ToString();
             int devicesGifted = Convert.ToInt32(result.Rows[0]["devices_gifted"]);
             int devicesWon = Convert.ToInt32(result.Rows[0]["devices_won"]);
 
-            return Ok(new { name, surname, email, devicesGifted, devicesWon });
+            return Ok(new { name, surname, email, phone_number, devicesGifted, devicesWon });
         }
 
         [HttpPost("updateProfileDetails")]
@@ -81,16 +82,17 @@ namespace mainykdovanok.Controllers.UserAuthentication
             var form = await Request.ReadFormAsync();
             string name = form["name"].ToString();
             string surname = form["surname"].ToString();
+            string phone_number = form["phone_number"].ToString();
 
-            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(surname))
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(surname) || string.IsNullOrWhiteSpace(phone_number))
             {
                 return BadRequest(new { message = "Negalima palikti tuščių laukų" });
             }
 
             int user_id = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
-            string sql = "UPDATE user SET name = @name, surname = @surname WHERE user_id = @user_id";
-            var parameters_update = new { name, surname, user_id };
+            string sql = "UPDATE user SET name = @name, surname = @surname, phone_number = @phone_number WHERE user_id = @user_id";
+            var parameters_update = new { name, surname, phone_number, user_id };
                 await _userRepo.SaveData(sql, parameters_update);
 
             return Ok();

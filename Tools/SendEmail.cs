@@ -47,7 +47,7 @@ namespace mainykdovanok.Tools
             message.Body = $"<html><body>" +
                            $"<p>Sveiki,</p>" +
                            $"<p>Jūsų skelbimo loterijos <b>„{deviceName}“</b> laimėtojas yra <b>{winnerEmail}</b>.</p>" +
-                           $"<p>Laimėtojui išsiųstas laiškas su nuoroda į formą, kurioje paprašoma pateikti telefono numerį, kad galėtumėte susisiekti su jais.</p>" +
+                           $"<p>Laimėtojui išsiųstas laiškas, kuriame yra pateikiama jūsų informacija, kad laimėtojas galėtų su jumis susisiekti</p>" +
                            $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
                            $"<p>Linkėjimai,</p>" +
                            $"<p>mainykdovanok.lt</p>" +
@@ -63,7 +63,7 @@ namespace mainykdovanok.Tools
             }
         }
 
-        public async Task notifyLotteryWinner(string email, string deviceName, int deviceId)
+        public async Task notifyLotteryWinner(string email, string ownerEmail, string ownerPhoneNumber, string deviceName, int deviceId)
         {
             message.To.Clear();
             message.To.Add(new MailAddress(email));
@@ -75,9 +75,10 @@ namespace mainykdovanok.Tools
             message.Body = $"<html><body>" +
                            $"<p>Sveiki,</p>" +
                            $"<p>Jūs tapote laimėtoju skelbimo „<b>{deviceName}</b>“ loterijoje!</p>" +
-                           $"<p>Kad suderinti pristatymą ar atsiėmimą, prašome eiti į šią nuorodą:</p>" +
-                           $"<p><a href='{url}'>{url}</a></p>" +
-                           $"<p>Šiame puslapyje turėsite galimybę pateikti savo telefono numerį, kad skelbėjas galėtų su Jumis susisiekti.</p>" +
+                           $"<p>Žemiau matysite skelbimo savininko duomenis, kad galėtumėte susisiekti su skelbimo savininku dėl laimėto prietaiso atsiėmimo:</p>" +
+                           $"<p>-{ownerEmail}</p>" +
+                           $"<p>-{ownerPhoneNumber}</p>" +
+                           $"<p>Laimėto elektronikos prietaiso atsiėmimą galite patvirtinti čia: {url}</p>" +
                            $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
                            $"<p>Linkėjimai,</p>" +
                            $"<p>mainykdovanok.lt</p>" +
@@ -117,7 +118,7 @@ namespace mainykdovanok.Tools
             }
         }
 
-        public async Task notifyLetterWinner(string email, string deviceName, int deviceId)
+        public async Task notifyLetterWinner(string email, string ownerEmail, string ownerPhoneNumber, string deviceName, int deviceId)
         {
             message.To.Clear();
             message.To.Add(new MailAddress(email));
@@ -130,9 +131,10 @@ namespace mainykdovanok.Tools
                            $"<p>Sveiki,</p>" +
                            $"<p>Jūs tapote „<b>{deviceName}</b>“ skelbimo laimėtoju!</p>" +
                            $"<p>Iš visų motyvacinių laiškų, savininkui labiausiai patiko Jūsų!</p>" +
-                           $"<p>Kad suderinti pristatymą ar atsiėmimą, prašome eiti į šią nuorodą:</p>" +
-                           $"<p>{url}</p>" +
-                           $"<p>Šiame puslapyje turėsite galimybę pateikti savo telefono numerį, kad skelbėjas galėtų su Jumis susisiekti.</p>" +
+                           $"<p>Žemiau matysite skelbimo savininko duomenis, kad galėtumėte susisiekti su skelbimo savininku dėl laimėto prietaiso atsiėmimo:</p>" +
+                           $"<p>-{ownerEmail}</p>" +
+                           $"<p>-{ownerPhoneNumber}</p>" +
+                           $"<p>Laimėto elektronikos prietaiso atsiėmimą galite patvirtinti čia: {url}</p>" +
                            $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
                            $"<p>Linkėjimai,</p>" +
                            $"<p>mainykdovanok.lt</p>" +
@@ -148,37 +150,7 @@ namespace mainykdovanok.Tools
                 _logger.Error("Error sending email to device winner: {0}", ex.Message);
             }
         }
-        public async Task<bool> sendWinnerDetails(string email, string deviceName, string phoneNumber, string additionalMessage)
-        {
-            message.To.Clear();
-            message.To.Add(new MailAddress(email));
-
-            message.Subject = "Skelbimo laimėtojas atsiuntė susisiekimo duomenis";
-
-            string extraMessageBody = additionalMessage.Trim().Length > 0 ? $"<p>Papildoma žinutė iš laimėtojo: <b>{additionalMessage}</b></p>" : "";
-            message.Body = $"<html><body>" +
-                           $"<p>Sveiki,</p>" +
-                           $"<p>Jūsų skelbimo „<b>{deviceName}</b>“ laimėtojas pateikė savo susisiekimo duomenis:</p>" +
-                           $"<p>Telefono numeris: <b>{phoneNumber}</b></p>" +
-                           $"<p>{extraMessageBody}</p>" +
-                           $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
-                           $"<p>Linkėjimai,</p>" +
-                           $"<p>mainykdovanok.lt</p>" +
-                           $"</body></html>";
-            message.IsBodyHtml = true;
-
-            try
-            {
-                smtpClient.Send(message);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error("Error sending winner details email to poster: {0}", ex.Message);
-                return false;
-            }
-        }
-        public async Task notifyOfferWinner(string email, string deviceName, int deviceId, string offerDeviceName)
+        public async Task notifyOfferWinner(string email, string ownerEmail, string ownerPhoneNumber, string deviceName, int deviceId, string offerDeviceName)
         {
             message.To.Clear();
             message.To.Add(new MailAddress(email));
@@ -191,9 +163,10 @@ namespace mainykdovanok.Tools
                            $"<p>Sveiki,</p>" +
                            $"<p>Su jumis sutiko mainyti „<b>{deviceName}</b>“ prietaisą!</p>" +
                            $"<p>Iš visų pasiūlymų, savininkui labiausiai patiko jūsų „<b>{offerDeviceName}</b>“!" +
-                           $"<p>Kad suderinti pristatymą ar atsiėmimą, prašome eiti į šią nuorodą:</p>" +
-                           $"<p>{url}</p>" +
-                           $"<p>Šiame puslapyje turėsite galimybę pateikti savo telefono numerį, kad skelbėjas galėtų su Jumis susisiekti.</p>" +
+                           $"<p>Žemiau matysite skelbimo savininko duomenis, kad galėtumėte susisiekti su skelbimo savininku dėl laimėto prietaiso atsiėmimo:</p>" +
+                           $"<p>-{ownerEmail}</p>" +
+                           $"<p>-{ownerPhoneNumber}</p>" +
+                           $"<p>Laimėto elektronikos prietaiso atsiėmimą galite patvirtinti čia: {url}</p>" +
                            $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
                            $"<p>Linkėjimai,</p>" +
                            $"<p>mainykdovanok.lt</p>" +
@@ -218,7 +191,7 @@ namespace mainykdovanok.Tools
             message.Body = $"<html><body><p>Sveiki,</p>" +
                 $"<p>Norėdami pasikeisti slaptažodį, spauskite <a href=\"{resetURL}\">čia</a>.</p>" +
                 $"<p>Linkėjimai,</p>" +
-                $"<p>mainyk.lt</p>" +
+                $"<p>mainykdovanok.lt</p>" +
                 $"</body></html>";
 
             try
@@ -233,7 +206,7 @@ namespace mainykdovanok.Tools
             }
         }
 
-        public async Task notifyQuestionnaireWinner(string email, string deviceName, int deviceId)
+        public async Task notifyQuestionnaireWinner(string email, string ownerEmail, string ownerPhoneNumber, string deviceName, int deviceId)
         {
             message.To.Clear();
             message.To.Add(new MailAddress(email));
@@ -246,9 +219,10 @@ namespace mainykdovanok.Tools
                            $"<p>Sveiki,</p>" +
                            $"<p>Jūs tapote laimėtoju skelbimo „<b>{deviceName}</b>“ klausimyne!</p>" +
                            $"<p>Iš visų atsakymų, savininkui labiausiai patiko Jūsų!</p>" +
-                           $"<p>Kad suderinti pristatymą ar atsiėmimą, prašome eiti į šią nuorodą:</p>" +
-                           $"<p><a href='{url}'>{url}</a></p>" +
-                           $"<p>Šiame puslapyje turėsite galimybę pateikti savo telefono numerį, kad skelbėjas galėtų su Jumis susisiekti.</p>" +
+                           $"<p>Žemiau matysite skelbimo savininko duomenis, kad galėtumėte susisiekti su skelbimo savininku dėl laimėto prietaiso atsiėmimo:</p>" +
+                           $"<p>-{ownerEmail}</p>" +
+                           $"<p>-{ownerPhoneNumber}</p>" +
+                           $"<p>Laimėto elektronikos prietaiso atsiėmimą galite patvirtinti čia: {url}</p>" +
                            $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
                            $"<p>Linkėjimai,</p>" +
                            $"<p>mainykdovanok.lt</p>" +

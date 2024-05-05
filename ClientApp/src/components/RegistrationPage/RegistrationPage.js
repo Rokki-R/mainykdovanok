@@ -10,6 +10,7 @@ const RegistrationPage = () => {
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
   const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -29,7 +30,7 @@ const RegistrationPage = () => {
 
 function checkFields() {
     if (password === confirmPassword) {
-        if (name === '' || surname === '' || email === '') {
+        if (name === '' || surname === '' || email === '' || phoneNumber === '') {
             setMessage('Reikia užpildyti visus laukus!');
             return false;
         }
@@ -39,6 +40,10 @@ function checkFields() {
             {
                 setMatchMessage("Neteisingai įvestas el. paštas");
                 return false;
+            }
+            else if (!/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(phoneNumber)) {
+              setMatchMessage("Neteisingai įvestas telefono numeris");
+              return false;
             }
         setMatchMessage("");
         setMessage("");
@@ -61,10 +66,12 @@ const handleSubmit = (event) => {
               name: name,
               surname: surname,
               password: password,
+              phoneNumber: phoneNumber,
               email: email,
               confirmPassword: confirmPassword
           }),
       };
+      console.log(phoneNumber)
       fetch("api/login/register", requestOptions)
           .then(response => {
               if (response.status === 200) {
@@ -124,6 +131,17 @@ const handleSubmit = (event) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Įveskite savo elektroninį paštą"
+              />
+            </FormGroup>
+            <FormGroup>
+              <Input
+                type="text"
+                className='input'
+                name="phoneNumber"
+                id="phoneNumber"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="Įveskite savo telefono numerį"
               />
             </FormGroup>
             <FormGroup>

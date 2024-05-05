@@ -13,6 +13,9 @@ namespace mainykdovanok.ViewModels.User
         public string Surname { get; set; }
         [JsonProperty("email")]
         public string Email { get; set; }
+        [JsonProperty("phone_number")]
+        public string PhoneNumber { get; set; }
+
         [JsonProperty("devices_won")]
         public int devicesWon { get; set; }
         [JsonProperty("devices_gifted")]

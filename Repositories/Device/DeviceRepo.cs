@@ -630,7 +630,7 @@ namespace mainykdovanok.Repositories.Device
 
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT e.fk_offered_device, e.offer_message, i.name, i.description, i.location, i.winner_draw_datetime, CONCAT(u.name, ' ', u.surname) AS user " +
+                "SELECT e.fk_offered_device, i.name, i.description, i.location, u.name as user_name, u.surname, u.devices_won, u.devices_gifted " +
                 "FROM device_exchange_offer AS e " +
                 "INNER JOIN device_ad AS i ON i.id = e.fk_offered_device " +
                 "JOIN user AS u ON i.fk_user = u.user_id " +
@@ -647,13 +647,14 @@ namespace mainykdovanok.Repositories.Device
                     ExchangeViewModel result = new ExchangeViewModel
                     {
                         Id = reader.GetInt32("fk_offered_device"),
-                        Message = reader.GetString("offer_message"),
                         Name = reader.GetString("name"),
                         Description = reader.GetString("description"),
                         Location = reader.GetString("location"),
-                        WinnerDrawDateTime = reader.GetDateTime("winner_draw_datetime"),
                         Images = await _imageRepo.GetByDevice(Convert.ToInt32(reader["fk_offered_device"])),
-                        User = reader.GetString("user"),
+                        UserName = reader.GetString("user_name"),
+                        Surname = reader.GetString("surname"),
+                        DevicesWon = reader.GetInt32("devices_won"),
+                        DevicesGifted = reader.GetInt32("devices_gifted")
                     };
                     results.Add(result);
                 }
@@ -669,12 +670,10 @@ namespace mainykdovanok.Repositories.Device
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                    "INSERT INTO device_exchange_offer (fk_main_device, fk_offered_device, offer_message) VALUES (@fk_main_device, @fk_offered_device, @offer_message)", connection);
+                    "INSERT INTO device_exchange_offer (fk_main_device, fk_offered_device) VALUES (@fk_main_device, @fk_offered_device)", connection);
 
-            // Add parameters
             command.Parameters.AddWithValue("@fk_main_device", deviceId);
             command.Parameters.AddWithValue("@fk_offered_device", offer.SelectedDevice);
-            command.Parameters.AddWithValue("@offer_message", offer.Message);
 
             await command.ExecuteNonQueryAsync();
             return true;
@@ -736,7 +735,7 @@ namespace mainykdovanok.Repositories.Device
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT l.id AS id, l.letter, CONCAT(u.name, ' ', u.surname) AS user " +
+                "SELECT l.id AS id, l.letter, u.name, u.surname, u.devices_won, u.devices_gifted " +
                 "FROM motivational_letter AS l " +
                 "INNER JOIN user AS u ON l.fk_user = u.user_id " +
                 "WHERE l.fk_device=@deviceId", connection);
@@ -750,16 +749,20 @@ namespace mainykdovanok.Repositories.Device
             {
                 int id = reader.GetInt32("id");
                 string letter = reader.GetString("letter");
-                string user = reader.GetString("user");
-                MotivationalLetterViewModel result = new MotivationalLetterViewModel { Id = id, Letter = letter, User = user };
+                string name = reader.GetString("name");
+                string surname = reader.GetString("surname");
+                int devicesWon = reader.GetInt32("devices_won");
+                int devicesGifted = reader.GetInt32("devices_gifted");
+                MotivationalLetterViewModel result = new MotivationalLetterViewModel { Id = id, Letter = letter, Name = name, Surname = surname, DevicesWon = devicesWon, DevicesGifted = devicesGifted  };
                 results.Add(result);
             }
 
-            Dictionary<string, List<MotivationalLetterViewModel>> groupedResults = results.GroupBy(r => r.User)
+            Dictionary<string, List<MotivationalLetterViewModel>> groupedResults = results.GroupBy(r => $"{r.Name} {r.Surname}")
                 .ToDictionary(g => g.Key, g => g.ToList());
 
             return groupedResults;
         }
+
 
         public async Task<bool> InsertQuestions(DeviceModel device)
         {
@@ -839,7 +842,7 @@ namespace mainykdovanok.Repositories.Device
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT a.id AS id, a.answer, q.question, CONCAT(u.name, ' ', u.surname) AS user " +
+                "SELECT a.id AS id, a.answer, q.question, u.name, u.surname, u.devices_won, u.devices_gifted " +
                 "FROM answer AS a " +
                 "INNER JOIN question AS q ON a.fk_question = q.id " +
                 "INNER JOIN user AS u ON a.fk_user = u.user_id " +
@@ -854,12 +857,15 @@ namespace mainykdovanok.Repositories.Device
                 int id = reader.GetInt32("id");
                 string text = reader.GetString("question");
                 string answer = reader.GetString("answer");
-                string user = reader.GetString("user");
-                QuestionnaireViewModel result = new QuestionnaireViewModel { Id = id, Question = text, Answer = answer, User = user };
+                string name = reader.GetString("name");
+                string surname = reader.GetString("surname");
+                int devicesWon = reader.GetInt32("devices_won");
+                int devicesGifted = reader.GetInt32("devices_gifted");
+                QuestionnaireViewModel result = new QuestionnaireViewModel { Id = id, Question = text, Answer = answer, Name = name, Surname = surname, DevicesWon = devicesWon, DevicesGifted = devicesGifted};
                 results.Add(result);
             }
 
-            Dictionary<string, List<QuestionnaireViewModel>> groupedResults = results.GroupBy(r => r.User)
+            Dictionary<string, List<QuestionnaireViewModel>> groupedResults = results.GroupBy(r => $"{r.Name} {r.Surname}")
                 .ToDictionary(g => g.Key, g => g.ToList());
 
             return groupedResults;
@@ -892,13 +898,13 @@ namespace mainykdovanok.Repositories.Device
         {
             using MySqlConnection connection = GetConnection();
             using MySqlCommand command = new MySqlCommand(
-                "UPDATE device_ad SET name=@Name, description=@Description, fk_category=@Category, fk_type=@Type WHERE id=@Id", connection);
+                "UPDATE device_ad SET name=@Name, description=@Description, fk_category=@Category, location=@Location WHERE id=@Id", connection);
 
             command.Parameters.AddWithValue("@Id", device.Id);
             command.Parameters.AddWithValue("@Name", device.Name);
             command.Parameters.AddWithValue("@Description", device.Description);
             command.Parameters.AddWithValue("@Category", device.Category);
-            command.Parameters.AddWithValue("@Type", device.Type);
+            command.Parameters.AddWithValue("@Location", device.Location);
 
             await connection.OpenAsync();
             await command.ExecuteNonQueryAsync();

@@ -12,5 +12,13 @@ namespace mainykdovanok.ViewModels.Device
 
         [JsonProperty("user")]
         public string User { get; set; }
+        [JsonProperty("name")]
+        public string Name { get; set; }
+        [JsonProperty("surname")]
+        public string Surname { get; set; }
+        [JsonProperty("devices_won")]
+        public int DevicesWon { get; set; }
+        [JsonProperty("devices_gifted")]
+        public int DevicesGifted { get; set; }
     }
 }

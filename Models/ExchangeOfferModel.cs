@@ -4,6 +4,5 @@
     {
         public int SelectedDevice { get; set; }
 
-        public string Message { get; set; }
     }
 }

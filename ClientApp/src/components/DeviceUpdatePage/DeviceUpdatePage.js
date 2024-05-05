@@ -10,6 +10,7 @@ function DeviceUpdatePage() {
   const { deviceId } = useParams();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [location, setLocation] = useState('');
   const [viewerId, setViewerId] = useState(null);
   const [category, setCategory] = useState('Pasirinkite kategoriją');
   const [categories, setCategories] = useState([]);
@@ -28,6 +29,7 @@ function DeviceUpdatePage() {
       setName(response.data.name);
       setDescription(response.data.description);
       setCategory(response.data.fk_Category);
+      setLocation(response.data.location);
     }
     fetchDevice();
   }, [deviceId]);
@@ -85,13 +87,14 @@ function DeviceUpdatePage() {
       data.append('name', name || device.name);
       data.append('description', description || device.description);
       data.append('fk_Category', category || device.fk_Category);
+      data.append('location', location || device.location)
       if (device.images.length === 0 && images.length === 0) {
         toast.error('Negalite palikti skelbimo be nuotraukos');
         await new Promise(resolve => setTimeout(resolve, 1000));
         window.location.reload();
         return;
       }
-      if (name === '' || description === '' || category === 'Pasirinkite kategoriją') {
+      if (name === '' || description === '' || location === '' || category === 'Pasirinkite kategoriją' || category === undefined) {
         toast.error('Užpildykite visus laukus!');
         return;
       }
@@ -115,6 +118,7 @@ function DeviceUpdatePage() {
       toast.success('Skelbimas sėkmingai atnaujintas!');
       setName('');
       setDescription('');
+      setLocation('');
       setCategory('');
       setImages([]);
       setImagesToDelete([]);
@@ -253,6 +257,17 @@ function DeviceUpdatePage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder='Aprašymas' />
+              </Form.Group>
+              <Form.Group className='text-center mt-3'>
+                <Form.Control
+                  className='input'
+                  type='text'
+                  name='location'
+                  id='location'
+                  value={location}
+                  onChange={(event) => setLocation(event.target.value)}
+                  placeholder='Gyvenamoji vietovė'
+                />
               </Form.Group>
               <Form.Group className='text-center mb-3'>
                 <Form.Select value={category} onChange={(e) => setCategory(e.target.value)}>

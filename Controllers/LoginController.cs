@@ -44,7 +44,7 @@ namespace mainykdovanok.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> login(LoginViewModel loginData)
         {
-            string sql = "SELECT user_id, name, surname, password_hash, password_salt, verification_token, user_role, fk_user_status FROM user WHERE email = @email";
+            string sql = "SELECT user_id, name, surname, password_hash, password_salt, user_role, fk_user_status FROM user WHERE email = @email";
             var parameters = new { email = loginData.Email };
             var result = await _userRepo.LoadData(sql, parameters);
 
@@ -137,7 +137,7 @@ namespace mainykdovanok.Controllers
         public async Task<IActionResult> Register(RegistrationViewModel registration)
         {
 
-            if (string.IsNullOrWhiteSpace(registration.Name) || string.IsNullOrWhiteSpace(registration.Surname) || string.IsNullOrWhiteSpace(registration.Email) || string.IsNullOrWhiteSpace(registration.Password) || string.IsNullOrWhiteSpace(registration.ConfirmPassword))
+            if (string.IsNullOrWhiteSpace(registration.Name) || string.IsNullOrWhiteSpace(registration.Surname) || string.IsNullOrWhiteSpace(registration.PhoneNumber) || string.IsNullOrWhiteSpace(registration.Email) || string.IsNullOrWhiteSpace(registration.Password) || string.IsNullOrWhiteSpace(registration.ConfirmPassword))
             {
                 return BadRequest(new { message = "Visi laukai turi būti užpildyti!" });
             }
@@ -167,16 +167,8 @@ namespace mainykdovanok.Controllers
             string password_hash = PasswordHash.hashPassword(registration.Password, out salt);
             string password_salt = Convert.ToBase64String(salt);
 
-            byte[] tokenData = new byte[32];
-            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
-            {
-                rng.GetBytes(tokenData);
-            }
-
-            string token = BitConverter.ToString(tokenData).Replace("-", "");
-
-            bool success = await _userRepo.SaveData("INSERT INTO user (name, surname, email, password_hash, password_salt, verification_token) VALUES (@name, @surname, @email, @password_hash, @password_salt, @token)",
-                    new { registration.Name, registration.Surname, registration.Email, password_hash, password_salt, token });
+            bool success = await _userRepo.SaveData("INSERT INTO user (name, surname, email, password_hash, password_salt, phone_number) VALUES (@name, @surname, @email, @password_hash, @password_salt, @PhoneNumber)",
+                    new { registration.Name, registration.Surname, registration.Email, password_hash, password_salt, registration.PhoneNumber});
 
             if (success)
             {

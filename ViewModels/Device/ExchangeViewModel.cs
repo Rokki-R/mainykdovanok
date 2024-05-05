@@ -7,9 +7,6 @@ namespace mainykdovanok.ViewModels.Device
         [JsonProperty("id")]
         public int Id { get; set; }
 
-        [JsonProperty("message")]
-        public string Message { get; set; }
-
         [JsonProperty("name")]
         public string Name { get; set; }
 
@@ -22,13 +19,20 @@ namespace mainykdovanok.ViewModels.Device
         [JsonProperty("category")]
         public string Category { get; set; }
 
-        [JsonProperty("winner_draw_datetime")]
-        public DateTime? WinnerDrawDateTime { get; set; }
-
         [JsonProperty("images")]
         public List<DeviceImageViewModel> Images { get; set; }
 
         [JsonProperty("user")]
         public string User { get; set; }
+
+        [JsonProperty("username")]
+        public string UserName { get; set; }
+
+        [JsonProperty("surname")]
+        public string Surname { get; set; }
+        [JsonProperty("devices_won")]
+        public int DevicesWon { get; set; }
+        [JsonProperty("devices_gifted")]
+        public int DevicesGifted { get; set; }
     }
 }

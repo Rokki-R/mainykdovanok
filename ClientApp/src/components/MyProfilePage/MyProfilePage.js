@@ -15,6 +15,7 @@ const MyProfilePage = () => {
             try {
                 await axios.get("api/user/getMyProfileDetails").then(response => {
                     const data = response.data;
+                    console.log(data)
                     setUser({ ...data });
                 });    
             }
@@ -31,9 +32,10 @@ const MyProfilePage = () => {
     function checkFields(formData) {
         const name = formData.get('name');
         const surname = formData.get('surname');
+        const phoneNumber = formData.get('phone_number')
 
-        if ((name === '' || surname === '') ) {
-            toast.error('Vardas ir pavardė negali būti tušti!', {
+        if ((name === '' || surname === '' || phoneNumber === '') ) {
+            toast.error('Naudotojo duomenys negali būti tušti!', {
                 style: {
                     backgroundColor: 'red',
                     color: 'white',
@@ -41,6 +43,18 @@ const MyProfilePage = () => {
             });
             return false;
         }
+
+        else if (!/^(?:\+[0-9]{1,3} ?)?[0-9]{8,14}$/.test(phoneNumber))
+            {
+                toast.error('Įvestas neteisingas telefono numeris', {
+                    style: {
+                        backgroundColor: 'red',
+                        color: 'white',
+                    },
+                });
+                return false;
+            }
+
         return true;
     }
 
@@ -54,6 +68,7 @@ const MyProfilePage = () => {
         const formData = new FormData();
         formData.append('name', user.name);
         formData.append('surname', user.surname);
+        formData.append('phone_number', user.phone_number)
 
         if (checkFields(formData)) {
             axios.post("api/user/updateProfileDetails", formData)
@@ -101,6 +116,10 @@ const MyProfilePage = () => {
                                     <Form.Group>
     <Form.Label><strong>El. paštas:</strong></Form.Label>
     <Form.Control type="email" id="email" value={user.email} readOnly />
+</Form.Group>
+<Form.Group>
+    <Form.Label><strong>Telefono numeris:</strong></Form.Label>
+    <Form.Control type="text" id="phone_number" value={user.phone_number} onChange={(e) => setUser({ ...user, phone_number: e.target.value })} />
 </Form.Group>
 
                                     <Form.Group className='givenAwayLabel'>

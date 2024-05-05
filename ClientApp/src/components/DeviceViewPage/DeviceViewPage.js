@@ -19,7 +19,6 @@ export const DeviceViewPage = () => {
   const { deviceId } = useParams();
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
-  const [message, setMessage] = useState("");
   const [letter, setLetter] = useState("");
   const [device, setDevice] = useState(null);
   const [userDevices, setUserDevices] = useState(null);
@@ -134,10 +133,6 @@ export const DeviceViewPage = () => {
     setSelectedDevice(event.target.value);
   };
 
-  const handleMessageChange = (event) => {
-    setMessage(event.target.value);
-  };
-
   const handleLetterChange = (event) => {
     setLetter(event.target.value);
   };
@@ -221,7 +216,6 @@ export const DeviceViewPage = () => {
 
     const data = {
       selectedDevice,
-      message,
       ...(device.type === 'Klausimynas' && { answers })
     };
 
@@ -312,7 +306,6 @@ export const DeviceViewPage = () => {
     } else if (device.type === "Mainai į kita prietaisą") {
       const formData = new FormData();
       formData.append("selectedDevice", data.selectedDevice);
-      formData.append("message", data.message);
       axios
         .post(`api/device/submitOffer/${deviceId}`, formData)
         .then((response) => {
@@ -484,16 +477,6 @@ export const DeviceViewPage = () => {
                             ))}
                       </Form.Control>
                     </Form.Group>
-                    <Form.Group>
-                      <Form.Label>Žinutė:</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        rows={3}
-                        id="message"
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                      />
-                    </Form.Group>
                     </> ) : null}
                     <Row>
                       <Col>
@@ -523,6 +506,7 @@ export const DeviceViewPage = () => {
                       ) : null}
                         {device.userId === viewerId && device.status === "Aktyvus" ? (
                           <>
+                          <Link>
                             <Button
                               style={{ marginRight: "10px" }}
                               variant="primary"
@@ -530,17 +514,18 @@ export const DeviceViewPage = () => {
                             >
                               Ištrinti
                             </Button>
+                            </Link>
                             <Link
-                              style={{ marginRight: "10px", marginTop: "9px" }}
+                              style={{ marginRight: "10px"}}
                               to={`/skelbimas/redaguoti/${device.id}`}
                             >
                               <Button variant="primary">Redaguoti</Button>
                             </Link>
                             <Link
-                              style={{ marginRight: "10px", marginTop: "9px" }}
+                              style={{ marginRight: "10px"}}
                               to={`/skelbimas/info/${device.id}`}
                             >
-                              <Button variant="primary">Siūlymai</Button>
+                              <Button variant="primary">Skelbimo dalyviai</Button>
                             </Link>
                           </>
                         ) : null}
@@ -566,7 +551,7 @@ export const DeviceViewPage = () => {
                           variant="primary"
                           type="submit"
                         >
-                          Atsakyti
+                          Pateikti
                         </Button>
                       </Col>
                       </> ) : null}
@@ -585,6 +570,7 @@ export const DeviceViewPage = () => {
                       ) : null}
                         {device.userId === viewerId && device.status === "Aktyvus" ? (
                           <>
+                          <Link>
                             <Button
                               style={{ marginRight: "10px" }}
                               variant="primary"
@@ -592,17 +578,18 @@ export const DeviceViewPage = () => {
                             >
                               Ištrinti
                             </Button>
+                            </Link>
                             <Link
-                              style={{ marginRight: "10px", marginTop: "9px" }}
+                              style={{ marginRight: "10px"}}
                               to={`/skelbimas/redaguoti/${device.id}`}
                             >
                               <Button variant="primary">Redaguoti</Button>
                             </Link>
                             <Link
-                              style={{ marginRight: "10px", marginTop: "9px" }}
+                              style={{ marginRight: "10px"}}
                               to={`/skelbimas/info/${device.id}`}
                             >
-                              <Button variant="primary">Atsakymai</Button>
+                              <Button variant="primary">Skelbimo dalyviai</Button>
                             </Link>
                           </>
                         ) : null}
@@ -660,6 +647,7 @@ export const DeviceViewPage = () => {
                       ) : null}
                         {device.userId === viewerId ? (
                           <>
+                          <Link>
                             <Button
                               style={{ marginRight: "10px" }}
                               variant="primary"
@@ -667,17 +655,18 @@ export const DeviceViewPage = () => {
                             >
                               Ištrinti
                             </Button>
+                            </Link>
                             <Link
-                              style={{ marginRight: "10px", marginTop: "9px" }}
+                              style={{ marginRight: "10px"}}
                               to={`/skelbimas/redaguoti/${device.id}`}
                             >
                               <Button variant="primary">Redaguoti</Button>
                             </Link>
                             <Link
-                              style={{ marginRight: "10px", marginTop: "9px" }}
+                              style={{ marginRight: "10px"}}
                               to={`/skelbimas/info/${device.id}`}
                             >
-                              <Button variant="primary">Dalyviai</Button>
+                              <Button variant="primary">Skelbimo dalyviai</Button>
                             </Link>
                           </>
                         ) : null}
@@ -726,7 +715,7 @@ export const DeviceViewPage = () => {
                                                             <Button variant="primary">Redaguoti</Button>
                                                         </Link>
                                                         <Link style={{ marginRight: '10px'}} to={`/skelbimas/info/${device.id}`}>
-                                                            <Button variant="primary">Atsakymai</Button>
+                                                            <Button variant="primary">Skelbimo dalyviai</Button>
                                                         </Link>
                                                     </>
                                                 ) : null}

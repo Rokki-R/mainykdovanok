@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Carousel, Col, Container, Row, Form, Button, Card, Spinner } from 'react-bootstrap';
+import { Carousel, Col, Container, Row, Button, Card, Spinner } from 'react-bootstrap';
 import toast, { Toaster } from 'react-hot-toast';
 import './DeviceWinnerPage.css'
 import axios from 'axios';
@@ -9,8 +9,6 @@ export const DeviceWinnerPage = () => {
     const { deviceId } = useParams();
     const [viewerId, setViewerId] = useState(null);
     const [canAccess, setCanAccess] = useState(null);
-    const [phone, setPhone] = useState('');
-    const [message, setMessage] = useState('');
     const [device, setDevice] = useState(null);
     const [posterEmail, setPosterEmail] = useState(null);
     const [sending, setSending] = useState(false);
@@ -66,50 +64,6 @@ export const DeviceWinnerPage = () => {
             fetchPosterEmail();
         }
     }, [device]);
-
-
-    const handleMessageChange = (event) => {
-        setMessage(event.target.value);
-    };
-
-    const handlePhoneChange = (event) => {
-        setPhone(event.target.value);
-    };
-
-
-    const handleSubmit = (event) => {
-        event.preventDefault();
-
-        if (phone.length < 9) {
-            toast.error('Įveskite telefono numerį!');
-            return;
-        }
-
-        const data = {
-            phone: phone,
-            message: message,
-            deviceId: deviceId,
-            deviceName: device.name,
-            posterEmail: posterEmail,
-            winnerId: viewerId
-        }
-
-        setSending(true);
-        axios.post('api/devicewinner/submitWinnerDetails', data)
-            .then(response => {
-                if (response.data) {
-                    toast.success('Sėkmingai išsiųstas pranešimas skelbėjui!');
-                }
-                else {
-                    toast.error('Įvyko klaida, susisiekite su administratoriumi!');
-                    setSending(false);
-                }
-            })
-            .catch(error => {
-                toast.error('Įvyko klaida, susisiekite su administratoriumi!');
-                setSending(false);
-            });
-    };
     
     const handleConfirm = async () => {
         try {
@@ -156,24 +110,8 @@ export const DeviceWinnerPage = () => {
                                 <Card.Title>Laimėjote: {device.name}</Card.Title>
                                 <Card.Text>{device.description}</Card.Text>
                                 <hr></hr>
-                                {device.status === 'Išrinktas laimėtojas' && (
-        <>
-            <Card.Text>Norint suderinti atsiėmimą ar pristatymą, pateikite savo kontaktinius duomenis, su kuriais skelbėjas galės su Jumis susisiekti:</Card.Text>
-            <Form onSubmit={handleSubmit}>
-                <Form.Group>
-                    <Form.Label>Telefono numeris:</Form.Label>
-                    <Form.Control as="textarea" rows={1} onChange={handlePhoneChange} type="phone" placeholder="Telefono numeris" />
-                    <br />
-                    <Form.Label>Žinutė:</Form.Label>
-                    <Form.Control as="textarea" rows={3} onChange={handleMessageChange} placeholder="Papildoma informacija (nebūtina)" />
-                </Form.Group>
-                <Button variant="primary" disabled={sending} type="submit">Siųsti</Button>
-            </Form>
-            <br />
-        </>
-    )}
 
-{device.status === 'Laukiama patvirtinimo' && (
+{device.status === 'Išrinktas laimėtojas' && (
     <Button variant="primary" onClick={handleConfirm}>Patvirtinti</Button>
 )}
 

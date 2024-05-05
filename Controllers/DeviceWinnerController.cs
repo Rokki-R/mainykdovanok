@@ -22,31 +22,6 @@ namespace mainykdovanok.Controllers
             _userRepo = new UserRepo();
         }
 
-        [HttpPost("submitWinnerDetails")]
-        [Authorize]
-        public async Task<IActionResult> SubmitWinnerDetails(DeviceWinnerViewModel deviceWinnerDetails)
-        {
-
-            //Patikrinti ar prisijungęs naudotojas nėra admin
-            if (!User.IsInRole("0"))
-            {
-                return StatusCode(403);
-            }
-
-            try
-            {
-                // Send an email to the device poster with winner details.
-                SendEmail emailer = new SendEmail();
-                bool result = await emailer.sendWinnerDetails(deviceWinnerDetails.PosterEmail, deviceWinnerDetails.DeviceName, deviceWinnerDetails.Phone, deviceWinnerDetails.Message);
-                await _deviceRepo.UpdateDeviceStatus(deviceWinnerDetails.DeviceId, 5); //Update status to 'Laukiama patvirtinimo'
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
         [HttpPost("confirm")]
         [Authorize]
         public async Task<IActionResult> Confirm(DeviceConfirmViewModel device)

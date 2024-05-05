@@ -6,14 +6,8 @@ using mainykdovanok.Repositories.Type;
 using mainykdovanok.Repositories.Device;
 using mainykdovanok.Repositories.Image;
 using Microsoft.AspNetCore.Authorization;
-using mainykdovanok.ViewModels.Device;
 using mainykdovanok.Tools;
 using mainykdovanok.Repositories.User;
-using Newtonsoft.Json.Linq;
-using mainykdovanok.Services;
-using static System.Net.Mime.MediaTypeNames;
-using mainykdovanok.Repositories.Comment;
-using System.Reflection;
 using mainykdovanok.Models.mainykdovanok.Models.Device;
 
 namespace mainykdovanok.Controllers
@@ -27,9 +21,6 @@ namespace mainykdovanok.Controllers
         private readonly DeviceRepo _deviceRepo;
         private readonly ImageRepo _imageRepo;
         private readonly UserRepo _userRepo;
-        private readonly MotivationalLetterService _motivationalLetterService;
-        private readonly ExchangeService _exchangeService;
-        private readonly QuestionnaireService _questionnaireService;
 
         public DeviceController()
         {
@@ -38,9 +29,6 @@ namespace mainykdovanok.Controllers
             _deviceRepo = new DeviceRepo();
             _imageRepo = new ImageRepo();
             _userRepo = new UserRepo();
-            _motivationalLetterService = new MotivationalLetterService();
-            _exchangeService = new ExchangeService();
-            _questionnaireService = new QuestionnaireService();
         }
 
         [HttpGet("getDevices")]
@@ -475,7 +463,6 @@ namespace mainykdovanok.Controllers
             ExchangeOfferModel offer = new ExchangeOfferModel()
             {
                 SelectedDevice = Convert.ToInt32(form["selectedDevice"]),
-                Message = form["message"].ToString(),
             };
 
             if (!User.Identity.IsAuthenticated)
@@ -636,10 +623,11 @@ namespace mainykdovanok.Controllers
 
                 string deviceName = await _deviceRepo.GetDeviceName(winner.DeviceId);
                 UserModel user = await _userRepo.GetUser(winner.User);
+                var owner = await _userRepo.GetUserById(userId);
 
                 await _deviceRepo.SetExchangeWinners(winner.DeviceId, user.Id, userId, winner.UserDeviceId);
 
-                await emailer.notifyOfferWinner(user.Email, deviceName, winner.DeviceId, winner.DeviceName);
+                await emailer.notifyOfferWinner(user.Email, owner.Email, owner.PhoneNumber, deviceName, winner.DeviceId, winner.DeviceName);
 
                 return Ok();
             }
@@ -704,13 +692,34 @@ namespace mainykdovanok.Controllers
 
             try
             {
+                SendEmail emailer = new SendEmail();
+
+                var owner = await _userRepo.GetUserById(userId);
+
                 if (winner.DeviceType == "Klausimynas")
                 {
-                    _motivationalLetterService.NotifyWinner(winner, userId);
+                    string deviceName = await _deviceRepo.GetDeviceName(winner.DeviceId);
+                    UserModel user = await _userRepo.GetUser(winner.User);
+
+                    await _deviceRepo.SetDeviceWinner(winner.DeviceId, user.Id);
+                    
+                    await _deviceRepo.UpdateDeviceStatus(winner.DeviceId, 2);
+
+                    await emailer.notifyQuestionnaireWinner(user.Email, owner.Email, owner.PhoneNumber, deviceName, winner.DeviceId);
+
                 }
                 else if (winner.DeviceType == "Motyvacinis laiškas")
                 {
-                    _questionnaireService.NotifyWinner(winner, userId);
+
+                    string deviceName = await _deviceRepo.GetDeviceName(winner.DeviceId);
+                    UserModel user = await _userRepo.GetUser(winner.User);
+
+                    await _deviceRepo.SetDeviceWinner(winner.DeviceId, user.Id);
+
+                    await _deviceRepo.UpdateDeviceStatus(winner.DeviceId, 2);
+
+                    await emailer.notifyLetterWinner(user.Email, owner.Email, owner.PhoneNumber, deviceName, winner.DeviceId);
+
                 }
                 else
                 {
@@ -855,7 +864,7 @@ namespace mainykdovanok.Controllers
                 if (string.IsNullOrEmpty(form["name"]) ||
                     string.IsNullOrEmpty(form["description"]) ||
                     string.IsNullOrEmpty(form["location"]) ||
-                    string.IsNullOrEmpty(form["category"]))
+                    string.IsNullOrEmpty(form["fk_Category"]))
                 {
                     return BadRequest("Privaloma užpildyti visus skelbimo atnaujinimo formos laukus!");
                 }
@@ -866,6 +875,7 @@ namespace mainykdovanok.Controllers
                     Name = form["name"],
                     Description = form["description"],
                     Category = Convert.ToInt32(form["fk_Category"]),
+                    Location = form["location"],
                     Images = Request.Form.Files.GetFiles("images").ToList(),
                 };
               

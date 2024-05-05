@@ -48,10 +48,12 @@ namespace mainykdovanok.Services
 
                     await _deviceRepo.SetDeviceWinner(lottery.Id, winnerUserId);
 
+                    var owner = await _userRepo.GetUserById(lottery.UserId);
+
                     // Send email notifications to poster and winner
 
                     await emailer.notifyLotteryPosterWin(posterUserEmail, lottery.Name, winnerUserEmail);
-                    await emailer.notifyLotteryWinner(winnerUserEmail, lottery.Name, lottery.Id);
+                    await emailer.notifyLotteryWinner(winnerUserEmail, owner.Email, owner.PhoneNumber, lottery.Name, lottery.Id);
 
                     // Update device status to 'Ištrinktas laimėtojas'
                     await _deviceRepo.UpdateDeviceStatus(lottery.Id, 2);
