@@ -249,7 +249,7 @@ namespace mainykdovanok.Repositories.User
             await connection.OpenAsync();
 
             using MySqlCommand command = new MySqlCommand(
-                "SELECT user_id, name, surname, email, devices_gifted, devices_won FROM user " +
+                "SELECT user_id, name, surname, email, phone_number, devices_gifted, devices_won FROM user " +
                 "WHERE user_id = @id", connection);
             command.Parameters.AddWithValue("@id", userId);
 
@@ -263,6 +263,7 @@ namespace mainykdovanok.Repositories.User
                     Name = reader["name"].ToString(),
                     Surname = reader["surname"].ToString(),
                     Email = reader["email"].ToString(),
+                    PhoneNumber = reader["phone_number"].ToString(),
                     devicesGifted = Convert.ToInt32(reader["devices_gifted"]),
                     devicesWon = Convert.ToInt32(reader["devices_won"]),
 

@@ -16,9 +16,6 @@ namespace mainykdovanok.ViewModels.Device
         [JsonProperty("phone")]
         public string Phone { get; set; }
 
-        [JsonProperty("message")]
-        public string Message { get; set; }
-
         [JsonProperty("posterEmail")]
         public string PosterEmail { get; set; }
     }

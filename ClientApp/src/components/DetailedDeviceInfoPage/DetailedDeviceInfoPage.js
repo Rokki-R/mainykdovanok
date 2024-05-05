@@ -66,6 +66,7 @@ export const DetailedDeviceInfoPage = () => {
             try {
                 if (device && device.type === 'Motyvacinis laiškas') {
                     const response = await axios.get(`api/device/getLetters/${deviceId}`);
+                    console.log(response.data)
                     setDeviceLetters(response.data);
                 } else if (device && device.type === 'Mainai į kita prietaisą') {
                     const response = await axios.get(`api/device/getOffers/${deviceId}`);
@@ -125,6 +126,7 @@ export const DetailedDeviceInfoPage = () => {
 };
 
     const handleOfferWinner = async (user, deviceName, userDeviceId) => {
+        console.log(user)
         const requestBody = {
             deviceId,
             user,
@@ -165,7 +167,6 @@ export const DetailedDeviceInfoPage = () => {
         try {
             await axios.post(`/api/device/rejectExchangeOffer`, requestBody);
             toast.success('Sėkmingai atmetėte mainų pasiūlymą');
-            // Refetch the offered devices
             const response = await axios.get(`api/device/getOffers/${deviceId}`);
             setDeviceOffers(response.data);
         } catch (error) {
@@ -188,7 +189,7 @@ export const DetailedDeviceInfoPage = () => {
         {deviceOffers && deviceOffers.length > 0 ? (
             <Row className="justify-content-center">
                 {deviceOffers.map((device) => (
-                    <Col sm={4} key={device.id} style={{ width: '300px' }}>
+                    <Col sm={4} key={device.id} style={{ width: '350px' }}>
                         <Card className="mb-4">
                             <Carousel indicators={false} style={{ height: "250px" }}>
                                 {device.images && device.images.map((image, index) => (
@@ -197,6 +198,7 @@ export const DetailedDeviceInfoPage = () => {
                                             className="d-block w-100"
                                             style={{ objectFit: "cover" }}
                                             src={`data:image/png;base64,${image.data}`}
+                                            height="250"
                                             alt={device.name}
                                         />
                                     </Carousel.Item>
@@ -205,11 +207,12 @@ export const DetailedDeviceInfoPage = () => {
                             <Card.Body>
                                 <Card.Title>{device.name}</Card.Title>
                                 <Card.Text>{device.description}</Card.Text>
-                                <Card.Text>{device.message ? device.message : "-"}</Card.Text>
-                                <Card.Text>Pasiūlė: {device.user}</Card.Text>
+                                <Card.Text>Pasiūlė: {`${device.userName} ${device.surname}`}</Card.Text>
+                                <Card.Text>Naudotojo laimėtų prietaisų kiekis: {device.devicesWon}</Card.Text>
+                                <Card.Text>Naudotojo padovanotų prietaisų kiekis: {device.devicesWon}</Card.Text>
                                 <Card.Text>Vietovė: {device.location}</Card.Text>
                                 <div className="d-flex justify-content-between align-items-center">
-                                    <Button variant="primary" disabled={isSubmitting} onClick={() => handleOfferWinner(device.user, device.name, device.id)}>Mainyti!</Button>
+                                    <Button variant="primary" disabled={isSubmitting} onClick={() => handleOfferWinner(`${device.userName} ${device.surname}`, device.name, device.id)}>Mainyti!</Button>
                                     <Button variant="primary" disabled={isSubmitting} onClick={() => handleRejectOffer(device.user, device.id)}>Atmesti</Button>
                                 </div>
                             </Card.Body>
@@ -230,16 +233,21 @@ export const DetailedDeviceInfoPage = () => {
                         Object.keys(deviceLetters.letters).map((user) => (
                             <Container key={user}>
                                 <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenWinner(device.type, user)}>Dovanoti</Button>
-                                <ListGroupItem variant="primary">
-    <div className="d-flex justify-content-between align-items-center">
-        <div className="d-flex align-items-center">
-            <b>Motyvacinis laiškas:</b>&nbsp;{user}
-        </div>
-    </div>
-</ListGroupItem>
 
                                 {deviceLetters.letters[user].map((letter, index) => (
                                     <ListGroup key={letter.id}>
+                                                                        <ListGroupItem variant="primary">
+    <div className="d-flex align-items-center">
+        <b>Motyvacinis laiškas:</b>&nbsp;{letter.name} {letter.surname}
+    </div>
+    <div>
+        <b>Laimėtų prietaisų kiekis:</b>&nbsp;{letter.devicesWon}
+    </div>
+    <div>
+        <b>Padovanotų prietaisų kiekis:</b>&nbsp;{letter.devicesGifted}
+    </div>
+
+</ListGroupItem>
                                         <ListGroupItem variant="light"> {letter.letter} </ListGroupItem>
                                     </ListGroup>
                                 ))}
@@ -269,35 +277,43 @@ export const DetailedDeviceInfoPage = () => {
                 </ListGroup>
             )}
             {device.type === 'Klausimynas' && (
-                <ListGroup>
-                    {Object.keys(deviceQuestions_Answers.questionnaires).length > 0 ? (
-                        Object.keys(deviceQuestions_Answers.questionnaires).map((user) => (
-                            <Container key={user}>
-                                <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenWinner(device.type, user)}>Dovanoti</Button>
-                                <ListGroupItem variant="primary">
-    <div className="d-flex justify-content-between align-items-center">
-        <div className="d-flex align-items-center">
-        <b>Klausimyno atsakymai:</b>&nbsp;{user}
-        </div>
+    <ListGroup>
+        {Object.keys(deviceQuestions_Answers.questionnaires).length > 0 ? (
+            Object.keys(deviceQuestions_Answers.questionnaires).map((user) => {
+                const { devicesWon, devicesGifted, name, surname } = deviceQuestions_Answers.questionnaires[user][0];
+                
+                return (
+                    <Container key={user}>
+                        <Button type="submit" variant="primary" disabled={isSubmitting} onClick={() => handleChosenWinner(device.type, user)}>Dovanoti</Button>
+                        <ListGroupItem variant="primary">
+                        <div className="d-flex align-items-center">
+        <b>Klausimyno atsakymai</b>&nbsp;{name} {surname}
     </div>
-</ListGroupItem>
+    <div>
+        <b>Laimėtų prietaisų kiekis:</b>&nbsp;{devicesWon}
+    </div>
+    <div>
+        <b>Padovanotų prietaisų kiekis:</b>&nbsp;{devicesGifted}
+    </div>
+                        </ListGroupItem>
 
-                                {deviceQuestions_Answers.questionnaires[user].map((questionnaire, index) => (
-                                    <ListGroup key={questionnaire.id}>
-                                        <ListGroupItem variant="info"><b>Klausimas nr. {index + 1}</b> {questionnaire.question} </ListGroupItem>
-                                        <ListGroupItem variant="light"><b>Atsakymas:</b> {questionnaire.answer} </ListGroupItem>
-                                    </ListGroup>
-                                ))}
-                            </Container>
-                        ))
-                    ) : (
-                        <Container>
-                            <ListGroupItem variant="primary"><b>Klausimyno atsakymai</b></ListGroupItem>
-                            <ListGroupItem>Klausimyno atsakymų nėra.</ListGroupItem>
-                        </Container>
-                    )}
-                </ListGroup>
-            )}
+                        {deviceQuestions_Answers.questionnaires[user].map((questionnaire, index) => (
+                            <ListGroup key={questionnaire.id}>
+                                <ListGroupItem variant="info"><b>Klausimas nr. {index + 1}</b> {questionnaire.question} </ListGroupItem>
+                                <ListGroupItem variant="light"><b>Atsakymas:</b> {questionnaire.answer} </ListGroupItem>
+                            </ListGroup>
+                        ))}
+                    </Container>
+                );
+            })
+        ) : (
+            <Container>
+                <ListGroupItem variant="primary"><b>Klausimyno atsakymai</b></ListGroupItem>
+                <ListGroupItem>Klausimyno atsakymų nėra.</ListGroupItem>
+            </Container>
+        )}
+    </ListGroup>
+)}
         </div>
     ) : (
         <Container className="my-5">
