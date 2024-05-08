@@ -44,6 +44,7 @@ const PasswordChangePage = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     password: password,
+                    confirmPassword: confirmPassword,
                     email: email,
                     token: token
                 }),

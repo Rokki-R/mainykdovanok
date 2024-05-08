@@ -174,12 +174,9 @@ namespace mainykdovanok.Controllers.UserAuthentication
                 }
 
                 string token = BitConverter.ToString(tokenData).Replace("-", ""); // Convert byte array to hex string
-                DateTime changeTimer = DateTime.Now;
-                changeTimer = changeTimer.AddHours(1);
-                string time = changeTimer.ToString("yyyy-MM-dd HH:mm:ss.fff");
 
-                bool success = await _userRepo.SaveData("UPDATE user SET password_change_token = @token, password_change_time = @time WHERE email = @email",
-                                new { token, time, resetRequest.Email });
+                bool success = await _userRepo.SaveData("UPDATE user SET password_change_token = @token WHERE email = @email",
+                                new { token, resetRequest.Email });
 
                 if (!success) { return BadRequest(); }
 
@@ -222,16 +219,12 @@ namespace mainykdovanok.Controllers.UserAuthentication
                 return StatusCode(401);
             }
             else
-            {
-                DateTime timer = DateTime.Parse(result.Rows[0]["password_change_time"].ToString());
-
-                if (timer > DateTime.Now)
                 {
                     byte[] salt;
                     string password_hash = PasswordHash.hashPassword(passwordChange.Password, out salt);
                     string password_salt = Convert.ToBase64String(salt);
 
-                    bool success = await _userRepo.SaveData("UPDATE user SET password_hash = @password_hash, password_salt = @password_salt, password_change_token = NULL, password_change_time = NULL WHERE password_change_token = @token",
+                    bool success = await _userRepo.SaveData("UPDATE user SET password_hash = @password_hash, password_salt = @password_salt, password_change_token = NULL, WHERE password_change_token = @token",
                     new { password_hash, password_salt, token = passwordChange.Token });
 
                     if (success)
@@ -243,12 +236,6 @@ namespace mainykdovanok.Controllers.UserAuthentication
                         return BadRequest();
                     }
                 }
-                else
-                {
-                    return StatusCode(300);
-                }
-
             }
         }
     }
-}
