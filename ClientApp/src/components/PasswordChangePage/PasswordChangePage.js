@@ -58,9 +58,6 @@ const PasswordChangePage = () => {
                     else if (response.status === 401) {
                         toast.error("Neteisingi nuorodos duomenys. Pakartokite slaptažodžio pakeitimo užklausą.");
                     }
-                    else if (response.status === 300) {
-                        toast.error("Pasibaigė laikotarpios pakeisti slaptažodžiui. Pakartokite slaptažodžio pakeitimo užklausą.")
-                    }
                     else {
                         toast.error("Įvyko klaida, susisiekite su administratoriumi!");
                     }
