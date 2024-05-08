@@ -199,7 +199,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
         [HttpPost("changePassword")]
         public async Task<IActionResult> ChangePassword(PasswordChangeViewModel passwordChange)
         {
-            string sql = "SELECT password_change_token, password_change_time FROM user WHERE email = @email AND password_change_token = @token";
+            string sql = "SELECT password_change_token FROM user WHERE email = @email AND password_change_token = @token";
             var parameters = new { email = passwordChange.Email, token = passwordChange.Token };
             var result = await _userRepo.LoadData(sql, parameters);
             if (string.IsNullOrWhiteSpace(passwordChange.Password) || string.IsNullOrWhiteSpace(passwordChange.ConfirmPassword))
@@ -224,7 +224,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
                     string password_hash = PasswordHash.hashPassword(passwordChange.Password, out salt);
                     string password_salt = Convert.ToBase64String(salt);
 
-                    bool success = await _userRepo.SaveData("UPDATE user SET password_hash = @password_hash, password_salt = @password_salt, password_change_token = NULL, WHERE password_change_token = @token",
+                    bool success = await _userRepo.SaveData("UPDATE user SET password_hash = @password_hash, password_salt = @password_salt, password_change_token = NULL WHERE password_change_token = @token",
                     new { password_hash, password_salt, token = passwordChange.Token });
 
                     if (success)
