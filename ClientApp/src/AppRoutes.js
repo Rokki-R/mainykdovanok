@@ -1,5 +1,3 @@
-import { Counter } from "./components/Counter";
-import { FetchData } from "./components/FetchData";
 import HomePage from "./components/HomePage/HomePage";
 
 import { LoginPage } from "./components/LoginPage/LoginPage";
@@ -27,14 +25,6 @@ const AppRoutes = [
   {
     index: true,
     element: <HomePage />
-  },
-  {
-    path: '/counter',
-    element: <Counter />
-  },
-  {
-    path: '/fetch-data',
-    element: <FetchData />
   },
   {
     path: '/registracija',
