@@ -191,7 +191,7 @@ namespace mainykdovanok.Controllers
                 int userRole = Convert.ToInt32(HttpContext.User.FindFirst(ClaimTypes.Role).Value);
                 string userEmail = HttpContext.User.FindFirst(ClaimTypes.Email).Value;
                 _logger.LogInformation($"User #{userId} with email {userEmail} is logged in and is the required role.");
-                return Ok(new { UserRole = userRole });
+                return Ok(new { UserRole = userRole, userEmail = userEmail });
             }
             else
             {

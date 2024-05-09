@@ -29,6 +29,13 @@
         background-color: #0d3c34 !important;
         border-color: #0d3c34 !important;
     }
+.userEmail
+{
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+    color: #0d3c34
+}
 
 .buttoncreate {
     color: white;
@@ -49,10 +56,6 @@
         background-color: #0d3c34 !important;
         border-color: #0d3c34 !important;
     }
-
-.ms-auto {
-    margin-right: 20px;
-}
 
 footer {
     position: fixed;
