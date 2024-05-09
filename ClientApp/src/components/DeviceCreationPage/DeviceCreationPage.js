@@ -95,14 +95,28 @@ const DeviceCreationPage = () => {
         }
     }
 
-    const getAllImages = () => {
-        if (images.length > 0) {
-            return images.map((image) => {
-                const imageUrl = URL.createObjectURL(image);
-                return <img src={imageUrl} style={{ maxWidth: '15%', height: '80px', marginRight: '10px', border: '1px solid white' }}></img>;
-            })
-        }
+    const removeImage = (indexToRemove) => {
+    setImages((prevImages) => {
+        return prevImages.filter((_, index) => index !== indexToRemove);
+    });
+};
+
+const getAllImages = () => {
+    if (images.length > 0) {
+      return (
+        <div className="image-container">
+          {images.map((image, index) => (
+            <div key={index}>
+              <img src={URL.createObjectURL(image)} alt={`Image ${index + 1}`} />
+              <Button className="btn btn-danger" onClick={() => removeImage(index)}>-</Button>
+            </div>
+          ))}
+        </div>
+      );
     }
+  };
+  
+
 
     function checkFields() {
         console.log(lotteryWinnerDrawDate)
@@ -223,12 +237,46 @@ const DeviceCreationPage = () => {
                     <Card.Body>
                         <Form>
                             <Form.Group className='mb-3'>
-                                <Form.Control
-                                    type='file'
-                                    name='images'
-                                    multiple accept='image/*'
-                                    onChange={(e) => setImages([...e.target.files])} />
-                            </Form.Group>
+                            <Form.Control
+    type='file'
+    name='images'
+    accept='image/*'
+    onChange={(e) => {
+        const selectedFiles = Array.from(e.target.files);
+        const invalidFiles = selectedFiles.filter(file => !file.type.startsWith('image/'));
+
+        if (invalidFiles.length > 0) {
+            toast.error("Prašome pasirinkti tik paveikslėlių failus!", {
+                style: {
+                    backgroundColor: 'red',
+                    color: 'white',
+                },
+            });
+            // Clear the selected files from the input
+            e.target.value = null;
+            return;
+        }
+
+        if (!selectedFiles.length) return; // If no file is selected, do nothing
+
+        const updatedImages = [...images, ...selectedFiles]; // Add the selected files to the current list of images
+
+        // Check if the number of images exceeds the limit
+        if (updatedImages.length > 6) {
+            toast.error("Negalima įkelti daugiau nei 6 nuotraukų!", {
+                style: {
+                    backgroundColor: 'red',
+                    color: 'white',
+                },
+            });
+            return;
+        }
+
+        // Update the state with the new list of images
+        setImages(updatedImages);
+    }}
+/>
+</Form.Group>
                             <Form.Group>
                                 {getAllImages()}
                             </Form.Group>

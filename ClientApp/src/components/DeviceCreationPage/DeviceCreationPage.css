@@ -82,3 +82,27 @@ button {
   .custom-card {
     width: 700px;
   }
+
+  .image-container {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .image-container > div {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 10px;
+  }
+  
+  .image-container img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border: 1px solid white;
+    margin-right: 5px;
+  }
+  
+  .image-container button {
+    padding: 2px 5px;
+  }
+  
