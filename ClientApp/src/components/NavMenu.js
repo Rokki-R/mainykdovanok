@@ -114,8 +114,12 @@ export class NavMenu extends Component {
       })
       .then((data) => {
         const userRole = data.userRole;
-        console.log(userRole);
-        this.setState({ isLogged: true, userRole: userRole });
+        const userEmail = data.userEmail;
+        this.setState({
+          isLogged: true,
+          userRole: userRole,
+          userEmail: userEmail,
+        });
       })
       .catch((error) => {
         console.error("Error checking login status:", error);
@@ -152,7 +156,7 @@ export class NavMenu extends Component {
   };
 
   render() {
-    const { userRole } = this.state;
+    const { userRole, isLogged } = this.state;
     const maxCategoryLength = 20;
     let displayCategory = this.state.selectedCategory;
     if (displayCategory.length > maxCategoryLength) {
@@ -183,6 +187,11 @@ export class NavMenu extends Component {
             style={{ backgroundColor: "#c3d5c7" }}
           >
             <Nav className="ms-auto">
+              {this.state.isLogged && (
+                <Nav className="userEmail d-flex align-items-center">
+                  <span>Prisijungęs: {this.state.userEmail}</span>
+                </Nav>
+              )}
               {userRole === 0 ? (
                 <div className="d-inline-block align-middle">
                   <Button
@@ -212,6 +221,7 @@ export class NavMenu extends Component {
             </Nav>
           </Navbar.Collapse>
         </Navbar>
+
         {!this.state.isLogged || this.state.userRole !== 1 ? (
           <footer>
             <div className="links">
