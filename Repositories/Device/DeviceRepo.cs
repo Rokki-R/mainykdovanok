@@ -420,7 +420,7 @@ namespace mainykdovanok.Repositories.Device
             using MySqlConnection connection = GetConnection();
             await connection.OpenAsync();
 
-            string query = "SELECT u.user_id AS UserId, u.name AS Name, u.surname AS Surname, u.email AS Email " +
+            string query = "SELECT u.user_id AS UserId, u.name AS Name, u.surname AS Surname, u.email AS Email, u.devices_won as DevicesWon, u.devices_gifted AS DevicesGifted " +
                            "FROM device_ad AS i " +
                            "JOIN user AS u ON i.fk_user = u.user_id " +
                            "WHERE i.id = @deviceId";
@@ -436,6 +436,8 @@ namespace mainykdovanok.Repositories.Device
                     deviceOwner.Name = reader.GetString("Name");
                     deviceOwner.Surname = reader.GetString("Surname");
                     deviceOwner.Email = reader.GetString("Email");
+                    deviceOwner.devicesGifted = reader.GetInt32("DevicesGifted");
+                    deviceOwner.devicesWon = reader.GetInt32("DevicesWon");
                 }
             }
 
