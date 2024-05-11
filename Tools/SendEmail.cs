@@ -48,9 +48,8 @@ namespace mainykdovanok.Tools
                            $"<p>Sveiki,</p>" +
                            $"<p>Jūsų skelbimo loterijos <b>„{deviceName}“</b> laimėtojas yra <b>{winnerEmail}</b>.</p>" +
                            $"<p>Laimėtojui išsiųstas laiškas, kuriame yra pateikiama jūsų informacija, kad laimėtojas galėtų su jumis susisiekti</p>" +
-                           $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
                            $"<p>Linkėjimai,</p>" +
-                           $"<p>mainykdovanok.lt</p>" +
+                           $"<p>mainykdovanok</p>" +
                            $"</body></html>";
 
             try
@@ -68,7 +67,7 @@ namespace mainykdovanok.Tools
             message.To.Clear();
             message.To.Add(new MailAddress(email));
 
-            message.Subject = "Laimėjote mainykdovanok.lt skelbimo loteriją!";
+            message.Subject = "Laimėjote mainykdovanok sistemos skelbimo loteriją!";
 
             string url = $"https://localhost:44492/laimejimas/{deviceId}";
 
@@ -78,10 +77,9 @@ namespace mainykdovanok.Tools
                            $"<p>Žemiau matysite skelbimo savininko duomenis, kad galėtumėte susisiekti su skelbimo savininku dėl laimėto prietaiso atsiėmimo:</p>" +
                            $"<p>-{ownerEmail}</p>" +
                            $"<p>-{ownerPhoneNumber}</p>" +
-                           $"<p>Laimėto elektronikos prietaiso atsiėmimą galite patvirtinti čia: {url}</p>" +
-                           $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
+                           $"<p>Atsiėmus elektronikos prietaisą, laimėto elektronikos prietaiso atsiėmimą prašome patvirtinti <a href=\"{url}\">čia</a>." +
                            $"<p>Linkėjimai,</p>" +
-                           $"<p>mainykdovanok.lt</p>" +
+                           $"<p>mainykdovanok</p>" +
                            $"</body></html>";
             message.IsBodyHtml = true;
 
@@ -102,11 +100,10 @@ namespace mainykdovanok.Tools
             message.Subject = "Jūsų loterijos tipo skelbimas";
             message.Body = $"<html><body>" +
                            $"<p>Sveiki,</p>" +
-                           $"<p>Neatsiradus nei vienam loterijos dalyviui, jūsų skelbimas {deviceName} buvo ištrintas</p>";
-
-            message.Body += $"<p>Linkėjimai,</p>" +
-                            $"<p>mainykdovanok.lt</p>" +
-                            $"</body></html>";
+                           $"<p>Neatsiradus nei vienam loterijos dalyviui, jūsų skelbimas {deviceName} buvo ištrintas</p>" +
+                           $"<p>Linkėjimai,</p>" +
+                           $"<p>mainykdovanok</p>" +
+                           $"</body></html>";
 
             try
             {
@@ -134,10 +131,9 @@ namespace mainykdovanok.Tools
                            $"<p>Žemiau matysite skelbimo savininko duomenis, kad galėtumėte susisiekti su skelbimo savininku dėl laimėto prietaiso atsiėmimo:</p>" +
                            $"<p>-{ownerEmail}</p>" +
                            $"<p>-{ownerPhoneNumber}</p>" +
-                           $"<p>Laimėto elektronikos prietaiso atsiėmimą galite patvirtinti čia: {url}</p>" +
-                           $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
+                           $"<p>Atsiėmus elektronikos prietaisą, laimėto elektronikos prietaiso atsiėmimą prašome patvirtinti <a href=\"{url}\">čia</a>." +
                            $"<p>Linkėjimai,</p>" +
-                           $"<p>mainykdovanok.lt</p>" +
+                           $"<p>mainykdovanok</p>" +
                            $"</body></html>";
             message.IsBodyHtml = true;
 
@@ -155,7 +151,7 @@ namespace mainykdovanok.Tools
             message.To.Clear();
             message.To.Add(new MailAddress(email));
 
-            message.Subject = "Sėkmingi mainai skelbimais mainykdovanok.lt svetainėje!";
+            message.Subject = "Sėkmingi mainai skelbimais mainykdovanok sistemoje!";
 
             string url = $"https://localhost:44492/laimejimas/{deviceId}";
 
@@ -166,10 +162,9 @@ namespace mainykdovanok.Tools
                            $"<p>Žemiau matysite skelbimo savininko duomenis, kad galėtumėte susisiekti su skelbimo savininku dėl laimėto prietaiso atsiėmimo:</p>" +
                            $"<p>-{ownerEmail}</p>" +
                            $"<p>-{ownerPhoneNumber}</p>" +
-                           $"<p>Laimėto elektronikos prietaiso atsiėmimą galite patvirtinti čia: {url}</p>" +
-                           $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
+                           $"<p>Atsiėmus elektronikos prietaisą, laimėto elektronikos prietaiso atsiėmimą prašome patvirtinti <a href=\"{url}\">čia</a>." +
                            $"<p>Linkėjimai,</p>" +
-                           $"<p>mainykdovanok.lt</p>" +
+                           $"<p>mainykdovanok</p>" +
                            $"</body></html>";
             message.IsBodyHtml = true;
 
@@ -191,7 +186,7 @@ namespace mainykdovanok.Tools
             message.Body = $"<html><body><p>Sveiki,</p>" +
                 $"<p>Norėdami pasikeisti slaptažodį, spauskite <a href=\"{resetURL}\">čia</a>.</p>" +
                 $"<p>Linkėjimai,</p>" +
-                $"<p>mainykdovanok.lt</p>" +
+                $"<p>mainykdovanok</p>" +
                 $"</body></html>";
 
             try
@@ -222,10 +217,9 @@ namespace mainykdovanok.Tools
                            $"<p>Žemiau matysite skelbimo savininko duomenis, kad galėtumėte susisiekti su skelbimo savininku dėl laimėto prietaiso atsiėmimo:</p>" +
                            $"<p>-{ownerEmail}</p>" +
                            $"<p>-{ownerPhoneNumber}</p>" +
-                           $"<p>Laimėto elektronikos prietaiso atsiėmimą galite patvirtinti čia: {url}</p>" +
-                           $"<p>Ačiū, kad padedate tausoti aplinką!</p>" +
+                           $"<p>Atsiėmus elektronikos prietaisą, laimėto elektronikos prietaiso atsiėmimą prašome patvirtinti <a href=\"{url}\">čia</a>." +
                            $"<p>Linkėjimai,</p>" +
-                           $"<p>mainykdovanok.lt</p>" +
+                           $"<p>mainykdovanok</p>" +
                            $"</body></html>";
             message.IsBodyHtml = true;
 

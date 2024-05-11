@@ -170,13 +170,9 @@ const handleSubmit = (event) => {
             <Label className='warningText'>{matchMessage}</Label>
             <div className='text-center'>
             <Button className='btn btn-primary' onClick={(event) => handleSubmit(event)} type='submit'>
-              Registruotis
+              Sukurti paskyrą
             </Button>
           </div>
-            <hr></hr>
-            <div className="mt-3 text-center">
-                Jau turite paskyrą? <Link to="/login">Prisijungti</Link>
-            </div>
           </Form>
         </CardBody>
       </Card>

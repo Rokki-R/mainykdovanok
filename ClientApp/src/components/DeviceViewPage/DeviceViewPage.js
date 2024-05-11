@@ -30,16 +30,17 @@ export const DeviceViewPage = () => {
   const [newComment, setNewComment] = useState("");
   const [answers, setAnswers] = useState({});
   const [userRole, setUserRole] = useState(null);
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDeviceOwnerInfo = async () => {
       try {
-        const response = await axios.get(`api/device/getDeviceOwnerInfo/${deviceId}`);
+        const response = await axios.get(
+          `api/device/getDeviceOwnerInfo/${deviceId}`
+        );
         const deviceOwnerData = response.data;
         setDeviceOwner(deviceOwnerData);
-
       } catch (error) {
         toast.error("Įvyko klaida, susisiekite su administratoriumi!");
       }
@@ -67,12 +68,8 @@ export const DeviceViewPage = () => {
   useEffect(() => {
     if (device && device.type === "Mainai į kita prietaisą") {
       const fetchUserDevices = async () => {
-        try {
-          const response = await axios.get("api/device/getUserDevices");
-          setUserDevices(response.data);
-        } catch (error) {
-          //toast.error('Įvyko klaida, susisiekite su administratoriumi!');
-        }
+        const response = await axios.get("api/device/getUserDevices");
+        setUserDevices(response.data);
       };
       fetchUserDevices();
     } else if (device && device.type === "Loterija") {
@@ -92,12 +89,8 @@ export const DeviceViewPage = () => {
 
   useEffect(() => {
     const fetchViewerId = async () => {
-      try {
-        const response = await axios.get("api/user/getCurrentUserId");
-        setViewerId(response.data);
-      } catch (error) {
-        //toast.error('Įvyko klaida, susisiekite su administratoriumi!');
-      }
+      const response = await axios.get("api/user/getCurrentUserId");
+      setViewerId(response.data);
     };
     fetchViewerId();
   }, []);
@@ -124,10 +117,9 @@ export const DeviceViewPage = () => {
         console.error("Error fetching user role:", error);
       }
     };
-  
+
     fetchUserRole();
   }, [userRole]);
-  
 
   const handleDeviceSelect = (event) => {
     setSelectedDevice(event.target.value);
@@ -140,17 +132,15 @@ export const DeviceViewPage = () => {
   const handleCommentChange = (event) => {
     setNewComment(event.target.value);
   };
-  
 
   const handleAnswerChange = (event, questionId) => {
     setAnswers({
-        ...answers,
-        [questionId]: event.target.value,
+      ...answers,
+      [questionId]: event.target.value,
     });
-};
+  };
 
   const handleSubmitComment = async (event) => {
-
     event.preventDefault();
 
     if (viewerId === null) {
@@ -184,7 +174,7 @@ export const DeviceViewPage = () => {
         toast.error("Įvyko klaida, susisiekite su administratoriumi!");
       }
     }
-  }
+  };
 
   const handleSubmit = async (event, isParticipating) => {
     event.preventDefault();
@@ -197,58 +187,52 @@ export const DeviceViewPage = () => {
     if (device.type === "Mainai į kita prietaisą" && !selectedDevice) {
       toast.error("Pasirinkite skelbimą, kurį norite pasiūlyti keitimui.");
       return;
-    } 
-    
-    else if (device.type === "Motyvacinis laiškas" && letter.length <= 10) {
+    } else if (device.type === "Motyvacinis laiškas" && letter.length <= 10) {
       toast.error("Motyvacinis laiškas turi būti siekti bent 10 simbolių!");
       return;
-    }
-    
-
-    else if (device.type === 'Klausimynas') {
-      const unansweredQuestions = device.questions.filter(q => !answers[q.id]);
+    } else if (device.type === "Klausimynas") {
+      const unansweredQuestions = device.questions.filter(
+        (q) => !answers[q.id]
+      );
 
       if (unansweredQuestions.length > 0) {
-          toast.error('Atsakykite į visus klausimus.');
-          return;
+        toast.error("Atsakykite į visus klausimus.");
+        return;
       }
-  }
+    }
 
     const data = {
       selectedDevice,
-      ...(device.type === 'Klausimynas' && { answers })
+      ...(device.type === "Klausimynas" && { answers }),
     };
 
     if (device.type === "Loterija") {
       if (!isParticipating) {
         axios
-  .post(`api/device/enterLottery/${deviceId}`, data)
-  .then((response) => {
-    if (response.data) {
-      toast.success("Sėkmingai prisijungėte prie loterijos!");
-      setIsUserParticipating(true);
-      setDevice({
-        ...device,
-        participants: device.participants + 1,
-      });
-    } else {
-      toast.error("Įvyko klaida, susisiekite su administratoriumi!");
-    }
-  })
-  .catch((error) => {
-    console.log(error.response.status)
-    if (error.response.status === 401) {
-      toast.error("Turite būti prisijungęs!");
-    } else if (error.response.status === 403) {
-      toast.error("Neturite privilegijų dalyvauti loterijoje!");
-    } else {
-      console.log(error)
-      toast.error("Įvyko klaida, susisiekite su administratoriumi!");
-    }
-  });
-
-
-
+          .post(`api/device/enterLottery/${deviceId}`, data)
+          .then((response) => {
+            if (response.data) {
+              toast.success("Sėkmingai prisijungėte prie loterijos!");
+              setIsUserParticipating(true);
+              setDevice({
+                ...device,
+                participants: device.participants + 1,
+              });
+            } else {
+              toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+            }
+          })
+          .catch((error) => {
+            console.log(error.response.status);
+            if (error.response.status === 401) {
+              toast.error("Turite būti prisijungęs!");
+            } else if (error.response.status === 403) {
+              toast.error("Neturite privilegijų dalyvauti loterijoje!");
+            } else {
+              console.log(error);
+              toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+            }
+          });
       } else {
         axios
           .post(`api/device/leaveLottery/${deviceId}`, data)
@@ -289,13 +273,10 @@ export const DeviceViewPage = () => {
           if (error.response.status === 401) {
             toast.error("Turite būti prisijungęs!");
             return;
-          } 
-          else if (error.response.status === 403)
-          {
+          } else if (error.response.status === 403) {
             toast.error("Jūs neturite privilegijų pateikti motyvacinį laišką");
             return;
-          }
-          else if (error.response.status === 409) {
+          } else if (error.response.status === 409) {
             toast.error("Jūs jau esate pateikęs laišką šiam skelbimui.");
             return;
           }
@@ -323,53 +304,51 @@ export const DeviceViewPage = () => {
         .catch((error) => {
           if (error.response.status === 401) {
             toast.error("Turite būti prisijungęs!");
-          } 
-          else if (error.response.status === 403)
-          {
-            toast.error("Jūs neturite privilegijų siūlyti elektronikos prietaisą mainais");
+          } else if (error.response.status === 403) {
+            toast.error(
+              "Jūs neturite privilegijų siūlyti elektronikos prietaisą mainais"
+            );
             return;
+          } else {
+            toast.error("Įvyko klaida, susisiekite su administratoriumi!");
           }
-          
-          else {
+        });
+    } else if (device.type === "Klausimynas") {
+      const answersList = Object.entries(data.answers).map(([key, value]) => ({
+        question: parseInt(key),
+        text: value,
+      }));
+      axios
+        .post(`api/device/submitAnswers/${deviceId}`, answersList)
+        .then((response) => {
+          if (response.data) {
+            toast.success("Sėkmingai atsakėte į klausimus!");
+
+            setIsUserParticipating(true);
+            setDevice({
+              ...device,
+              participants: device.participants + 1,
+            });
+          } else {
+            toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+          }
+        })
+        .catch((error) => {
+          if (error.response.status === 401) {
+            toast.error("Turite būti prisijungęs!");
+          } else if (error.response.status === 409) {
+            toast.error("Jūs jau esate atsakęs į šio skelbimo klausimus.");
+            return;
+          } else if (error.response.status === 403) {
+            toast.error(
+              "Jūs neturite privilegijų atsakyti į skelbimo klausimus"
+            );
+            return;
+          } else {
             toast.error("Įvyko klaida, susisiekite su administratoriumi!");
           }
         });
     }
-    else if (device.type === 'Klausimynas') {
-      const answersList = Object.entries(data.answers).map(([key, value]) => ({ question: parseInt(key), text: value }));
-      axios.post(`api/device/submitAnswers/${deviceId}`, answersList)
-          .then(response => {
-              if (response.data) {
-                  toast.success('Sėkmingai atsakėte į klausimus!');
-
-                  setIsUserParticipating(true);
-                  setDevice({
-                      ...device,
-                      participants: device.participants + 1,
-                  });
-              }
-              else {
-                  toast.error('Įvyko klaida, susisiekite su administratoriumi!');
-              }
-          })
-          .catch(error => {
-              if (error.response.status === 401) {
-                  toast.error('Turite būti prisijungęs!');
-              }
-              else if (error.response.status === 409) {
-                toast.error("Jūs jau esate atsakęs į šio skelbimo klausimus.");
-                return;
-              }
-              else if (error.response.status === 403)
-          {
-            toast.error("Jūs neturite privilegijų atsakyti į skelbimo klausimus");
-            return;
-          }
-              else {
-                  toast.error('Įvyko klaida, susisiekite su administratoriumi!');
-              }
-          });
-  }
   };
 
   const handleDelete = async (deviceId) => {
@@ -409,9 +388,7 @@ export const DeviceViewPage = () => {
                   className="borderless-accordion"
                 >
                   <Accordion.Item eventKey="0">
-                    <Accordion.Header
-                      style={{ outline: "none" }}
-                    >
+                    <Accordion.Header style={{ outline: "none" }}>
                       Skelbimo savininko informacija
                     </Accordion.Header>
                     <Accordion.Body>
@@ -452,61 +429,51 @@ export const DeviceViewPage = () => {
                 <hr></hr>
                 {device.type === "Mainai į kita prietaisą" && (
                   <Form onSubmit={handleSubmit}>
-                     {device.userId !== viewerId && device.status === "Aktyvus"  && userRole == 0 ? (
+                    {device.userId !== viewerId &&
+                    device.status === "Aktyvus" &&
+                    userRole == 0 ? (
                       <>
-                    <Form.Group>
-                      <Form.Label>
-                        Pasirinkite savo prietaisą, kurį norite pasiūlyti:
-                      </Form.Label>
-                      <Form.Control
-                        as="select"
-                        id="selectedDevice"
-                        value={selectedDevice}
-                        onChange={(e) => setSelectedDevice(e.target.value)}
-                      >
-                        <option value="">Pasirinkti skelbimą</option>
-                        {userDevices &&
-                          userDevices
-                            .filter(
-                              (device) => device.type === `Mainai į kita prietaisą`
-                            )
-                            .map((device) => (
-                              <option key={device.id} value={device.id}>
-                                {device.name}
-                              </option>
-                            ))}
-                      </Form.Control>
-                    </Form.Group>
-                    </> ) : null}
+                        <Form.Group>
+                          <Form.Label>
+                            Pasirinkite savo prietaisą, kurį norite pasiūlyti:
+                          </Form.Label>
+                          <Form.Control
+                            as="select"
+                            id="selectedDevice"
+                            value={selectedDevice}
+                            onChange={(e) => setSelectedDevice(e.target.value)}
+                          >
+                            <option value="">Pasirinkti skelbimą</option>
+                            {userDevices &&
+                              userDevices
+                                .filter(
+                                  (device) =>
+                                    device.type === `Mainai į kita prietaisą`
+                                )
+                                .map((device) => (
+                                  <option key={device.id} value={device.id}>
+                                    {device.name}
+                                  </option>
+                                ))}
+                          </Form.Control>
+                        </Form.Group>
+                      </>
+                    ) : null}
                     <Row>
                       <Col>
-                      {device.userId !== viewerId && device.status === "Aktyvus"  && userRole == 0 ? (
+                        {device.userId !== viewerId &&
+                        device.status === "Aktyvus" &&
+                        userRole == 0 ? (
                           <>
-                        <Button
-                          variant="primary"
-                          type="submit"
-                        >
-                          Siūlyti
-                        </Button>
-                        </>
-                      ) : null}
+                            <Button variant="primary" type="submit">
+                              Siūlyti
+                            </Button>
+                          </>
+                        ) : null}
                       </Col>
                       <Col className="d-flex justify-content-end">
-                      {userRole === 1 && device.status === "Aktyvus" ?
-                      (
-                        <>
-                        <Button
-                              style={{ marginRight: "10px" }}
-                              variant="primary"
-                              onClick={() => handleDelete(device.id)}
-                            >
-                              Ištrinti
-                            </Button>
-                        </>
-                      ) : null}
-                        {device.userId === viewerId && device.status === "Aktyvus" ? (
+                        {userRole === 1 && device.status === "Aktyvus" ? (
                           <>
-                          <Link>
                             <Button
                               style={{ marginRight: "10px" }}
                               variant="primary"
@@ -514,18 +481,33 @@ export const DeviceViewPage = () => {
                             >
                               Ištrinti
                             </Button>
+                          </>
+                        ) : null}
+                        {device.userId === viewerId &&
+                        device.status === "Aktyvus" ? (
+                          <>
+                            <Link>
+                              <Button
+                                style={{ marginRight: "10px" }}
+                                variant="primary"
+                                onClick={() => handleDelete(device.id)}
+                              >
+                                Ištrinti
+                              </Button>
                             </Link>
                             <Link
-                              style={{ marginRight: "10px"}}
+                              style={{ marginRight: "10px" }}
                               to={`/skelbimas/redaguoti/${device.id}`}
                             >
                               <Button variant="primary">Redaguoti</Button>
                             </Link>
                             <Link
-                              style={{ marginRight: "10px"}}
+                              style={{ marginRight: "10px" }}
                               to={`/skelbimas/info/${device.id}`}
                             >
-                              <Button variant="primary">Skelbimo dalyviai</Button>
+                              <Button variant="primary">
+                                Skelbimo dalyviai
+                              </Button>
                             </Link>
                           </>
                         ) : null}
@@ -536,41 +518,28 @@ export const DeviceViewPage = () => {
                 {device.type === "Motyvacinis laiškas" && (
                   <Form onSubmit={handleSubmit}>
                     <Row>
-                    {device.userId !== viewerId && device.status === "Aktyvus" && userRole == 0 ? (
-                      <>
-                      <Form.Control
-                        as="textarea"
-                        rows={3}
-                        id="letter"
-                        value={letter}
-                        onChange={(e) => setLetter(e.target.value)}
-                        placeholder="Čia galite parašyti motyvacinį laišką, kuriame galite pagrįsti savo norą laimėti elektronikos prietaisą"
-                      />
-                      <Col>
-                        <Button
-                          variant="primary"
-                          type="submit"
-                        >
-                          Pateikti
-                        </Button>
-                      </Col>
-                      </> ) : null}
-                      <Col className="d-flex justify-content-end">
-                      {userRole === 1 && device.status === "Aktyvus" ?
-                      (
+                      {device.userId !== viewerId &&
+                      device.status === "Aktyvus" &&
+                      userRole == 0 ? (
                         <>
-                        <Button
-                              style={{ marginRight: "10px" }}
-                              variant="primary"
-                              onClick={() => handleDelete(device.id)}
-                            >
-                              Ištrinti
+                          <Form.Control
+                            as="textarea"
+                            rows={3}
+                            id="letter"
+                            value={letter}
+                            onChange={(e) => setLetter(e.target.value)}
+                            placeholder="Čia galite parašyti motyvacinį laišką, kuriame galite pagrįsti savo norą laimėti elektronikos prietaisą"
+                          />
+                          <Col>
+                            <Button variant="primary" type="submit">
+                              Pateikti
                             </Button>
+                          </Col>
                         </>
                       ) : null}
-                        {device.userId === viewerId && device.status === "Aktyvus" ? (
+                      <Col className="d-flex justify-content-end">
+                        {userRole === 1 && device.status === "Aktyvus" ? (
                           <>
-                          <Link>
                             <Button
                               style={{ marginRight: "10px" }}
                               variant="primary"
@@ -578,18 +547,33 @@ export const DeviceViewPage = () => {
                             >
                               Ištrinti
                             </Button>
+                          </>
+                        ) : null}
+                        {device.userId === viewerId &&
+                        device.status === "Aktyvus" ? (
+                          <>
+                            <Link>
+                              <Button
+                                style={{ marginRight: "10px" }}
+                                variant="primary"
+                                onClick={() => handleDelete(device.id)}
+                              >
+                                Ištrinti
+                              </Button>
                             </Link>
                             <Link
-                              style={{ marginRight: "10px"}}
+                              style={{ marginRight: "10px" }}
                               to={`/skelbimas/redaguoti/${device.id}`}
                             >
                               <Button variant="primary">Redaguoti</Button>
                             </Link>
                             <Link
-                              style={{ marginRight: "10px"}}
+                              style={{ marginRight: "10px" }}
                               to={`/skelbimas/info/${device.id}`}
                             >
-                              <Button variant="primary">Skelbimo dalyviai</Button>
+                              <Button variant="primary">
+                                Skelbimo dalyviai
+                              </Button>
                             </Link>
                           </>
                         ) : null}
@@ -599,55 +583,50 @@ export const DeviceViewPage = () => {
                 )}
                 {device.type === "Loterija" && (
                   <Form onSubmit={handleSubmit}>
-                     {device.userId !== viewerId && device.status === "Aktyvus" && userRole == 0 ? (
+                    {device.userId !== viewerId &&
+                    device.status === "Aktyvus" &&
+                    userRole == 0 ? (
                       <>
-                    <p>Dalyvių skaičius: {device.participants}</p>
-                    <p>
-                      Laimėtojas bus išrinktas{" "}
-                      {new Date(device.winnerDrawDateTime).toLocaleString("lt-LT")}
-                    </p>
-                    </> ) : null}
+                        <p>Dalyvių skaičius: {device.participants}</p>
+                        <p>
+                          Laimėtojas bus išrinktas{" "}
+                          {new Date(device.winnerDrawDateTime).toLocaleString(
+                            "lt-LT"
+                          )}
+                        </p>
+                      </>
+                    ) : null}
                     <Row>
-                    {device.userId !== viewerId && device.status === "Aktyvus" && userRole == 0 ? (
-                      <>
-                      <Col>
-                        {isUserParticipating && viewerId !== null ? (
-                          <Button
-                            variant="primary"
-                            type="submit"
-                            disabled={device.userId === viewerId}
-                            onClick={(event) => handleSubmit(event, true)}
-                          >
-                            Nebedalyvauti
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="primary"
-                            type="submit"
-                            disabled={device.userId === viewerId}
-                            onClick={(event) => handleSubmit(event, false)}
-                          >
-                            Dalyvauti
-                          </Button>
-                        )}
-                      </Col>
-                      </> ) : null}
-                      <Col className="d-flex justify-content-end">
-                      {userRole === 1 && device.status === "Aktyvus" ?
-                      (
+                      {device.userId !== viewerId &&
+                      device.status === "Aktyvus" &&
+                      userRole == 0 ? (
                         <>
-                        <Button
-                              style={{ marginRight: "10px" }}
-                              variant="primary"
-                              onClick={() => handleDelete(device.id)}
-                            >
-                              Ištrinti
-                            </Button>
+                          <Col>
+                            {isUserParticipating && viewerId !== null ? (
+                              <Button
+                                variant="primary"
+                                type="submit"
+                                disabled={device.userId === viewerId}
+                                onClick={(event) => handleSubmit(event, true)}
+                              >
+                                Nebedalyvauti
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="primary"
+                                type="submit"
+                                disabled={device.userId === viewerId}
+                                onClick={(event) => handleSubmit(event, false)}
+                              >
+                                Dalyvauti
+                              </Button>
+                            )}
+                          </Col>
                         </>
                       ) : null}
-                        {device.userId === viewerId ? (
+                      <Col className="d-flex justify-content-end">
+                        {userRole === 1 && device.status === "Aktyvus" ? (
                           <>
-                          <Link>
                             <Button
                               style={{ marginRight: "10px" }}
                               variant="primary"
@@ -655,18 +634,32 @@ export const DeviceViewPage = () => {
                             >
                               Ištrinti
                             </Button>
+                          </>
+                        ) : null}
+                        {device.userId === viewerId ? (
+                          <>
+                            <Link>
+                              <Button
+                                style={{ marginRight: "10px" }}
+                                variant="primary"
+                                onClick={() => handleDelete(device.id)}
+                              >
+                                Ištrinti
+                              </Button>
                             </Link>
                             <Link
-                              style={{ marginRight: "10px"}}
+                              style={{ marginRight: "10px" }}
                               to={`/skelbimas/redaguoti/${device.id}`}
                             >
                               <Button variant="primary">Redaguoti</Button>
                             </Link>
                             <Link
-                              style={{ marginRight: "10px"}}
+                              style={{ marginRight: "10px" }}
                               to={`/skelbimas/info/${device.id}`}
                             >
-                              <Button variant="primary">Skelbimo dalyviai</Button>
+                              <Button variant="primary">
+                                Skelbimo dalyviai
+                              </Button>
                             </Link>
                           </>
                         ) : null}
@@ -674,56 +667,79 @@ export const DeviceViewPage = () => {
                     </Row>
                   </Form>
                 )}
-                {device.type === 'Klausimynas' && (
-                                    <Form onSubmit={handleSubmit}>
-                                      {device.userId !== viewerId && device.status === "Aktyvus" && userRole == 0 ? (
+                {device.type === "Klausimynas" && (
+                  <Form onSubmit={handleSubmit}>
+                    {device.userId !== viewerId &&
+                    device.status === "Aktyvus" &&
+                    userRole == 0 ? (
                       <>
-                                        {device.questions.map((question) => (
-                                            <Form.Group key={question.id}>
-                                                <Form.Label>{question.question}</Form.Label>
-                                                <Form.Control type="text" onChange={(event) => handleAnswerChange(event, question.id)} />
-                                            </Form.Group>
-                                        ))}
-                                                </> ) : null}                                
-                                        <Row>
-                                        {device.userId !== viewerId && device.status === "Aktyvus" && userRole == 0 ? (
-                      <>
-                                          
-                                            <Col>
-                                                <Button variant="primary" type="submit">Atsakyti</Button>
-                                            </Col>
-                                            </> ) : null}  
-                                            <Col className="d-flex justify-content-end">
-                                            {userRole === 1 && device.status === "Aktyvus" ?
-                      (
+                        {device.questions.map((question) => (
+                          <Form.Group key={question.id}>
+                            <Form.Label>{question.question}</Form.Label>
+                            <Form.Control
+                              type="text"
+                              onChange={(event) =>
+                                handleAnswerChange(event, question.id)
+                              }
+                            />
+                          </Form.Group>
+                        ))}
+                      </>
+                    ) : null}
+                    <Row>
+                      {device.userId !== viewerId &&
+                      device.status === "Aktyvus" &&
+                      userRole == 0 ? (
                         <>
-                        <Button
+                          <Col>
+                            <Button variant="primary" type="submit">
+                              Atsakyti
+                            </Button>
+                          </Col>
+                        </>
+                      ) : null}
+                      <Col className="d-flex justify-content-end">
+                        {userRole === 1 && device.status === "Aktyvus" ? (
+                          <>
+                            <Button
                               style={{ marginRight: "10px" }}
                               variant="primary"
                               onClick={() => handleDelete(device.id)}
                             >
                               Ištrinti
                             </Button>
-                        </>
-                      ) : null}
-                                                {device.userId === viewerId ? (
-                                                    <>
-                                                    <Link style={{ marginRight: '10px'}}>
-                                                        <Button variant="primary" onClick={() => handleDelete(device.id)}>Ištrinti</Button>
-                                                        </Link>
-                                                        <Link style={{ marginRight: '10px'}} to={`/skelbimas/redaguoti/${device.id}`}>
-                                                            <Button variant="primary">Redaguoti</Button>
-                                                        </Link>
-                                                        <Link style={{ marginRight: '10px'}} to={`/skelbimas/info/${device.id}`}>
-                                                            <Button variant="primary">Skelbimo dalyviai</Button>
-                                                        </Link>
-                                                    </>
-                                                ) : null}
-                                            </Col>
-                                        </Row>
-
-                                    </Form>
-                                )}
+                          </>
+                        ) : null}
+                        {device.userId === viewerId ? (
+                          <>
+                            <Link style={{ marginRight: "10px" }}>
+                              <Button
+                                variant="primary"
+                                onClick={() => handleDelete(device.id)}
+                              >
+                                Ištrinti
+                              </Button>
+                            </Link>
+                            <Link
+                              style={{ marginRight: "10px" }}
+                              to={`/skelbimas/redaguoti/${device.id}`}
+                            >
+                              <Button variant="primary">Redaguoti</Button>
+                            </Link>
+                            <Link
+                              style={{ marginRight: "10px" }}
+                              to={`/skelbimas/info/${device.id}`}
+                            >
+                              <Button variant="primary">
+                                Skelbimo dalyviai
+                              </Button>
+                            </Link>
+                          </>
+                        ) : null}
+                      </Col>
+                    </Row>
+                  </Form>
+                )}
               </Card.Body>
               <Card.Footer>
                 {device.location} |{" "}
@@ -759,20 +775,22 @@ export const DeviceViewPage = () => {
                   <p>Nėra komentarų.</p>
                 )}
 
-                <Form onSubmit={handleSubmitComment}>
-                  <Form.Group controlId="comment">
-                    <Form.Label>Palikite komentarą:</Form.Label>
-                    <Form.Control
-                      as="textarea"
-                      rows={3}
-                      value={newComment}
-                      onChange={handleCommentChange}
-                    />
-                  </Form.Group>
-                  <Button variant="primary" type="submit">
-                    Pridėti komentarą
-                  </Button>
-                </Form>
+                {userRole !== 1 && (
+                  <Form onSubmit={handleSubmitComment}>
+                    <Form.Group controlId="comment">
+                      <Form.Label>Palikite komentarą:</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={3}
+                        value={newComment}
+                        onChange={handleCommentChange}
+                      />
+                    </Form.Group>
+                    <Button variant="primary" type="submit">
+                      Pridėti komentarą
+                    </Button>
+                  </Form>
+                )}
               </Card.Body>
             </Card>
           </Col>

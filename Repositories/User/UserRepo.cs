@@ -304,7 +304,8 @@ namespace mainykdovanok.Repositories.User
                 using (MySqlCommand command = new MySqlCommand("SELECT user.user_id, user.name, user.surname, " +
                      "user.email, user.user_role, user.devices_won, user.devices_gifted, user_status.status as status " +
                      "FROM user " +
-                     "LEFT JOIN user_status ON user.fk_user_status = user_status.id "
+                     "LEFT JOIN user_status ON user.fk_user_status = user_status.id " +
+                     "WHERE user.user_role = 0"
                      , connection))
                 {
                     using (DbDataReader reader = await command.ExecuteReaderAsync())

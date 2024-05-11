@@ -182,10 +182,10 @@ export const DetailedDeviceInfoPage = () => {
     
 
     return device && ((device.type === 'Motyvacinis laiškas' && deviceLetters) || (device.type === 'Loterija' && deviceLotteryParticipants) || (device.type === 'Mainai į kita prietaisą' && deviceOffers) || (device.type === 'Klausimynas' && deviceQuestions_Answers)) ? (
-        <div className="my-div" style={{ paddingTop: "120px" }}>
+        <div className="my-div">
           {device.type === 'Mainai į kita prietaisą' && (
-    <Container className="home">
-        <h3 style={{ textAlign: "center", marginBottom: "50px" }}>Pasiūlymai mainams</h3>
+    <Container className="home-device-participants">
+        <h3 style={{ textAlign: "center"}}>Pasiūlymai mainams</h3>
         {deviceOffers && deviceOffers.length > 0 ? (
             <Row className="justify-content-center">
                 {deviceOffers.map((device) => (
@@ -212,7 +212,7 @@ export const DetailedDeviceInfoPage = () => {
                                 <Card.Text>Naudotojo padovanotų prietaisų kiekis: {device.devicesWon}</Card.Text>
                                 <Card.Text>Vietovė: {device.location}</Card.Text>
                                 <div className="d-flex justify-content-between align-items-center">
-                                    <Button variant="primary" disabled={isSubmitting} onClick={() => handleOfferWinner(`${device.userName} ${device.surname}`, device.name, device.id)}>Mainyti!</Button>
+                                    <Button variant="primary" disabled={isSubmitting} onClick={() => handleOfferWinner(`${device.userName} ${device.surname}`, device.name, device.id)}>Mainyti</Button>
                                     <Button variant="primary" disabled={isSubmitting} onClick={() => handleRejectOffer(device.user, device.id)}>Atmesti</Button>
                                 </div>
                             </Card.Body>
