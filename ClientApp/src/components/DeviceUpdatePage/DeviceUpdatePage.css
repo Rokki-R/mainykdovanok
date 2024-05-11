@@ -1,16 +1,8 @@
-.aa
-{
-    text-align: center;
-    margin-top: 500px;
-}
 
 .outerDeviceUpdateBoxWrapper {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    padding-top: 130px;
-    padding-bottom: 75px;
 }
 
 .submit, .cancel {

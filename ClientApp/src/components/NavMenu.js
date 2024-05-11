@@ -49,7 +49,6 @@ export class NavMenu extends Component {
       })
       .catch((error) => {
         console.log(error);
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
       });
   }
 
@@ -129,16 +128,11 @@ export class NavMenu extends Component {
   handleLogoutClick = () => {
     fetch("api/login/logout", { method: "GET" }).then((response) => {
       if (response.status === 200) {
-        // 200 - Ok
         this.setState({ isLogged: false });
         window.location.reload();
         window.location.href = "/prisijungimas";
       } else if (response.status === 401) {
-        // 401 - Unauthorized
         toast.error("Jūs jau esate atsijungęs!");
-      } else {
-        // 500 - Internal server error
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
       }
     });
   };
@@ -192,22 +186,41 @@ export class NavMenu extends Component {
                   <span>Prisijungęs: {this.state.userEmail}</span>
                 </Nav>
               )}
-              {userRole === 0 ? (
-                <div className="d-inline-block align-middle">
-                  <Button
-                    className="buttoncreate"
-                    variant="primary"
-                    size="sm"
-                    href="/naujasskelbimas"
-                  >
-                    Dovanoti!
-                  </Button>
-                </div>
-              ) : userRole === 1 ? (
-                <Link className="nav-link" to="/admin">
-                  Naudotojai
-                </Link>
-              ) : null}
+             {userRole === 0 ? (
+  <div className="d-flex align-items-center">
+    <Link className="nav-link me-2" to="/manoskelbimai">
+      Mano skelbimai
+    </Link>
+    <Link className="nav-link me-2" to="/laimejimai">
+      Laimėti skelbimai
+    </Link>
+    <Link className="nav-link me-2" to="/manoprofilis">
+      Mano profilis
+    </Link>
+    <Button
+      className="buttoncreate"
+      variant="primary"
+      size="sm"
+      href="/naujasskelbimas"
+    >
+      Dovanoti!
+    </Button>
+  </div>
+) : userRole === 1 ? (
+  <Link className="nav-link" to="/admin">
+    Naudotojai
+  </Link>
+) : (
+  <div className="d-flex align-items-center">
+    <Link className="nav-link me-2" to="/prisijungimas">
+      Prisijungti
+    </Link>
+    <Link className="nav-link me-2" to="/registracija">
+      Registruotis
+    </Link>
+  </div>
+)}
+
 
               {this.state.isLogged && (
                 <Link
@@ -221,41 +234,6 @@ export class NavMenu extends Component {
             </Nav>
           </Navbar.Collapse>
         </Navbar>
-
-        {!this.state.isLogged || this.state.userRole !== 1 ? (
-          <footer>
-            <div className="links">
-              {this.state.isLogged ? (
-                <>
-                  {this.state.userRole === 0 && (
-                    <>
-                      <Link className="links" to="/manoskelbimai">
-                        Mano skelbimai
-                      </Link>
-                      <Link className="links" to="/laimejimai">
-                        Laimėti skelbimai
-                      </Link>
-                      <div className="ml-auto">
-                        <Link className="links" to="/manoprofilis">
-                          Mano profilis
-                        </Link>
-                      </div>
-                    </>
-                  )}
-                </>
-              ) : (
-                <>
-                  <Link className="links" to="/prisijungimas">
-                    Prisijungti
-                  </Link>
-                  <Link className="links" to="/registracija">
-                    Registruotis
-                  </Link>
-                </>
-              )}
-            </div>
-          </footer>
-        ) : null}
       </>
     );
   }

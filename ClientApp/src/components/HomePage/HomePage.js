@@ -23,42 +23,25 @@ function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Visos kategorijos");
   const [selectedType, setSelectedType] = useState("Visi atidavimo būdai");
+  const [loading, setLoading] = useState(true); // Loading state
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function fetchDevices() {
+    async function fetchData() {
       try {
-        const response = await axios.get("/api/home/getDevices");
-        setDevices(response.data);
+        const devicesResponse = await axios.get("/api/home/getDevices");
+        const categoriesResponse = await axios.get("/api/device/getCategories");
+        const typesResponse = await axios.get("/api/device/getDeviceTypes");
+        setDevices(devicesResponse.data);
+        setCategories(categoriesResponse.data);
+        setTypes(typesResponse.data);
+        setLoading(false); // Set loading to false when data is fetched
       } catch (error) {
-        console.error("Error fetching devices:", error);
+        console.error("Error fetching data:", error);
+        setLoading(false); // Set loading to false even if there's an error
       }
     }
-    fetchDevices();
-  }, []);
-
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const response = await axios.get("/api/device/getCategories");
-        setCategories(response.data);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    }
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    async function fetchDeviceTypes() {
-      try {
-        const response = await axios.get("/api/device/getDeviceTypes");
-        setTypes(response.data);
-      } catch (error) {
-        console.error("Error fetching device types:", error);
-      }
-    }
-    fetchDeviceTypes();
+    fetchData();
   }, []);
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -74,7 +57,6 @@ function HomePage() {
       )
     : [];
 
-  // Log the count of filtered devices to the console
   console.log("Number of devices found:", filteredDevices.length);
 
   const currentDevices = filteredDevices.slice(
@@ -113,120 +95,129 @@ function HomePage() {
   };
 
   return (
-    <Container className="home">
+    <Container className="homepage">
       <Row className="justify-content-center">
         <Col sm={12}>
-          <h3 style={{ textAlign: "center", marginBottom: "25px" }}>
+          <h3 style={{ textAlign: "center"}}>
             Elektronikos prietaisų skelbimai
           </h3>
         </Col>
       </Row>
       <Row className="justify-content-center">
-        <Col sm={6}>
-          <Form.Group controlId="formSearch">
-            <Form.Control
-              type="text"
-              placeholder="Įveskite skelbimo pavadinimą"
-              value={searchTerm}
-              onChange={handleSearch}
-            />
-          </Form.Group>
-        </Col>
-        <Col sm={3} style={{ marginRight: "10px" }}>
-          <Dropdown>
-            <Dropdown.Toggle variant="secondary" id="dropdown-basic">
-              {selectedCategory}
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-              <Dropdown.Item
-                onClick={() => handleCategorySelect("Visos kategorijos")}
-              >
-                Visos kategorijos
-              </Dropdown.Item>
-              <hr />
-              {categories.map((category) => (
-                <Dropdown.Item
-                  key={category.id}
-                  onClick={() => handleCategorySelect(category.name)}
-                >
-                  {category.name}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
-        </Col>
-        <Col sm={3}>
-          <Dropdown>
-            <Dropdown.Toggle variant="secondary" id="dropdown-basic">
-              {selectedType}
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-              <Dropdown.Item onClick={() => handleTypeSelect("Visi atidavimo būdai")}>
-                Visi atidavimo būdai
-              </Dropdown.Item>
-              <hr />
-              {types.map((type) => (
-                <Dropdown.Item
-                  key={type.id}
-                  onClick={() => handleTypeSelect(type.name)}
-                >
-                  {type.name}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown>
-        </Col>
-      </Row>
+  <Col sm={3} style={{ marginTop: "5px" }}>
+    <Form.Group controlId="formSearch">
+      <Form.Control
+        type="text"
+        placeholder="Įveskite skelbimo pavadinimą"
+        value={searchTerm}
+        onChange={handleSearch}
+      />
+    </Form.Group>
+  </Col>
+  <Col sm={2}>
+    <Dropdown>
+      <Dropdown.Toggle variant="secondary" id="dropdown-basic" style={{ width: "100%" }}>
+        {selectedCategory}
+      </Dropdown.Toggle>
+      <Dropdown.Menu>
+        <Dropdown.Item
+          onClick={() => handleCategorySelect("Visos kategorijos")}
+        >
+          Visos kategorijos
+        </Dropdown.Item>
+        <hr />
+        {categories.map((category) => (
+          <Dropdown.Item
+            key={category.id}
+            onClick={() => handleCategorySelect(category.name)}
+          >
+            {category.name}
+          </Dropdown.Item>
+        ))}
+      </Dropdown.Menu>
+    </Dropdown>
+  </Col>
+  <Col sm={2}>
+    <Dropdown>
+      <Dropdown.Toggle variant="secondary" id="dropdown-basic" style={{ width: "100%" }}>
+        {selectedType}
+      </Dropdown.Toggle>
+      <Dropdown.Menu>
+        <Dropdown.Item onClick={() => handleTypeSelect("Visi atidavimo būdai")}>
+          Visi atidavimo būdai
+        </Dropdown.Item>
+        <hr />
+        {types.map((type) => (
+          <Dropdown.Item
+            key={type.id}
+            onClick={() => handleTypeSelect(type.name)}
+          >
+            {type.name}
+          </Dropdown.Item>
+        ))}
+      </Dropdown.Menu>
+    </Dropdown>
+  </Col>
+</Row>
+
 
       <Row className="justify-content-center">
         <Col sm={12}>
-          <div className={contentWrapperClass}>
-            <Row className="justify-content-center">
-              {currentDevices.length > 0 ? (
-                currentDevices.map((device) => (
-                  <Col sm={4} key={device.id} style={{ width: "350px" }}>
-                    <Card className="mb-4">
-                      <img
-                        className="d-block w-100"
-                        style={{ objectFit: "cover" }}
-                        height="256"
-                        src={
-                          device.images && device.images.length > 0
-                            ? `data:image/png;base64,${device.images[0].data}`
-                            : ""
-                        }
-                        alt={device.name}
-                      />
-                      <Card.Body>
-                        <Card.Title>{device.name}</Card.Title>
-                        <hr></hr>
-                        <Card.Text>Atidavimo būdas: {device.type}</Card.Text>
-                        <Card.Text>Vietovė: {device.location}</Card.Text>
-                        <div className="d-flex justify-content-end">
-                          <Button
-                            variant="primary"
-                            onClick={() => handleOpen(device.id)}
-                          >
-                            Peržiūrėti
-                          </Button>
-                        </div>
-                      </Card.Body>
-                    </Card>
+          {loading ? (
+            <div className="text-center mt-5">
+              <Spinner animation="border" role="status">
+                <span className="sr-only">Kraunama...</span>
+              </Spinner>
+            </div>
+          ) : (
+            <div className={contentWrapperClass}>
+              <Row className="justify-content-center">
+                {currentDevices.length > 0 ? (
+                  currentDevices.map((device) => (
+                    <Col sm={4} key={device.id} style={{ width: "350px" }}>
+                      <Card className="mb-4">
+                        <img
+                          className="d-block w-100"
+                          style={{ objectFit: "cover" }}
+                          height="256"
+                          src={
+                            device.images && device.images.length > 0
+                              ? `data:image/png;base64,${device.images[0].data}`
+                              : ""
+                          }
+                          alt={device.name}
+                        />
+                        <Card.Body>
+                          <Card.Title>{device.name}</Card.Title>
+                          <hr></hr>
+                          <Card.Text>Atidavimo būdas: {device.type}</Card.Text>
+                          <Card.Text>Vietovė: {device.location}</Card.Text>
+                          <div className="d-flex justify-content-end">
+                            <Button
+                              variant="primary"
+                              onClick={() => handleOpen(device.id)}
+                            >
+                              Peržiūrėti
+                            </Button>
+                          </div>
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))
+                ) : (
+                  <Col sm={12}>
+                    <h3 style={{ textAlign: "center" }}>
+                      {searchTerm ||
+                      selectedCategory !== "Visos kategorijos" ||
+                      selectedType !== "Visi atidavimo būdai"
+                        ? "Nerasta elektronikos prietaisų pagal paieškos kriterijus"
+                        : "Šiuo metu nėra dovanojamų elektronikos prietaisų"}
+                    </h3>
                   </Col>
-                ))
-              ) : (
-                <Col sm={12}>
-                  <h3 style={{ textAlign: "center" }}>
-                    {searchTerm ||
-                    selectedCategory !== "Visos kategorijos" ||
-                    selectedType !== "Visi atidavimo būdai"
-                      ? "Nerasta elektronikos prietaisų pagal paieškos kriterijus"
-                      : "Šiuo metu nėra dovanojamų elektronikos prietaisų"}
-                  </h3>
-                </Col>
-              )}
-            </Row>
-          </div>
+                )}
+              </Row>
+            </div>
+          )}
         </Col>
       </Row>
       {totalPages > 1 && (

@@ -10,8 +10,6 @@ export const DeviceWinnerPage = () => {
     const [viewerId, setViewerId] = useState(null);
     const [canAccess, setCanAccess] = useState(null);
     const [device, setDevice] = useState(null);
-    const [posterEmail, setPosterEmail] = useState(null);
-    const [sending, setSending] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -50,20 +48,6 @@ export const DeviceWinnerPage = () => {
         };
         fetchDevice();
     }, [deviceId, canAccess]);
-
-    useEffect(() => {
-        const fetchPosterEmail = async () => {
-            try {
-                const response = await axios.get(`api/user/getUserEmail/${device.userId}`);
-                setPosterEmail(response.data);
-            } catch (error) {
-                toast.error('Įvyko klaida, susisiekite su administratoriumi!');
-            }
-        };
-        if (device && device.userId) {
-            fetchPosterEmail();
-        }
-    }, [device]);
     
     const handleConfirm = async () => {
         try {
@@ -82,7 +66,7 @@ export const DeviceWinnerPage = () => {
     };
     
 
-    return device && viewerId && canAccess && posterEmail ? (
+    return device && viewerId && canAccess ? (
         <div className='outerBoxWrapper'>
             <Toaster />
             <Container className="my-5">
@@ -108,7 +92,7 @@ export const DeviceWinnerPage = () => {
                             <Card.Header>{device.category}</Card.Header>
                             <Card.Body>
                                 <Card.Title>Laimėjote: {device.name}</Card.Title>
-                                <Card.Text>{device.description}</Card.Text>
+                                <Card.Text style={{marginTop: '30px'}}><b>Skelbimo aprašymas:</b> {device.description}</Card.Text>
                                 <hr></hr>
 
 {device.status === 'Išrinktas laimėtojas' && (
@@ -117,7 +101,6 @@ export const DeviceWinnerPage = () => {
 
                                 <br></br>
                             </Card.Body>
-                            <Card.Footer>{device.location} | Skelbėjo el. paštas: {posterEmail}</Card.Footer>
                         </Card>
                     </Col>
                 </Row>
