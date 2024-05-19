@@ -186,41 +186,40 @@ export class NavMenu extends Component {
                   <span>Prisijungęs: {this.state.userEmail}</span>
                 </Nav>
               )}
-             {userRole === 0 ? (
-  <div className="d-flex align-items-center">
-    <Link className="nav-link me-2" to="/manoskelbimai">
-      Mano skelbimai
-    </Link>
-    <Link className="nav-link me-2" to="/laimejimai">
-      Laimėti skelbimai
-    </Link>
-    <Link className="nav-link me-2" to="/manoprofilis">
-      Mano profilis
-    </Link>
-    <Button
-      className="buttoncreate"
-      variant="primary"
-      size="sm"
-      href="/naujasskelbimas"
-    >
-      Dovanoti!
-    </Button>
-  </div>
-) : userRole === 1 ? (
-  <Link className="nav-link" to="/admin">
-    Naudotojai
-  </Link>
-) : (
-  <div className="d-flex align-items-center">
-    <Link className="nav-link me-2" to="/prisijungimas">
-      Prisijungti
-    </Link>
-    <Link className="nav-link me-2" to="/registracija">
-      Registruotis
-    </Link>
-  </div>
-)}
-
+              {userRole === 0 ? (
+                <div className="d-flex align-items-center">
+                  <Link className="nav-link me-2" to="/manoskelbimai">
+                    Mano skelbimai
+                  </Link>
+                  <Link className="nav-link me-2" to="/laimejimai">
+                    Laimėti skelbimai
+                  </Link>
+                  <Link className="nav-link me-2" to="/manoprofilis">
+                    Mano profilis
+                  </Link>
+                  <Button
+                    className="buttoncreate"
+                    variant="primary"
+                    size="sm"
+                    href="/naujasskelbimas"
+                  >
+                    Dovanoti!
+                  </Button>
+                </div>
+              ) : userRole === 1 ? (
+                <Link className="nav-link" to="/admin">
+                  Naudotojai
+                </Link>
+              ) : (
+                <div className="d-flex align-items-center">
+                  <Link className="nav-link me-2" to="/prisijungimas">
+                    Prisijungti
+                  </Link>
+                  <Link className="nav-link me-2" to="/registracija">
+                    Registruotis
+                  </Link>
+                </div>
+              )}
 
               {this.state.isLogged && (
                 <Link

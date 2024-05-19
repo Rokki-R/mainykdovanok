@@ -491,6 +491,13 @@ namespace mainykdovanok.Controllers
                     return BadRequest("Šis skelbimas yra ne mainų tipo.");
                 }
 
+                bool hasAlreadySubmittedOffer = await _deviceRepo.checkIfOfferAlreadyExists(deviceId, offer.SelectedDevice);
+                if (hasAlreadySubmittedOffer)
+                {
+                    return Conflict("Jūs jau esate pasiūlęs savo pasirinktą elektronikos prietaisą šiam skelbimui mainais");
+                }
+
+
                 var result = await _deviceRepo.SubmitExchangeOffer(deviceId, offer);
 
                 return Ok(result);
