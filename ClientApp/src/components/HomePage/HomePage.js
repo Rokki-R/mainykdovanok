@@ -53,7 +53,8 @@ function HomePage() {
           device.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
           (selectedCategory === "Visos kategorijos" ||
             device.category === selectedCategory) &&
-          (selectedType === "Visi atidavimo būdai" || device.type === selectedType)
+          (selectedType === "Visi atidavimo būdai" ||
+            device.type === selectedType)
       )
     : [];
 
@@ -98,68 +99,77 @@ function HomePage() {
     <Container className="homepage">
       <Row className="justify-content-center">
         <Col sm={12}>
-          <h3 style={{ textAlign: "center"}}>
+          <h3 style={{ textAlign: "center" }}>
             Elektronikos prietaisų skelbimai
           </h3>
         </Col>
       </Row>
       <Row className="justify-content-center">
-  <Col sm={3} style={{ marginTop: "5px" }}>
-    <Form.Group controlId="formSearch">
-      <Form.Control
-        type="text"
-        placeholder="Įveskite skelbimo pavadinimą"
-        value={searchTerm}
-        onChange={handleSearch}
-      />
-    </Form.Group>
-  </Col>
-  <Col sm={2}>
-    <Dropdown>
-      <Dropdown.Toggle variant="secondary" id="dropdown-basic" style={{ width: "100%" }}>
-        {selectedCategory}
-      </Dropdown.Toggle>
-      <Dropdown.Menu>
-        <Dropdown.Item
-          onClick={() => handleCategorySelect("Visos kategorijos")}
-        >
-          Visos kategorijos
-        </Dropdown.Item>
-        <hr />
-        {categories.map((category) => (
-          <Dropdown.Item
-            key={category.id}
-            onClick={() => handleCategorySelect(category.name)}
-          >
-            {category.name}
-          </Dropdown.Item>
-        ))}
-      </Dropdown.Menu>
-    </Dropdown>
-  </Col>
-  <Col sm={2}>
-    <Dropdown>
-      <Dropdown.Toggle variant="secondary" id="dropdown-basic" style={{ width: "100%" }}>
-        {selectedType}
-      </Dropdown.Toggle>
-      <Dropdown.Menu>
-        <Dropdown.Item onClick={() => handleTypeSelect("Visi atidavimo būdai")}>
-          Visi atidavimo būdai
-        </Dropdown.Item>
-        <hr />
-        {types.map((type) => (
-          <Dropdown.Item
-            key={type.id}
-            onClick={() => handleTypeSelect(type.name)}
-          >
-            {type.name}
-          </Dropdown.Item>
-        ))}
-      </Dropdown.Menu>
-    </Dropdown>
-  </Col>
-</Row>
-
+        <Col sm={3} style={{ marginTop: "5px" }}>
+          <Form.Group controlId="formSearch">
+            <Form.Control
+              type="text"
+              placeholder="Įveskite skelbimo pavadinimą"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+          </Form.Group>
+        </Col>
+        <Col sm={2}>
+          <Dropdown>
+            <Dropdown.Toggle
+              variant="secondary"
+              id="dropdown-basic"
+              style={{ width: "100%" }}
+            >
+              {selectedCategory}
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item
+                onClick={() => handleCategorySelect("Visos kategorijos")}
+              >
+                Visos kategorijos
+              </Dropdown.Item>
+              <hr />
+              {categories.map((category) => (
+                <Dropdown.Item
+                  key={category.id}
+                  onClick={() => handleCategorySelect(category.name)}
+                >
+                  {category.name}
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown>
+        </Col>
+        <Col sm={2}>
+          <Dropdown>
+            <Dropdown.Toggle
+              variant="secondary"
+              id="dropdown-basic"
+              style={{ width: "100%" }}
+            >
+              {selectedType}
+            </Dropdown.Toggle>
+            <Dropdown.Menu>
+              <Dropdown.Item
+                onClick={() => handleTypeSelect("Visi atidavimo būdai")}
+              >
+                Visi atidavimo būdai
+              </Dropdown.Item>
+              <hr />
+              {types.map((type) => (
+                <Dropdown.Item
+                  key={type.id}
+                  onClick={() => handleTypeSelect(type.name)}
+                >
+                  {type.name}
+                </Dropdown.Item>
+              ))}
+            </Dropdown.Menu>
+          </Dropdown>
+        </Col>
+      </Row>
 
       <Row className="justify-content-center">
         <Col sm={12}>

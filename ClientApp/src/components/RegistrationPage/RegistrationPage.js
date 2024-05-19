@@ -1,109 +1,129 @@
-import React, { useState } from 'react';
-import { Card, CardHeader, CardBody, Form, FormGroup, Label, Input, Button, } from 'reactstrap';
-import { Container } from 'react-bootstrap';
-import { useNavigate } from 'react-router';
-import toast, { Toaster } from 'react-hot-toast';
-import { Link } from 'react-router-dom';
-import './RegistrationPage.css'
+import React, { useState } from "react";
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  Form,
+  FormGroup,
+  Label,
+  Input,
+  Button,
+} from "reactstrap";
+import { Container } from "react-bootstrap";
+import { useNavigate } from "react-router";
+import toast, { Toaster } from "react-hot-toast";
+import { Link } from "react-router-dom";
+import "./RegistrationPage.css";
 
 const RegistrationPage = () => {
-  const [name, setName] = useState('');
-  const [surname, setSurname] = useState('');
-  const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [matchMessage, setMatchMessage] = useState('');
+  const [name, setName] = useState("");
+  const [surname, setSurname] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [matchMessage, setMatchMessage] = useState("");
   const navigate = useNavigate();
 
   const onChange = (e) => {
     let password = e.target.value;
     setPassword(password);
-    if (password.length >= 8 && /^(?=.*\d)(?=.*[!@#$%^&*+\-])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(password)) {
-        setMessage("");
+    if (
+      password.length >= 8 &&
+      /^(?=.*\d)(?=.*[!@#$%^&*+\-])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(password)
+    ) {
+      setMessage("");
+    } else {
+      setMessage(
+        "Slaptažodis turi turėti mažąsias, didžiąsias raides, skaičius, spec. simbolius ir būti bent 8 simbolių ilgio!"
+      );
     }
-    else {
-        setMessage("Slaptažodis turi turėti mažąsias, didžiąsias raides, skaičius, spec. simbolius ir būti bent 8 simbolių ilgio!");
-    }
-}
+  };
 
-function checkFields() {
+  function checkFields() {
     if (password === confirmPassword) {
-        if (name === '' || surname === '' || email === '' || phoneNumber === '') {
-            setMessage('Reikia užpildyti visus laukus!');
-            return false;
+      if (name === "" || surname === "" || email === "" || phoneNumber === "") {
+        setMessage("Reikia užpildyti visus laukus!");
+        return false;
+      } else if (
+        password.length >= 8 &&
+        /^(?=.*\d)(?=.*[!@#$%^&*+\-])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(
+          password
+        )
+      ) {
+        if (!/\S+@\S+\.\S+/.test(email)) {
+          setMatchMessage("Neteisingai įvestas el. paštas");
+          return false;
+        } else if (
+          !/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(
+            phoneNumber
+          )
+        ) {
+          setMatchMessage("Neteisingai įvestas telefono numeris");
+          return false;
         }
-        else if (password.length >= 8 && /^(?=.*\d)(?=.*[!@#$%^&*+\-])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(password))
-        {
-            if  (!/\S+@\S+\.\S+/.test(email))
-            {
-                setMatchMessage("Neteisingai įvestas el. paštas");
-                return false;
-            }
-            else if (!/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/.test(phoneNumber)) {
-              setMatchMessage("Neteisingai įvestas telefono numeris");
-              return false;
-            }
         setMatchMessage("");
         setMessage("");
         return true;
-        }
+      }
+    } else {
+      setMatchMessage("Slaptažodžiai turi sutapti!");
+      return false;
     }
-    else {
-        setMatchMessage("Slaptažodžiai turi sutapti!");
-        return false;
-    }
-}
-
-const handleSubmit = (event) => {
-  event.preventDefault()
-  if (checkFields()) {
-      const requestOptions = {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-              name: name,
-              surname: surname,
-              password: password,
-              phoneNumber: phoneNumber,
-              email: email,
-              confirmPassword: confirmPassword
-          }),
-      };
-      console.log(phoneNumber)
-      fetch("api/login/register", requestOptions)
-          .then(response => {
-              if (response.status === 200) {
-                  toast.success('Sėkmingai prisiregistravote.');
-                  navigate("/prisijungimas");
-                } else if (response.status === 400) {
-                  response.json().then(data => {
-                      toast.error(data.message);
-                  });
-              } else {
-                  toast.error("Įvyko klaida, susisiekite su administratoriumi!", {
-                      style: {
-                          backgroundColor: 'red',
-                          color: 'white',
-                      },
-                  });
-              }
-          })
-
   }
-}
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (checkFields()) {
+      const requestOptions = {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name,
+          surname: surname,
+          password: password,
+          phoneNumber: phoneNumber,
+          email: email,
+          confirmPassword: confirmPassword,
+        }),
+      };
+      console.log(phoneNumber);
+      fetch("api/login/register", requestOptions).then((response) => {
+        if (response.status === 200) {
+          toast.success("Sėkmingai prisiregistravote.");
+          navigate("/prisijungimas");
+        } else if (response.status === 400) {
+          response.json().then((data) => {
+            toast.error(data.message);
+          });
+        } else {
+          toast.error("Įvyko klaida, susisiekite su administratoriumi!", {
+            style: {
+              backgroundColor: "red",
+              color: "white",
+            },
+          });
+        }
+      });
+    }
+  };
 
   return (
     <Container className="my-5 outerRegistrationBoxWrapper">
-      <Card className='custom-card'>
-      <CardHeader className='header d-flex justify-content-between align-items-center' style={{ color: 'black' }}>Registracija</CardHeader>
+      <Card className="custom-card">
+        <CardHeader
+          className="header d-flex justify-content-between align-items-center"
+          style={{ color: "black" }}
+        >
+          Registracija
+        </CardHeader>
         <CardBody>
           <Form onSubmit={handleSubmit}>
             <FormGroup>
               <Input
                 type="text"
-                className='input'
+                className="input"
                 name="name"
                 id="name"
                 value={name}
@@ -114,7 +134,7 @@ const handleSubmit = (event) => {
             <FormGroup>
               <Input
                 type="text"
-                className='input'
+                className="input"
                 name="surname"
                 id="surname"
                 value={surname}
@@ -125,7 +145,7 @@ const handleSubmit = (event) => {
             <FormGroup>
               <Input
                 type="email"
-                className='input'
+                className="input"
                 name="email"
                 id="email"
                 value={email}
@@ -136,7 +156,7 @@ const handleSubmit = (event) => {
             <FormGroup>
               <Input
                 type="text"
-                className='input'
+                className="input"
                 name="phoneNumber"
                 id="phoneNumber"
                 value={phoneNumber}
@@ -147,7 +167,7 @@ const handleSubmit = (event) => {
             <FormGroup>
               <Input
                 type="password"
-                className='input'
+                className="input"
                 name="password"
                 id="password"
                 value={password}
@@ -158,7 +178,7 @@ const handleSubmit = (event) => {
             <FormGroup>
               <Input
                 type="password"
-                className='input'
+                className="input"
                 name="confirmPassword"
                 id="confirmPassword"
                 value={confirmPassword}
@@ -166,13 +186,17 @@ const handleSubmit = (event) => {
                 placeholder="Pakartokite slaptažodį"
               />
             </FormGroup>
-            <Label className='warningText'>{message}</Label>
-            <Label className='warningText'>{matchMessage}</Label>
-            <div className='text-center'>
-            <Button className='btn btn-primary' onClick={(event) => handleSubmit(event)} type='submit'>
-              Sukurti paskyrą
-            </Button>
-          </div>
+            <Label className="warningText">{message}</Label>
+            <Label className="warningText">{matchMessage}</Label>
+            <div className="text-center">
+              <Button
+                className="btn btn-primary"
+                onClick={(event) => handleSubmit(event)}
+                type="submit"
+              >
+                Sukurti paskyrą
+              </Button>
+            </div>
           </Form>
         </CardBody>
       </Card>

@@ -309,6 +309,11 @@ export const DeviceViewPage = () => {
               "Jūs neturite privilegijų siūlyti elektronikos prietaisą mainais"
             );
             return;
+          } else if (error.response.status === 409) {
+            toast.error(
+              "Jūs jau esate pasiūlęs savo pasirinktą elektronikos prietaisą šiam skelbimui mainais"
+            );
+            return;
           } else {
             toast.error("Įvyko klaida, susisiekite su administratoriumi!");
           }

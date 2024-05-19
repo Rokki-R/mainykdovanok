@@ -715,6 +715,22 @@ namespace mainykdovanok.Repositories.Device
             return count > 0;
         }
 
+        public async Task<bool> checkIfOfferAlreadyExists(int deviceId, int offeredDeviceId)
+        {
+            using MySqlConnection connection = GetConnection();
+            await connection.OpenAsync();
+
+            using MySqlCommand command = new MySqlCommand(
+                "SELECT COUNT(*) FROM device_exchange_offer WHERE fk_main_device = @deviceId AND fk_offered_device = @offeredDeviceId", connection);
+
+            command.Parameters.AddWithValue("@deviceId", deviceId);
+            command.Parameters.AddWithValue("@offeredDeviceId", offeredDeviceId);
+
+            int count = Convert.ToInt32(await command.ExecuteScalarAsync());
+
+            return count > 0;
+        }
+
         public async Task<bool> HasSubmittedAnswers(int deviceId, int userId)
         {
             using MySqlConnection connection = GetConnection();
