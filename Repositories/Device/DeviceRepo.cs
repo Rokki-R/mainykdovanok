@@ -327,7 +327,7 @@ namespace mainykdovanok.Repositories.Device
                 }
             }
         }
-      
+
         public async Task<bool> DeleteDevice(int id)
         {
             using MySqlConnection connection = GetConnection();
@@ -771,7 +771,7 @@ namespace mainykdovanok.Repositories.Device
                 string surname = reader.GetString("surname");
                 int devicesWon = reader.GetInt32("devices_won");
                 int devicesGifted = reader.GetInt32("devices_gifted");
-                MotivationalLetterViewModel result = new MotivationalLetterViewModel { Id = id, Letter = letter, Name = name, Surname = surname, DevicesWon = devicesWon, DevicesGifted = devicesGifted  };
+                MotivationalLetterViewModel result = new MotivationalLetterViewModel { Id = id, Letter = letter, Name = name, Surname = surname, DevicesWon = devicesWon, DevicesGifted = devicesGifted };
                 results.Add(result);
             }
 
@@ -845,7 +845,7 @@ namespace mainykdovanok.Repositories.Device
             using DbDataReader reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                string answer_text= reader.GetString("answer");
+                string answer_text = reader.GetString("answer");
                 AnswerModel answer = new AnswerModel { Text = answer_text };
                 answers.Add(answer);
             }
@@ -879,7 +879,7 @@ namespace mainykdovanok.Repositories.Device
                 string surname = reader.GetString("surname");
                 int devicesWon = reader.GetInt32("devices_won");
                 int devicesGifted = reader.GetInt32("devices_gifted");
-                QuestionnaireViewModel result = new QuestionnaireViewModel { Id = id, Question = text, Answer = answer, Name = name, Surname = surname, DevicesWon = devicesWon, DevicesGifted = devicesGifted};
+                QuestionnaireViewModel result = new QuestionnaireViewModel { Id = id, Question = text, Answer = answer, Name = name, Surname = surname, DevicesWon = devicesWon, DevicesGifted = devicesGifted };
                 results.Add(result);
             }
 
