@@ -21,23 +21,27 @@ function MyDevicesPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserLogin = async () => {
+    const fetchUserRole = async () => {
       try {
-        const response = await axios.get("api/login/isloggedin");
-        if (response.status === 200) {
-          console.log("User is logged in.");
+        const response = await axios.get("api/login/isLoggedIn");
+        const role = response.data.userRole;
+        if (role === 1) {
+          toast.error("Jūs neturite privilegijų apsilankyti šiame lange");
+          navigate("/");
         }
       } catch (error) {
-        if (error.response.status === 401) {
+        if (error.response && error.response.status === 401) {
           toast.error("Jūs turite būti prisijungęs");
           navigate("/prisijungimas");
         } else {
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+          console.error("Error fetching user role:", error);
         }
+      } finally {
+        setLoading(false);
       }
     };
-    fetchUserLogin();
-  }, []);
+    fetchUserRole();
+  });
 
   useEffect(() => {
     async function fetchDevices() {

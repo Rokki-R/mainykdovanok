@@ -709,7 +709,7 @@ namespace mainykdovanok.Controllers
                     UserModel user = await _userRepo.GetUser(winner.User);
 
                     await _deviceRepo.SetDeviceWinner(winner.DeviceId, user.Id);
-                    
+
                     await _deviceRepo.UpdateDeviceStatus(winner.DeviceId, 2);
 
                     await emailer.notifyQuestionnaireWinner(user.Email, owner.Email, owner.PhoneNumber, deviceName, winner.DeviceId);
@@ -885,7 +885,7 @@ namespace mainykdovanok.Controllers
                     Location = form["location"],
                     Images = Request.Form.Files.GetFiles("images").ToList(),
                 };
-              
+
                 var imagesToDelete = form["imagesToDelete"].Select(idStr => Convert.ToInt32(idStr)).ToList();
 
                 if (imagesToDelete.Count > 0)

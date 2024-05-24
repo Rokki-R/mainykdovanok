@@ -32,7 +32,7 @@ export const LoginPage = () => {
         if (error.response.status === 401) {
           return true;
         } else {
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+          toast.error("Įvyko klaida");
         }
       }
     };
@@ -78,7 +78,7 @@ export const LoginPage = () => {
           toast.error(data.message);
         });
       } else {
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+        toast.error("Įvyko klaida");
       }
     });
   };

@@ -41,7 +41,6 @@ namespace mainykdovanok.Controllers
                 return Unauthorized();
             }
 
-            //Patikrinti ar prisijungęs naudotojas nėra admin
             if (!User.IsInRole("0"))
             {
                 return StatusCode(403);
@@ -52,7 +51,7 @@ namespace mainykdovanok.Controllers
                 int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
                 if (comment.Comment.Length < 10)
-                { 
+                {
                     return BadRequest("Parašytas komentaras yra per trumpas");
                 }
 

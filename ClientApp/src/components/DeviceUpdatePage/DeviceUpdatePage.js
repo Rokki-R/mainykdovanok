@@ -42,7 +42,7 @@ function DeviceUpdatePage() {
         setCategories(categoriesResponse.data);
       } catch (error) {
         console.log(error);
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+        toast.error("Įvyko klaida");
       }
     }
     fetchData();
@@ -58,7 +58,7 @@ function DeviceUpdatePage() {
           navigate("/prisijungimas");
           toast.error("Turite būti prisijungęs!");
         } else {
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+          toast.error("Įvyko klaida");
         }
       }
     };
@@ -67,7 +67,7 @@ function DeviceUpdatePage() {
 
   if (device && viewerId && device.userId !== viewerId) {
     navigate("/");
-    toast.error("Jūs nesate šio skelbimo savininkas");
+    toast.error("Jūs neturite prieigos prie šio skelbimo redagavimo!");
   }
 
   const handleSubmit = async (event) => {
@@ -213,7 +213,7 @@ function DeviceUpdatePage() {
         return <option value={category.id}>{category.name}</option>;
       });
     } catch (error) {
-      toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+      toast.error("Įvyko klaida");
       console.log(error);
     }
   };

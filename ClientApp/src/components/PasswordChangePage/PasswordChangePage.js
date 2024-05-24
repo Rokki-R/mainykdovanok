@@ -59,7 +59,7 @@ const PasswordChangePage = () => {
             "Neteisingi nuorodos duomenys. Pakartokite slaptažodžio pakeitimo užklausą."
           );
         } else {
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+          toast.error("Įvyko klaida");
         }
       });
     }

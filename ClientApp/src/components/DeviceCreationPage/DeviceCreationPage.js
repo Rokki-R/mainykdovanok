@@ -60,7 +60,7 @@ const DeviceCreationPage = () => {
       })
       .catch((error) => {
         console.log(error);
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+        toast.error("Įvyko klaida");
       });
   }, []);
 
@@ -70,7 +70,7 @@ const DeviceCreationPage = () => {
         return <option value={category.id}>{category.name}</option>;
       });
     } catch (error) {
-      toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+      toast.error("Įvyko klaida");
       console.log(error);
     }
   };
@@ -87,7 +87,7 @@ const DeviceCreationPage = () => {
         return <option value={deviceType.id}>{deviceType.name}</option>;
       });
     } catch (error) {
-      toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+      toast.error("Įvyko klaida");
       console.log(error);
     }
   };
@@ -204,7 +204,7 @@ const DeviceCreationPage = () => {
               toast.error("Turite būti prisijungęs!");
               navigate("/prisijungimas");
             } else {
-              toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+              toast.error("Įvyko klaida");
             }
           })
           .catch((error) => {
@@ -214,11 +214,11 @@ const DeviceCreationPage = () => {
             } else if (error.response.status === 403) {
               toast.error("Jūs neturite privilegijų sukurti skelbimo!");
             } else {
-              toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+              toast.error("Įvyko klaida");
             }
           });
       } catch (error) {
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+        toast.error("Įvyko klaida");
       }
     }
   };

@@ -34,7 +34,7 @@ const ForgotPasswordPage = () => {
               "Nuoroda į slaptažodžio pakeitimą sėkmingai išsiųsta į jūsų el. paštą."
             );
           } else {
-            toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+            toast.error("Įvyko klaida");
           }
         })
         .catch((error) => {
@@ -46,7 +46,7 @@ const ForgotPasswordPage = () => {
               "Klaida išsiunčiant pakeitimo žinutę. Bandykite dar kartą."
             );
           } else {
-            toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+            toast.error("Įvyko klaida");
           }
         });
     }

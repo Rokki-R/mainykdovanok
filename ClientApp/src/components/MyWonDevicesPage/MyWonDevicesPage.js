@@ -21,23 +21,27 @@ function MyWonDevicesPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserLogin = async () => {
+    const fetchUserRole = async () => {
       try {
-        const response = await axios.get("api/login/isloggedin");
-        if (response.status === 200) {
-          console.log("User is logged in.");
+        const response = await axios.get("api/login/isLoggedIn");
+        const role = response.data.userRole;
+        if (role === 1) {
+          toast.error("Jūs neturite privilegijų apsilankyti šiame lange");
+          navigate("/");
         }
       } catch (error) {
-        if (error.response.status === 401) {
+        if (error.response && error.response.status === 401) {
           toast.error("Jūs turite būti prisijungęs");
           navigate("/prisijungimas");
         } else {
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+          console.error("Error fetching user role:", error);
         }
+      } finally {
+        setLoading(false);
       }
     };
-    fetchUserLogin();
-  }, []);
+    fetchUserRole();
+  });
 
   useEffect(() => {
     async function fetchDevices() {
@@ -65,7 +69,7 @@ function MyWonDevicesPage() {
         <>
           {devices.length > 0 && (
             <h3 style={{ textAlign: "center", marginBottom: "10px" }}>
-              Jūsų laimėti elektronikos prietaisų skelbimai
+              Jūsų laimėti elektronikos prietaisai
             </h3>
           )}
           {devices.length === 0 ? (
@@ -75,7 +79,7 @@ function MyWonDevicesPage() {
           ) : (
             <Row className="justify-content-center">
               {devices.map((device) => (
-                <Col sm={4} key={device.id} style={{ width: "300px" }}>
+                <Col sm={4} key={device.id} style={{ width: "350px" }}>
                   <Card className="mb-4">
                     <img
                       className="d-block w-100"
@@ -90,13 +94,7 @@ function MyWonDevicesPage() {
                     />
                     <Card.Body>
                       <Card.Title>{device.name}</Card.Title>
-                      <Card.Text>{device.description}</Card.Text>
-                      <ul className="list-group list-group-flush mb-3">
-                        <li className="list-group-item d-flex justify-content-between align-items-center">
-                          <span>{device.type}</span>
-                          <span>{device.location}</span>
-                        </li>
-                      </ul>
+                      <Card.Text>Atidavimo būdas: {device.type}</Card.Text>
                       <div className="d-flex justify-content-end">
                         <Button
                           variant="primary"
