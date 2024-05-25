@@ -240,13 +240,45 @@ function DeviceUpdatePage() {
         <Card.Body>
           <Form>
             <Form.Group>{getExistingImages()}</Form.Group>
-            <Form.Group className="mb-3 mt-3">
+            <Form.Group className="mb-3">
               <Form.Control
                 type="file"
                 name="images"
-                multiple
                 accept="image/*"
-                onChange={(e) => setImages([...e.target.files])}
+                multiple
+                onChange={(e) => {
+                  const selectedFiles = Array.from(e.target.files);
+                  const invalidFiles = selectedFiles.filter(
+                    (file) => !file.type.startsWith("image/")
+                  );
+
+                  if (invalidFiles.length > 0) {
+                    toast.error("Prašome pasirinkti tik paveikslėlių failus!", {
+                      style: {
+                        backgroundColor: "red",
+                        color: "white",
+                      },
+                    });
+                    e.target.value = null;
+                    return;
+                  }
+
+                  if (!selectedFiles.length) return;
+
+                  const updatedImages = [...images, ...selectedFiles];
+
+                  if (updatedImages.length > 6) {
+                    toast.error("Negalima įkelti daugiau nei 6 nuotraukų!", {
+                      style: {
+                        backgroundColor: "red",
+                        color: "white",
+                      },
+                    });
+                    return;
+                  }
+
+                  setImages(updatedImages);
+                }}
               />
             </Form.Group>
             <Form.Group>{getAllImages()}</Form.Group>
