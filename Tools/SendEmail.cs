@@ -120,7 +120,7 @@ namespace mainykdovanok.Tools
             message.To.Clear();
             message.To.Add(new MailAddress(email));
 
-            message.Subject = "Laimėjote mainykdovanok.lt skelbimą!";
+            message.Subject = "Laimėjote mainykdovanok skelbimą!";
 
             string url = $"https://localhost:44492/laimejimas/{deviceId}";
 
@@ -206,7 +206,7 @@ namespace mainykdovanok.Tools
             message.To.Clear();
             message.To.Add(new MailAddress(email));
 
-            message.Subject = "Laimėjote mainykdovanok.lt skelbimo klausimyną!";
+            message.Subject = "Laimėjote mainykdovanok skelbimo klausimyną!";
 
             string url = $"https://localhost:44492/laimejimas/{deviceId}";
 

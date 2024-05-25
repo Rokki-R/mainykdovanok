@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using mainykdovanok.Tools;
 using mainykdovanok.Repositories.User;
 using mainykdovanok.Models.mainykdovanok.Models.Device;
+using System.Reflection;
 
 namespace mainykdovanok.Controllers
 {
@@ -101,7 +102,6 @@ namespace mainykdovanok.Controllers
                 return Unauthorized();
             }
 
-            //Patikrinti ar prisijungęs naudotojas nėra admin
             if (!User.IsInRole("0"))
             {
                 return StatusCode(403);
@@ -133,7 +133,6 @@ namespace mainykdovanok.Controllers
                 return Unauthorized();
             }
 
-            //Patikrinti ar prisijungęs naudotojas nėra admin
             if (!User.IsInRole("0"))
             {
                 return StatusCode(403);
@@ -165,7 +164,6 @@ namespace mainykdovanok.Controllers
                 return Unauthorized();
             }
 
-            //Patikrinti ar prisijungęs naudotojas nėra admin
             if (!User.IsInRole("0"))
             {
                 return StatusCode(403);
@@ -226,6 +224,7 @@ namespace mainykdovanok.Controllers
             }
 
         }
+
         [HttpGet("getCategories")]
         public async Task<IActionResult> GetCategories()
         {
@@ -245,6 +244,7 @@ namespace mainykdovanok.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpGet("getDeviceTypes")]
         public async Task<IActionResult> GetDeviceTypes()
         {
@@ -272,11 +272,36 @@ namespace mainykdovanok.Controllers
             {
                 return Unauthorized();
             }
+
+            bool canDelete = false;
+
+            if (User.IsInRole("0"))
+            {
+                var device = await _deviceRepo.GetFullById(deviceId);
+                int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+                if (userId != device.UserId)
+                {
+                    return BadRequest("Negalite ištrinti ne savo skelbimą!");
+                }
+                canDelete = true;
+            }
+
+            else if (User.IsInRole("1"))
+            {
+                canDelete = true;
+            }
+
             try
             {
-                await _deviceRepo.DeleteDevice(deviceId);
-
-                return Ok();
+                if (canDelete)
+                {
+                    await _deviceRepo.DeleteDevice(deviceId);
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest("Įvyko klaida ištrinant skelbimą");
+                }
             }
             catch (Exception ex)
             {
@@ -288,6 +313,12 @@ namespace mainykdovanok.Controllers
         [Authorize]
         public async Task<IActionResult> GetLotteryParticipants(int deviceId)
         {
+            var device = await _deviceRepo.GetFullById(deviceId);
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            if (userId != device.UserId)
+            {
+                return BadRequest("Neturite prieigos prie šių duomenų");
+            }
             try
             {
                 var result = await _deviceRepo.GetLotteryParticipants(deviceId);
@@ -335,13 +366,13 @@ namespace mainykdovanok.Controllers
                 return Unauthorized();
             }
 
-            //Patikrinti ar prisijungęs naudotojas nėra admin
             if (!User.IsInRole("0"))
             {
                 return StatusCode(403);
             }
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+
 
             try
             {
@@ -357,7 +388,11 @@ namespace mainykdovanok.Controllers
                     return BadRequest("Šis skelbimas yra ne loterijos tipo.");
                 }
 
-                // Proceed with entering the lottery
+                if (userId == device.UserId)
+                {
+                    return BadRequest("Negalite dalyvauti savo dovanojamo elektronikos prietaiso loterijoje");
+                }
+
                 var result = await _deviceRepo.EnterLottery(id, userId);
                 return Ok(result);
             }
@@ -389,40 +424,6 @@ namespace mainykdovanok.Controllers
             }
         }
 
-        [HttpGet("search")]
-        public async Task<IActionResult> Search([FromQuery] string searchWord)
-        {
-            try
-            {
-                var searchResults = await _deviceRepo.Search(searchWord);
-
-                return Ok(searchResults);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet("search/category/{categoryId}")]
-        public async Task<IActionResult> GetDevicesByCategory(int categoryId)
-        {
-            try
-            {
-                var result = await _deviceRepo.GetAllByCategory(categoryId);
-
-                if (result == null)
-                {
-                    return BadRequest();
-                }
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
         [HttpGet("getOffers/{deviceId}")]
         [Authorize]
         public async Task<IActionResult> GetOffers(int deviceId)
@@ -436,10 +437,9 @@ namespace mainykdovanok.Controllers
             var device = await _deviceRepo.GetFullById(deviceId);
             if (device == null || device.UserId != userId)
             {
-                return StatusCode(403);
+                return Forbid("Jūs neturite prieigos prie šių duomenų");
             }
 
-            //Patikrinti ar prisijungęs naudotojas nėra admin
             if (!User.IsInRole("0"))
             {
                 return StatusCode(403);
@@ -485,7 +485,13 @@ namespace mainykdovanok.Controllers
                     return NotFound();
                 }
 
-                // Check if device type is a lottery
+                int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+
+                if (userId == device.UserId)
+                {
+                    return BadRequest("Jūs negalite atlikti mainų tarp elektronikos prietaisų, kurie priklauso jums");
+                }
+
                 if (device.Type != "Mainai į kita prietaisą")
                 {
                     return BadRequest("Šis skelbimas yra ne mainų tipo.");
@@ -496,7 +502,6 @@ namespace mainykdovanok.Controllers
                 {
                     return Conflict("Jūs jau esate pasiūlęs savo pasirinktą elektronikos prietaisą šiam skelbimui mainais");
                 }
-
 
                 var result = await _deviceRepo.SubmitExchangeOffer(deviceId, offer);
 
@@ -540,6 +545,11 @@ namespace mainykdovanok.Controllers
 
                 int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
+                if (userId == device.UserId)
+                {
+                    return BadRequest("Jūs negalite pateikti motyvacinio laiško elektronikos prietaisui, kurį pats dovanojate");
+                }
+
                 bool hasSubmittedLetter = await _deviceRepo.HasSubmittedLetter(deviceId, userId);
                 if (hasSubmittedLetter)
                 {
@@ -547,6 +557,7 @@ namespace mainykdovanok.Controllers
                 }
 
                 var form = await Request.ReadFormAsync();
+
                 MotivationalLetterModel letter = new MotivationalLetterModel()
                 {
                     Letter = form["letter"].ToString()
@@ -584,7 +595,6 @@ namespace mainykdovanok.Controllers
                 return StatusCode(403);
             }
 
-            //Patikrinti ar prisijungęs naudotojas nėra admin
             if (!User.IsInRole("0"))
             {
                 return StatusCode(403);
@@ -615,10 +625,9 @@ namespace mainykdovanok.Controllers
             var device = await _deviceRepo.GetFullById(winner.DeviceId);
             if (device == null || device.UserId != userId)
             {
-                return StatusCode(403);
+                return Forbid("Jūs neturite prieigos išrinkti šio elektronikos prietaiso laimėtoją");
             }
 
-            //Patikrinti ar prisijungęs naudotojas nėra admin
             if (!User.IsInRole("0"))
             {
                 return StatusCode(403);
@@ -656,10 +665,9 @@ namespace mainykdovanok.Controllers
             var device = await _deviceRepo.GetFullById(rejectedOffer.DeviceId);
             if (device == null || device.UserId != userId)
             {
-                return StatusCode(403);
+                return Forbid("Jūs neturite prieigos atmesti mainų pasiūlymus šiam elektronikos prietaisui");
             }
 
-            //Patikrinti ar prisijungęs naudotojas nėra admin
             if (!User.IsInRole("0"))
             {
                 return StatusCode(403);
@@ -687,14 +695,15 @@ namespace mainykdovanok.Controllers
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
             var device = await _deviceRepo.GetFullById(winner.DeviceId);
-            if (device == null || device.UserId != userId)
-            {
-                return StatusCode(403);
-            }
 
             if (!User.IsInRole("0"))
             {
                 return StatusCode(403);
+            }
+            
+            if (device == null || device.UserId != userId)
+            {
+                return Forbid("Jūs neturite prieigos išrinkti šio elektronikos prietaiso laimėtoją");
             }
 
             try
@@ -826,6 +835,10 @@ namespace mainykdovanok.Controllers
             }
 
             int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            if (device.UserId == userId)
+            {
+                return BadRequest("Jūs negalite atsakyti į savo dovanojamo elektronikos prietaiso klausimus");
+            }
 
             bool hasSubmittedLetter = await _deviceRepo.HasSubmittedAnswers(deviceId, userId);
             if (hasSubmittedLetter)
@@ -857,7 +870,7 @@ namespace mainykdovanok.Controllers
             var device = await _deviceRepo.GetFullById(id);
             if (device == null || device.UserId != userId)
             {
-                return StatusCode(403);
+                return Forbid("Jūs negalite atnaujinti ne savo skelbimą!");
             }
 
             if (!User.IsInRole("0"))
@@ -904,9 +917,5 @@ namespace mainykdovanok.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
-
-
-
     }
 }

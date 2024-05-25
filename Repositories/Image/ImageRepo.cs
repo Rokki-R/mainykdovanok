@@ -47,12 +47,10 @@ namespace mainykdovanok.Repositories.Image
             {
                 byte[] data = await ImageCompressor.ResizeCompressImage(image, 640, 480);
 
-                data = await ImageCompressor.AddWatermark(data, "ClientApp\\public\\images\\watermark.png"); // Provide path to watermark image
+                data = await ImageCompressor.AddWatermark(data, "ClientApp\\public\\images\\watermark.png");
 
                 using MySqlCommand command = new MySqlCommand(
                     "INSERT INTO device_image (image, fk_device) VALUES (@image, @fk_device)", connection);
-
-                // Add parameters
                 command.Parameters.AddWithValue("@image", data);
                 command.Parameters.AddWithValue("@fk_device", device.Id);
 
@@ -130,7 +128,6 @@ namespace mainykdovanok.Repositories.Image
 
             foreach (int id in ids)
             {
-                // Clear parameters before adding new ones
                 command.Parameters.Clear();
                 command.Parameters.AddWithValue("@id", id);
                 await command.ExecuteNonQueryAsync();
