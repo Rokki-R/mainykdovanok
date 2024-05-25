@@ -10,6 +10,29 @@ function AdministratorPage() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await axios.get("api/login/isLoggedIn");
+        const role = response.data.userRole;
+        if (role === 0) {
+          toast.error("Jūs neturite privilegijų apsilankyti šiame lange");
+          navigate("/");
+        }
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          toast.error("Jūs turite būti prisijungęs");
+          navigate("/prisijungimas");
+        } else {
+          console.error("Error fetching user role:", error);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserRole();
+  });
+
   const fetchUsers = async () => {
     try {
       const response = await axios.get("/api/admin/getUsers");

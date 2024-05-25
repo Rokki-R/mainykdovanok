@@ -98,7 +98,7 @@ const RegistrationPage = () => {
             toast.error(data.message);
           });
         } else {
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!", {
+          toast.error("Įvyko klaida", {
             style: {
               backgroundColor: "red",
               color: "white",

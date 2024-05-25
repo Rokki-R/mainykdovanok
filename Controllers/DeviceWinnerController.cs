@@ -26,14 +26,16 @@ namespace mainykdovanok.Controllers
         [Authorize]
         public async Task<IActionResult> Confirm(DeviceConfirmViewModel device)
         {
-
-            //Patikrinti ar prisijungęs naudotojas nėra admin
             if (!User.IsInRole("0"))
             {
                 return StatusCode(403);
             }
 
-            //Pridėti tikrinimus, kad neleistų multiple confirmų ir įsitikinti ar tikrai tas useris confirmina
+            int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
+            if (device.WinnerId != userId)
+            {
+                return BadRequest("Tik šio elektronikos prietaiso laimėtojas gali atlikti šį veiksmą");
+            }
             try
             {
                 await _deviceRepo.UpdateDeviceStatus(device.Id, 3);

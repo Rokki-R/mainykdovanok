@@ -40,14 +40,6 @@ namespace mainykdovanok.Repositories.User
             return new MySqlConnection(_connectionString);
         }
 
-        /// <summary>
-        /// Returns data as a List of objects.
-        /// </summary>
-        /// <typeparam name="T">The type of the objects to return</typeparam>
-        /// <typeparam name="U">The type of the parameters used in the SQL query</typeparam>
-        /// <param name="sql">The SQL query to be executed</param>
-        /// <param name="parameters">The parameters used in the SQL query</param>
-        /// <returns>List of objects of type T</returns>
         public async Task<List<T>> LoadData<T, U>(string sql, U parameters)
         {
             using MySqlConnection connection = GetConnection();
@@ -83,12 +75,6 @@ namespace mainykdovanok.Repositories.User
             }
         }
 
-        /// <summary>
-        /// Returns query results as a DataTable.
-        /// </summary>
-        /// <param name="sql">The SQL query to be executed</param>
-        /// <param name="parameters">List of parameters to append to the query</param>
-        /// <returns>DataTable containing the query results</returns>
         public async Task<DataTable> LoadData<U>(string sql, U parameters)
         {
             try
@@ -116,12 +102,6 @@ namespace mainykdovanok.Repositories.User
             }
         }
 
-        /// <summary>
-        /// Executes a query that modifies data in the database.
-        /// </summary>
-        /// <typeparam name="U">Type of parameter object</typeparam>
-        /// <param name="sql">SQL statement to execute</param>
-        /// <param name="parameters">Object containing parameter values</param>
         public async Task<bool> SaveData<U>(string sql, U parameters)
         {
             try
@@ -142,12 +122,6 @@ namespace mainykdovanok.Repositories.User
             }
         }
 
-        /// <summary>
-        /// Adds parameters to a database command object.
-        /// </summary>
-        /// <typeparam name="U">Type of parameter object</typeparam>
-        /// <param name="command">Command object to add parameters to</param>
-        /// <param name="parameters">Object containing parameter values</param>
         private void AddParameters<U>(IDbCommand command, U parameters)
         {
             if (parameters != null)

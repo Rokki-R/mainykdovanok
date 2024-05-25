@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using mainykdovanok.Models;
 using mainykdovanok.Repositories.Comment;
-using System.Diagnostics.Metrics;
+using mainykdovanok.Repositories.Device;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -12,10 +12,12 @@ namespace mainykdovanok.Controllers
     public class CommentController : ControllerBase
     {
         private readonly CommentRepo _commentRepo;
+        private readonly DeviceRepo _deviceRepo;
 
         public CommentController()
         {
             _commentRepo = new CommentRepo();
+            _deviceRepo = new DeviceRepo();
         }
 
         [HttpGet("getComments/{deviceId}")]
@@ -41,10 +43,15 @@ namespace mainykdovanok.Controllers
                 return Unauthorized();
             }
 
-            //Patikrinti ar prisijungęs naudotojas nėra admin
             if (!User.IsInRole("0"))
             {
                 return StatusCode(403);
+            }
+
+            var device = await _deviceRepo.GetFullById(deviceId);
+            if (device.Status != "Aktyvus")
+            {
+                return Conflict("Negalite pakomentuoti elektronikos prietaiso skelbimo, kuris nebėra aktyvus");
             }
 
             try
@@ -52,7 +59,7 @@ namespace mainykdovanok.Controllers
                 int userId = Convert.ToInt32(HttpContext.User.FindFirst("user_id").Value);
 
                 if (comment.Comment.Length < 10)
-                { 
+                {
                     return BadRequest("Parašytas komentaras yra per trumpas");
                 }
 

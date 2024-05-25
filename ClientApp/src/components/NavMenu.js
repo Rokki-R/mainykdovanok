@@ -37,7 +37,30 @@ export class NavMenu extends Component {
   componentDidMount() {
     this.handleLoginClick();
     this.getCategories();
+
+    axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && error.response.status === 401) {
+
+          this.refreshNavMenu();
+        }
+        return Promise.reject(error);
+      }
+    );
   }
+
+  componentWillUnmount() {
+    axios.interceptors.response.eject(this.refreshNavMenuInterceptor);
+  }
+
+  refreshNavMenu = () => {
+    this.setState({
+      isLogged: false,
+      userRole: null,
+      userEmail: null,
+    });
+  };
 
   getCategories() {
     axios
@@ -133,6 +156,10 @@ export class NavMenu extends Component {
         window.location.href = "/prisijungimas";
       } else if (response.status === 401) {
         toast.error("Jūs jau esate atsijungęs!");
+      }
+      else if (response.status === 404) {
+        toast.error("Jūsų paskyra buvo atjungta nuo sistemos dėl neaktyvumo");
+        this.refreshNavMenu();
       }
     });
   };

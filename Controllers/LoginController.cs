@@ -168,7 +168,7 @@ namespace mainykdovanok.Controllers
             string password_salt = Convert.ToBase64String(salt);
 
             bool success = await _userRepo.SaveData("INSERT INTO user (name, surname, email, password_hash, password_salt, phone_number) VALUES (@name, @surname, @email, @password_hash, @password_salt, @PhoneNumber)",
-                    new { registration.Name, registration.Surname, registration.Email, password_hash, password_salt, registration.PhoneNumber});
+                    new { registration.Name, registration.Surname, registration.Email, password_hash, password_salt, registration.PhoneNumber });
 
             if (success)
             {

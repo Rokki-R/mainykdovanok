@@ -34,6 +34,7 @@ export const DeviceWinnerPage = () => {
         ) {
           setCanAccess(true);
         } else if (device && response.data !== device?.winnerId) {
+          toast.error("Jūs neturite privilegijų apsilankyti šiame lange");
           navigate("/");
         }
       } catch (error) {
@@ -42,7 +43,7 @@ export const DeviceWinnerPage = () => {
           toast.error("Turite būti prisijungęs!");
         } else {
           navigate("/index");
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+          toast.error("Įvyko klaida");
         }
       }
     };
@@ -55,7 +56,7 @@ export const DeviceWinnerPage = () => {
         const response = await axios.get(`api/device/getDevice/${deviceId}`);
         setDevice(response.data);
       } catch (error) {
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+        toast.error("Įvyko klaida");
       }
     };
     fetchDevice();

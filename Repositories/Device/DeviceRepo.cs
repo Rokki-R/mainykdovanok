@@ -327,7 +327,7 @@ namespace mainykdovanok.Repositories.Device
                 }
             }
         }
-      
+
         public async Task<bool> DeleteDevice(int id)
         {
             using MySqlConnection connection = GetConnection();
@@ -594,35 +594,6 @@ namespace mainykdovanok.Repositories.Device
             }
         }
 
-        public async Task<List<DeviceViewModel>> Search(string searchWord)
-        {
-            List<DeviceViewModel> foundDevices = new List<DeviceViewModel>();
-            using MySqlConnection connection = GetConnection();
-            await connection.OpenAsync();
-
-            using MySqlCommand command = new MySqlCommand(
-               "SELECT id, name, description, fk_user, fk_status, winner_draw_datetime FROM device_ad " +
-                "WHERE (name LIKE CONCAT('%', @searchWord, '%') OR description LIKE CONCAT('%', @searchWord, '%')) " +
-                "AND fk_status = 1", connection);
-            command.Parameters.AddWithValue("@searchWord", searchWord);
-
-            using DbDataReader reader = await command.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-            {
-                DeviceViewModel Device = new()
-                {
-                    Id = reader.GetInt32("id"),
-                    Name = reader.GetString("name"),
-                    Description = reader.GetString("description"),
-                    UserId = reader.GetInt32("fk_user"),
-                    Images = await _imageRepo.GetByDeviceFirst(reader.GetInt32("id")),
-                    WinnerDrawDateTime = reader.GetDateTime("winner_draw_datetime")
-                };
-                foundDevices.Add(Device);
-            }
-            return foundDevices;
-        }
-
         public async Task<List<ExchangeViewModel>> GetOffers(int deviceId)
         {
             List<ExchangeViewModel> results = new List<ExchangeViewModel>();
@@ -771,7 +742,7 @@ namespace mainykdovanok.Repositories.Device
                 string surname = reader.GetString("surname");
                 int devicesWon = reader.GetInt32("devices_won");
                 int devicesGifted = reader.GetInt32("devices_gifted");
-                MotivationalLetterViewModel result = new MotivationalLetterViewModel { Id = id, Letter = letter, Name = name, Surname = surname, DevicesWon = devicesWon, DevicesGifted = devicesGifted  };
+                MotivationalLetterViewModel result = new MotivationalLetterViewModel { Id = id, Letter = letter, Name = name, Surname = surname, DevicesWon = devicesWon, DevicesGifted = devicesGifted };
                 results.Add(result);
             }
 
@@ -780,7 +751,6 @@ namespace mainykdovanok.Repositories.Device
 
             return groupedResults;
         }
-
 
         public async Task<bool> InsertQuestions(DeviceModel device)
         {
@@ -845,14 +815,13 @@ namespace mainykdovanok.Repositories.Device
             using DbDataReader reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                string answer_text= reader.GetString("answer");
+                string answer_text = reader.GetString("answer");
                 AnswerModel answer = new AnswerModel { Text = answer_text };
                 answers.Add(answer);
             }
 
             return answers;
         }
-
 
         public async Task<Dictionary<string, List<QuestionnaireViewModel>>> GetQuestionsAndAnswers(int deviceId)
         {
@@ -879,7 +848,7 @@ namespace mainykdovanok.Repositories.Device
                 string surname = reader.GetString("surname");
                 int devicesWon = reader.GetInt32("devices_won");
                 int devicesGifted = reader.GetInt32("devices_gifted");
-                QuestionnaireViewModel result = new QuestionnaireViewModel { Id = id, Question = text, Answer = answer, Name = name, Surname = surname, DevicesWon = devicesWon, DevicesGifted = devicesGifted};
+                QuestionnaireViewModel result = new QuestionnaireViewModel { Id = id, Question = text, Answer = answer, Name = name, Surname = surname, DevicesWon = devicesWon, DevicesGifted = devicesGifted };
                 results.Add(result);
             }
 
@@ -888,7 +857,6 @@ namespace mainykdovanok.Repositories.Device
 
             return groupedResults;
         }
-
 
         public async Task<bool> InsertAnswers(int deviceId, List<AnswerModel> answers, int userId)
         {
@@ -929,49 +897,5 @@ namespace mainykdovanok.Repositories.Device
 
             return true;
         }
-
-        public async Task<bool> DeleteQuestions(int deviceId)
-        {
-            try
-            {
-                using MySqlConnection connection = GetConnection();
-                await connection.OpenAsync();
-
-                using MySqlCommand command = new MySqlCommand(
-                    "DELETE FROM question WHERE fk_device = @deviceId", connection);
-
-                // Add parameter
-                command.Parameters.AddWithValue("@deviceId", deviceId);
-
-                await command.ExecuteNonQueryAsync();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error deleting question from database!");
-                return false;
-            }
-        }
-
-
-        private async Task InsertQuestions(int deviceId, List<DeviceQuestionViewModel> updatedQuestions)
-        {
-            using MySqlConnection connection = GetConnection();
-            await connection.OpenAsync();
-
-            foreach (var question in updatedQuestions)
-            {
-                using MySqlCommand command = new MySqlCommand(
-                    "INSERT INTO question (fk_device, question) VALUES (@deviceId, @questionText)", connection);
-                command.Parameters.AddWithValue("@deviceId", deviceId);
-                command.Parameters.AddWithValue("@questionText", question.Question);
-
-                await command.ExecuteNonQueryAsync();
-            }
-        }
-
-
-
     }
 }

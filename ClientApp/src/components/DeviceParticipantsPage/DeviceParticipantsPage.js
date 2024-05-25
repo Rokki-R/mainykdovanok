@@ -34,7 +34,7 @@ export const DeviceParticipantsPage = () => {
         const response = await axios.get(`api/device/getDevice/${deviceId}`);
         setDevice(response.data);
       } catch (error) {
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+        toast.error("Įvyko klaida");
       }
     };
 
@@ -51,7 +51,7 @@ export const DeviceParticipantsPage = () => {
           navigate("/prisijungimas");
           toast.error("Turite būti prisijungęs!");
         } else {
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+          toast.error("Įvyko klaida");
         }
       }
     };
@@ -61,7 +61,7 @@ export const DeviceParticipantsPage = () => {
   useEffect(() => {
     if (device && viewerId && device.userId !== viewerId) {
       navigate("/");
-      toast.error("Negalite peržiūrėti šio skelbimo informacijos");
+      toast.error("Negalite peržiūrėti šio lango");
     }
   }, [device, viewerId, navigate]);
 
@@ -96,7 +96,7 @@ export const DeviceParticipantsPage = () => {
             "Jūs neturite prieigos peržiūrėti šio skelbimo informaciją"
           );
         } else {
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+          toast.error("Įvyko klaida");
         }
       }
     };
@@ -122,7 +122,7 @@ export const DeviceParticipantsPage = () => {
           );
           navigate(`/`);
         } else {
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+          toast.error("Įvyko klaida");
         }
       })
       .catch((error) => {
@@ -131,7 +131,7 @@ export const DeviceParticipantsPage = () => {
         } else if (error.response.status === 403) {
           toast.error("Jūs negalite atiduoti ne savo skelbimą!");
         } else {
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+          toast.error("Įvyko klaida");
         }
       });
     setSubmitting(false);
@@ -156,14 +156,14 @@ export const DeviceParticipantsPage = () => {
           );
           navigate(`/`);
         } else {
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+          toast.error("Įvyko klaida");
         }
       })
       .catch((error) => {
         if (error.response.status === 401) {
           toast.error("Turite būti prisijungęs!");
         } else {
-          toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+          toast.error("Įvyko klaida");
         }
       });
     setSubmitting(false);
@@ -186,7 +186,7 @@ export const DeviceParticipantsPage = () => {
       if (error.response.status === 401) {
         toast.error("Turite būti prisijungęs!");
       } else {
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+        toast.error("Įvyko klaida");
       }
     }
 

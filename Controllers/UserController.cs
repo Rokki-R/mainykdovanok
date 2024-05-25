@@ -93,7 +93,7 @@ namespace mainykdovanok.Controllers.UserAuthentication
 
             string sql = "UPDATE user SET name = @name, surname = @surname, phone_number = @phone_number WHERE user_id = @user_id";
             var parameters_update = new { name, surname, phone_number, user_id };
-                await _userRepo.SaveData(sql, parameters_update);
+            await _userRepo.SaveData(sql, parameters_update);
 
             return Ok();
         }
@@ -219,23 +219,23 @@ namespace mainykdovanok.Controllers.UserAuthentication
                 return StatusCode(401);
             }
             else
+            {
+                byte[] salt;
+                string password_hash = PasswordHash.hashPassword(passwordChange.Password, out salt);
+                string password_salt = Convert.ToBase64String(salt);
+
+                bool success = await _userRepo.SaveData("UPDATE user SET password_hash = @password_hash, password_salt = @password_salt, password_change_token = NULL WHERE password_change_token = @token",
+                new { password_hash, password_salt, token = passwordChange.Token });
+
+                if (success)
                 {
-                    byte[] salt;
-                    string password_hash = PasswordHash.hashPassword(passwordChange.Password, out salt);
-                    string password_salt = Convert.ToBase64String(salt);
-
-                    bool success = await _userRepo.SaveData("UPDATE user SET password_hash = @password_hash, password_salt = @password_salt, password_change_token = NULL WHERE password_change_token = @token",
-                    new { password_hash, password_salt, token = passwordChange.Token });
-
-                    if (success)
-                    {
-                        return Ok();
-                    }
-                    else
-                    {
-                        return BadRequest();
-                    }
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest();
                 }
             }
         }
     }
+}

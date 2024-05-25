@@ -60,7 +60,7 @@ const DeviceCreationPage = () => {
       })
       .catch((error) => {
         console.log(error);
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+        toast.error("Įvyko klaida");
       });
   }, []);
 
@@ -70,7 +70,7 @@ const DeviceCreationPage = () => {
         return <option value={category.id}>{category.name}</option>;
       });
     } catch (error) {
-      toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+      toast.error("Įvyko klaida");
       console.log(error);
     }
   };
@@ -87,7 +87,7 @@ const DeviceCreationPage = () => {
         return <option value={deviceType.id}>{deviceType.name}</option>;
       });
     } catch (error) {
-      toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+      toast.error("Įvyko klaida");
       console.log(error);
     }
   };
@@ -204,7 +204,7 @@ const DeviceCreationPage = () => {
               toast.error("Turite būti prisijungęs!");
               navigate("/prisijungimas");
             } else {
-              toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+              toast.error("Įvyko klaida");
             }
           })
           .catch((error) => {
@@ -214,11 +214,11 @@ const DeviceCreationPage = () => {
             } else if (error.response.status === 403) {
               toast.error("Jūs neturite privilegijų sukurti skelbimo!");
             } else {
-              toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+              toast.error("Įvyko klaida");
             }
           });
       } catch (error) {
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+        toast.error("Įvyko klaida");
       }
     }
   };
@@ -243,6 +243,7 @@ const DeviceCreationPage = () => {
                 type="file"
                 name="images"
                 accept="image/*"
+                multiple
                 onChange={(e) => {
                   const selectedFiles = Array.from(e.target.files);
                   const invalidFiles = selectedFiles.filter(
@@ -256,16 +257,14 @@ const DeviceCreationPage = () => {
                         color: "white",
                       },
                     });
-                    // Clear the selected files from the input
                     e.target.value = null;
                     return;
                   }
 
-                  if (!selectedFiles.length) return; // If no file is selected, do nothing
+                  if (!selectedFiles.length) return;
 
-                  const updatedImages = [...images, ...selectedFiles]; // Add the selected files to the current list of images
+                  const updatedImages = [...images, ...selectedFiles];
 
-                  // Check if the number of images exceeds the limit
                   if (updatedImages.length > 6) {
                     toast.error("Negalima įkelti daugiau nei 6 nuotraukų!", {
                       style: {
@@ -276,7 +275,6 @@ const DeviceCreationPage = () => {
                     return;
                   }
 
-                  // Update the state with the new list of images
                   setImages(updatedImages);
                 }}
               />

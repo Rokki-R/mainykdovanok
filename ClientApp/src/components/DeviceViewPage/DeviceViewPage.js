@@ -42,7 +42,7 @@ export const DeviceViewPage = () => {
         const deviceOwnerData = response.data;
         setDeviceOwner(deviceOwnerData);
       } catch (error) {
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+        toast.error("Įvyko klaida");
       }
     };
 
@@ -58,7 +58,7 @@ export const DeviceViewPage = () => {
           setCurrentTime(new Date());
         }, 1000);
       } catch (error) {
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+        toast.error("Įvyko klaida");
       }
     };
 
@@ -171,7 +171,7 @@ export const DeviceViewPage = () => {
         toast.error("Neturite privilegijų palikti komentarą!");
       } else {
         console.log(error);
-        toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+        toast.error("Įvyko klaida");
       }
     }
   };
@@ -219,7 +219,7 @@ export const DeviceViewPage = () => {
                 participants: device.participants + 1,
               });
             } else {
-              toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+              toast.error("Įvyko klaida");
             }
           })
           .catch((error) => {
@@ -230,7 +230,7 @@ export const DeviceViewPage = () => {
               toast.error("Neturite privilegijų dalyvauti loterijoje!");
             } else {
               console.log(error);
-              toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+              toast.error("Įvyko klaida");
             }
           });
       } else {
@@ -246,14 +246,14 @@ export const DeviceViewPage = () => {
                 participants: device.participants - 1,
               });
             } else {
-              toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+              toast.error("Įvyko klaida");
             }
           })
           .catch((error) => {
             if (error.response.status === 401) {
               toast.error("Turite būti prisijungęs!");
             } else {
-              toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+              toast.error("Įvyko klaida");
             }
           });
       }
@@ -266,7 +266,7 @@ export const DeviceViewPage = () => {
           if (response.data) {
             toast.success("Sėkmingai išsiuntėte motyvacinį laišką");
           } else {
-            toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+            toast.error("Įvyko klaida");
           }
         })
         .catch((error) => {
@@ -281,7 +281,7 @@ export const DeviceViewPage = () => {
             return;
           }
           {
-            toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+            toast.error("Įvyko klaida");
           }
         });
     } else if (device.type === "Mainai į kita prietaisą") {
@@ -298,7 +298,7 @@ export const DeviceViewPage = () => {
               participants: device.participants + 1,
             });
           } else {
-            toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+            toast.error("Įvyko klaida");
           }
         })
         .catch((error) => {
@@ -315,7 +315,7 @@ export const DeviceViewPage = () => {
             );
             return;
           } else {
-            toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+            toast.error("Įvyko klaida");
           }
         });
     } else if (device.type === "Klausimynas") {
@@ -335,7 +335,7 @@ export const DeviceViewPage = () => {
               participants: device.participants + 1,
             });
           } else {
-            toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+            toast.error("Įvyko klaida");
           }
         })
         .catch((error) => {
@@ -350,7 +350,7 @@ export const DeviceViewPage = () => {
             );
             return;
           } else {
-            toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+            toast.error("Įvyko klaida");
           }
         });
     }

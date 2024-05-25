@@ -16,25 +16,52 @@ import "./MyProfilePage.css";
 const MyProfilePage = () => {
   const [message, setMessage] = useState("");
   const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchUser() {
+    const fetchUserRole = async () => {
       try {
-        await axios.get("api/user/getMyProfileDetails").then((response) => {
-          const data = response.data;
-          console.log(data);
-          setUser({ ...data });
-        });
+        const response = await axios.get("api/login/isLoggedIn");
+        const role = response.data.userRole;
+        setUserRole(role);
+        if (role === 1) {
+          toast.error("Jūs neturite privilegijų apsilankyti šiame lange");
+          navigate("/");
+        } else {
+          fetchUser();
+        }
       } catch (error) {
-        if (error.response.status === 401) {
+        if (error.response && error.response.status === 401) {
           toast.error("Jūs turite būti prisijungęs");
           navigate("/prisijungimas");
+        } else {
+          console.error("Error fetching user role:", error);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get("api/user/getMyProfileDetails");
+        const data = response.data;
+        console.log(data);
+        setUser({ ...data });
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          toast.error("Jūs turite būti prisijungęs");
+          navigate("/prisijungimas");
+        } else {
+          console.error("Error fetching user:", error);
         }
       }
-    }
-    fetchUser();
-  }, []);
+    };
+
+    fetchUserRole();
+  }, [navigate]);
 
   function checkFields(formData) {
     const name = formData.get("name");
@@ -86,18 +113,28 @@ const MyProfilePage = () => {
               },
             });
           } else {
-            toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+            toast.error("Įvyko klaida");
           }
         })
         .catch((error) => {
           if (error.response.data) {
             toast.error(error.response.data);
           } else {
-            toast.error("Įvyko klaida, susisiekite su administratoriumi!");
+            toast.error("Įvyko klaida");
           }
         });
     }
   };
+
+  if (loading) {
+    return (
+      <Container className="my-5">
+        <div className="outerBoxWrapper d-flex justify-content-center">
+          <Spinner animation="border" role="status" />
+        </div>
+      </Container>
+    );
+  }
 
   return user ? (
     <Container className="profile">
@@ -196,4 +233,5 @@ const MyProfilePage = () => {
     </Container>
   );
 };
+
 export default MyProfilePage;
